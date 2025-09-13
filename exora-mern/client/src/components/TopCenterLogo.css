@@ -1,0 +1,22 @@
+.top-center-logo {
+  position: fixed;
+  top: 56px;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 64px;
+  width: auto;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+  z-index: 50;
+  filter: drop-shadow(0 4px 16px rgba(0,0,0,0.4));
+}
+
+.top-center-logo.fallback {
+  font-family: 'Press Start 2P', 'VT323', monospace;
+  color: #b794f4;
+  letter-spacing: 0.2em;
+  font-size: 18px;
+}
+
+
