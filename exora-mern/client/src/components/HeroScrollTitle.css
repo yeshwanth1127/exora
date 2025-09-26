@@ -1,0 +1,112 @@
+.hero-scroll-title {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto 16px auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hero-scroll-title .marquee {
+  position: relative;
+  overflow: hidden;
+  background: transparent !important;
+}
+
+.hero-scroll-title .marquee__inner {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: marquee var(--marquee-duration, 30s) linear infinite;
+  background: transparent !important;
+}
+
+.hero-scroll-title .marquee--right .marquee__inner {
+  animation: marquee-reverse var(--marquee-duration, 30s) linear infinite;
+}
+
+.hero-scroll-title span {
+  font: inherit;
+  color: #ffffff !important;
+  text-shadow: inherit;
+  letter-spacing: inherit;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes marquee-reverse {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+  .hero-scroll-title {
+    max-width: 95vw;
+    margin: 0 auto 12px auto;
+    gap: 4px;
+  }
+  
+  .hero-scroll-title .marquee__inner {
+    animation-duration: 20s;
+  }
+  
+  .hero-scroll-title .marquee--right .marquee__inner {
+    animation-duration: 20s;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-scroll-title {
+    max-width: 98vw;
+    margin: 0 auto 8px auto;
+    gap: 3px;
+  }
+  
+  .hero-scroll-title .marquee__inner {
+    animation-duration: 15s;
+  }
+  
+  .hero-scroll-title .marquee--right .marquee__inner {
+    animation-duration: 15s;
+  }
+}
+
+/* Landscape mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+  .hero-scroll-title {
+    max-width: 90vw;
+    margin: 0 auto 8px auto;
+  }
+  
+  .hero-scroll-title .marquee__inner {
+    animation-duration: 12s;
+  }
+  
+  .hero-scroll-title .marquee--right .marquee__inner {
+    animation-duration: 12s;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .hero-scroll-title .marquee__inner,
+  .hero-scroll-title .marquee--right .marquee__inner {
+    animation: none !important;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .hero-scroll-title .marquee__inner {
+    animation-duration: 25s;
+  }
+  
+  .hero-scroll-title .marquee--right .marquee__inner {
+    animation-duration: 25s;
+  }
+}
+
+

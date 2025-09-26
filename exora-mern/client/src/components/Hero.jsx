@@ -1,59 +1,52 @@
-import { useEffect, useRef } from 'react';
-import { animate, text, stagger } from 'animejs';
+import React from 'react';
+import ShinyText from './ShinyText';
+import HeroScrollTitle from './HeroScrollTitle';
+import ElectricBorder from './ElectricBorder';
 import Orb from './Orb';
-import CurvedLoop from './CurvedLoop';
 
-const Hero = () => {
-  const textRef = useRef(null);
-
-  useEffect(() => {
-    if (textRef.current) {
-      const textElement = textRef.current;
-      
-      text.split(textElement, {
-        lines: { wrap: 'clip' },
-      })
-      .addEffect(({ lines }) => animate(lines, {
-        y: [
-          { to: ['100%', '0%'] },
-          { to: '-100%', delay: 750, ease: 'in(3)' }
-        ],
-        duration: 750,
-        ease: 'out(3)',
-        delay: stagger(200),
-        loop: true,
-        loopDelay: 500,
-      }));
+const Hero = ({ onOpenChat }) => {
+  const handleOpenChat = () => {
+    if (onOpenChat) {
+      onOpenChat();
+    } else {
+      console.log('Open chatbot');
     }
-  }, []);
+  };
 
   return (
     <section className="landing-hero">
       <div className="hero-orb-container">
-        <div className="orb-wrapper">
-          <Orb
-            hoverIntensity={0.8}
-            rotateOnHover={true}
-            hue={0}
-            forceHoverState={false}
-          />
-        </div>
         <div className="hero-content">
-          <CurvedLoop 
-            marqueeText="Exora — AI that lives inside your OS and springs to life with your startup."
-            speed={2}
-            curveAmount={0}
-            direction="left"
-            interactive={true}
-            className="hero-title"
-          />
-          <p ref={textRef}>
-            Scribe watches your screen with high‑fidelity event capture and turns repetitive computer tasks
-            into secure, privacy‑first automations. Build powerful workflows from everyday actions.
-          </p>
-          <button className="waitlist-button">
-            Enter Waitlist
-          </button>
+          <div className="hero-split">
+            <div className="hero-left">
+              <div className="hero-title-container">
+                <HeroScrollTitle text="Your automation + assistance hub" className="hero-title-text" />
+              </div>
+              <div className="hero-ctas">
+                <a href="#solutions" className="button-secondary cursor-target">
+                  <ShinyText text="What We Do" speed={3} />
+                </a>
+              </div>
+            </div>
+            
+            <div className="hero-divider" style={{ width: '2px', minHeight: '220px', alignSelf: 'stretch', display: 'flex', alignItems: 'center' }}>
+              <ElectricBorder 
+                color="#a855f7" 
+                speed={1.2}
+                thickness={2}
+                className="electric-divider"
+              >
+                <div className="divider-content" style={{ width: '2px', height: '100%', background: 'transparent' }}></div>
+              </ElectricBorder>
+            </div>
+
+            <div className="hero-right" style={{ display: 'grid', placeItems: 'center', textAlign: 'center', gap: '16px' }}>
+              <h2 style={{ fontSize: 'clamp(18px, 3.2vw, 32px)', margin: 0 }}>Talk to our chatbot to understand what we do</h2>
+              <div style={{ marginTop: '8px' }}>
+                <Orb onClick={handleOpenChat} style={{ position: 'static', left: 'auto', top: 'auto', transform: 'none' }} />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>

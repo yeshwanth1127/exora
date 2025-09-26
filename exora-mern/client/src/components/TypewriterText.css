@@ -1,0 +1,79 @@
+.typewriter-text {
+  font-family: 'Space Grotesk', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #e7e3ff;
+  text-align: left;
+  position: relative;
+  min-height: 1.6em;
+}
+
+.typewriter-content {
+  display: block;
+}
+
+.typewriter-line {
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.typewriter-line:last-child {
+  margin-bottom: 0;
+}
+
+.typewriter-cursor {
+  display: inline-block;
+  color: #a855f7;
+  font-weight: 300;
+  margin-left: 2px;
+  animation: cursorBlink 1s infinite;
+  text-shadow: 0 0 8px rgba(168, 85, 247, 0.6);
+}
+
+.typewriter-cursor.blinking {
+  animation: cursorBlink 1s infinite;
+}
+
+.typewriter-cursor:not(.blinking) {
+  animation: none;
+  opacity: 1;
+}
+
+@keyframes cursorBlink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+/* Responsive typography */
+@media (max-width: 768px) {
+  .typewriter-text {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+}
+
+@media (max-width: 480px) {
+  .typewriter-text {
+    font-size: 13px;
+    line-height: 1.4;
+  }
+}
+
+/* Dark theme adjustments */
+@media (prefers-color-scheme: dark) {
+  .typewriter-text {
+    color: #e7e3ff;
+  }
+  
+  .typewriter-cursor {
+    color: #a855f7;
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .typewriter-cursor {
+    animation: none;
+    opacity: 1;
+  }
+}

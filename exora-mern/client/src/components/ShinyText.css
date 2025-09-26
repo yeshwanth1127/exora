@@ -1,0 +1,79 @@
+.shiny-text {
+  color: #ffffff; /* Brighter base color for more visibility */
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0) 30%,
+    rgba(168, 85, 247, 0.9) 45%,
+    rgba(255, 255, 255, 1) 50%,
+    rgba(168, 85, 247, 0.9) 55%,
+    rgba(255, 255, 255, 0) 70%
+  );
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  display: inline-block;
+  animation: shine 3s linear infinite;
+  text-shadow: 0 0 10px rgba(168, 85, 247, 0.3);
+  transition: all 0.3s ease;
+}
+
+@keyframes shine {
+  0% {
+    background-position: 200%;
+  }
+  100% {
+    background-position: -200%;
+  }
+}
+
+.shiny-text.disabled {
+  animation: none;
+}
+
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+  .shiny-text {
+    text-shadow: 0 0 8px rgba(168, 85, 247, 0.25);
+    animation-duration: 4s;
+  }
+}
+
+@media (max-width: 480px) {
+  .shiny-text {
+    text-shadow: 0 0 6px rgba(168, 85, 247, 0.2);
+    animation-duration: 5s;
+  }
+}
+
+/* Landscape mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+  .shiny-text {
+    animation-duration: 3.5s;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .shiny-text {
+    animation: none;
+    background: #ffffff;
+    -webkit-background-clip: initial;
+    background-clip: initial;
+    text-shadow: 0 0 5px rgba(168, 85, 247, 0.3);
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .shiny-text {
+    animation-duration: 4s;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .shiny-text {
+    color: #ffffff;
+    text-shadow: 0 0 15px rgba(168, 85, 247, 0.5);
+  }
+}
