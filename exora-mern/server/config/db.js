@@ -17,7 +17,7 @@ function createPool() {
       port: Number(process.env.PGPORT || 5432),
       user: process.env.PGUSER || 'postgres',
       password: process.env.PGPASSWORD || '',
-      database: process.env.PGDATABASE || 'exora',
+      database: process.env.PGDATABASE || 'exora-web',
       ssl: false,
     });
   }

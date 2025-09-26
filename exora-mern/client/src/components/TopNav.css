@@ -1,0 +1,117 @@
+.topnav {
+  position: fixed;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.topnav-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-end;
+  pointer-events: auto;
+}
+
+.topnav-link {
+  color: #e9e5ff;
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  padding: 10px 8px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  display: inline-block;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transition: all 0.3s ease;
+}
+
+.topnav-prox { 
+  color: inherit; 
+}
+
+.topnav-link:hover {
+  color: #cdbbff;
+  text-shadow: 0 0 18px rgba(124, 58, 237, 0.45);
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+  .topnav {
+    right: 8px;
+    top: auto;
+    bottom: 20px;
+    transform: none;
+  }
+  
+  .topnav-inner {
+    flex-direction: row;
+    gap: 8px;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 8px 12px;
+    border: 1px solid rgba(168, 85, 247, 0.3);
+  }
+  
+  .topnav-link {
+    writing-mode: horizontal-tb;
+    text-orientation: initial;
+    padding: 6px 8px;
+    font-size: 12px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+  }
+  
+  .topnav-link:hover {
+    background: rgba(168, 85, 247, 0.2);
+    transform: translateY(-1px);
+  }
+}
+
+/* Small mobile styles */
+@media (max-width: 480px) {
+  .topnav {
+    right: 6px;
+    bottom: 16px;
+  }
+  
+  .topnav-inner {
+    gap: 6px;
+    padding: 6px 10px;
+  }
+  
+  .topnav-link {
+    padding: 4px 6px;
+    font-size: 11px;
+  }
+}
+
+/* Landscape mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+  .topnav {
+    top: 12px;
+    bottom: auto;
+    right: 12px;
+  }
+  
+  .topnav-inner {
+    background: rgba(0, 0, 0, 0.9);
+    border-radius: 16px;
+    padding: 6px 10px;
+  }
+}
+
+/* Hide on very small screens if needed */
+@media (max-width: 320px) {
+  .topnav {
+    display: none;
+  }
+}
+
