@@ -7,7 +7,11 @@ const {
   getRecentActivities,
   getNotifications,
   markNotificationAsRead,
-  getStatisticsHistory
+  getStatisticsHistory,
+  updateDashboardData,
+  getDashboardData,
+  resetDashboardData,
+  addWorkflowsToDashboard
 } = require('../controllers/dashboardController');
 const { authenticateToken } = require('../middleware/auth');
 
@@ -35,6 +39,14 @@ router.put('/notifications/:notificationId/read', markNotificationAsRead);
 
 // Statistics
 router.get('/statistics/history', getStatisticsHistory);
+
+// Dashboard data management
+router.get('/data', getDashboardData);
+router.put('/data', updateDashboardData);
+router.delete('/data', resetDashboardData);
+
+// Workflow management
+router.post('/workflows', addWorkflowsToDashboard);
 
 module.exports = router;
 

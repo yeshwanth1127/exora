@@ -72,11 +72,34 @@ const MobileLayout = ({ isChatbotOpen, onChatbotToggle }) => {
             </p>
           </div>
           
+          {user && (
+            <button 
+              style={{ 
+                background: 'linear-gradient(135deg, #667eea, #764ba2)', 
+                color: 'white', 
+                border: 'none', 
+                padding: '16px 24px', 
+                borderRadius: '12px', 
+                fontSize: '16px', 
+                fontWeight: '600', 
+                width: '100%',
+                cursor: 'pointer',
+                marginBottom: '12px'
+              }}
+              onClick={() => {
+                const dashboardPath = user.usageType === 'personal' ? '/personal-dashboard' : '/dashboard';
+                navigate(dashboardPath);
+              }}
+            >
+              Go to Dashboard
+            </button>
+          )}
+          
           <button 
             style={{ 
-              background: 'linear-gradient(135deg, #a855f7, #7c3aed)', 
+              background: user ? 'rgba(255, 255, 255, 0.1)' : 'linear-gradient(135deg, #a855f7, #7c3aed)', 
               color: 'white', 
-              border: 'none', 
+              border: user ? '1px solid rgba(255, 255, 255, 0.2)' : 'none', 
               padding: '16px 24px', 
               borderRadius: '12px', 
               fontSize: '16px', 

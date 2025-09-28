@@ -1,0 +1,36 @@
+0 verbose cli D:\node.exe D:\node_modules\npm\bin\npm-cli.js
+1 info using npm@10.9.3
+2 info using node@v22.19.0
+3 silly config load:file:D:\node_modules\npm\npmrc
+4 silly config load:file:D:\.npmrc
+5 silly config load:file:C:\Users\len\.npmrc
+6 silly config load:file:D:\npm-global\etc\npmrc
+7 verbose title npm start
+8 verbose argv "start"
+9 verbose logfile logs-max:10 dir:D:\exora\prism\exora\exora-mern\server\npm-cache\_logs\2025-09-28T16_13_12_930Z-
+10 verbose logfile D:\exora\prism\exora\exora-mern\server\npm-cache\_logs\2025-09-28T16_13_12_930Z-debug-0.log
+11 silly logfile start cleaning logs, removing 1 files
+12 verbose stack Error: Could not read package.json: Error: ENOENT: no such file or directory, open 'D:\package.json'
+12 verbose stack     at async open (node:internal/fs/promises:641:25)
+12 verbose stack     at async readFile (node:internal/fs/promises:1245:14)
+12 verbose stack     at async read (D:\node_modules\npm\node_modules\@npmcli\package-json\lib\read-package.js:9:18)
+12 verbose stack     at async PackageJson.load (D:\node_modules\npm\node_modules\@npmcli\package-json\lib\index.js:132:31)
+12 verbose stack     at async PackageJson.normalize (D:\node_modules\npm\node_modules\@npmcli\package-json\lib\index.js:118:5)
+12 verbose stack     at async #run (D:\node_modules\npm\lib\commands\run-script.js:86:13)
+12 verbose stack     at async RunScript.exec (D:\node_modules\npm\lib\commands\run-script.js:40:7)
+12 verbose stack     at async Npm.exec (D:\node_modules\npm\lib\npm.js:207:9)
+12 verbose stack     at async module.exports (D:\node_modules\npm\lib\cli\entry.js:74:5)
+13 error code ENOENT
+14 error syscall open
+15 error path D:\package.json
+16 error errno -4058
+17 error enoent Could not read package.json: Error: ENOENT: no such file or directory, open 'D:\package.json'
+18 error enoent This is related to npm not being able to find a file.
+18 error enoent
+19 verbose cwd D:\exora\prism
+20 verbose os Windows_NT 10.0.22631
+21 verbose node v22.19.0
+22 verbose npm  v10.9.3
+23 verbose exit -4058
+24 verbose code -4058
+25 error A complete log of this run can be found in: D:\exora\prism\exora\exora-mern\server\npm-cache\_logs\2025-09-28T16_13_12_930Z-debug-0.log

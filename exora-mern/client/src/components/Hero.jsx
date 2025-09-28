@@ -4,12 +4,18 @@ import HeroScrollTitle from './HeroScrollTitle';
 import ElectricBorder from './ElectricBorder';
 import Orb from './Orb';
 
-const Hero = ({ onOpenChat }) => {
+const Hero = ({ onOpenChat, showDashboardButton, onDashboardClick }) => {
   const handleOpenChat = () => {
     if (onOpenChat) {
       onOpenChat();
     } else {
       console.log('Open chatbot');
+    }
+  };
+
+  const handleDashboardClick = () => {
+    if (onDashboardClick) {
+      onDashboardClick();
     }
   };
 
@@ -26,6 +32,34 @@ const Hero = ({ onOpenChat }) => {
                 <a href="#solutions" className="button-secondary cursor-target">
                   <ShinyText text="What We Do" speed={3} />
                 </a>
+                {showDashboardButton && (
+                  <button 
+                    onClick={handleDashboardClick}
+                    className="button-primary cursor-target"
+                    style={{
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '12px 24px',
+                      color: 'white',
+                      fontSize: '16px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      marginLeft: '16px'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.transform = 'translateY(-2px)';
+                      e.target.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.3)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.transform = 'translateY(0)';
+                      e.target.style.boxShadow = 'none';
+                    }}
+                  >
+                    Go to Dashboard
+                  </button>
+                )}
               </div>
             </div>
             

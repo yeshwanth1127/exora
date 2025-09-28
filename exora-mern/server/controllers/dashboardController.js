@@ -3,11 +3,32 @@ const AgentActivity = require('../models/AgentActivity');
 const UserAgent = require('../models/UserAgent');
 const UserNotification = require('../models/UserNotification');
 const AgentTemplate = require('../models/AgentTemplate');
+const DashboardData = require('../models/DashboardData');
 
 // Get dashboard overview data
 const getDashboardOverview = async (req, res) => {
   try {
     const userId = req.user.id;
+
+    // Get dashboard data first
+    const dashboardData = await DashboardData.findByUserId(userId);
+    
+    if (!dashboardData || !dashboardData.isConfigured) {
+      // Return empty state for unconfigured dashboard
+      return res.status(200).json({
+        success: true,
+        data: {
+          isConfigured: false,
+          businessInfo: {},
+          workflows: [],
+          recommendations: [],
+          metrics: {},
+          recentActivities: [],
+          userAgents: [],
+          unreadNotifications: 0
+        }
+      });
+    }
 
     // Get user statistics
     const statsData = await UserStatistics.getDashboardStats(userId);
@@ -33,6 +54,11 @@ const getDashboardOverview = async (req, res) => {
     res.status(200).json({
       success: true,
       data: {
+        isConfigured: true,
+        businessInfo: dashboardData.businessInfo,
+        workflows: dashboardData.workflows,
+        recommendations: dashboardData.recommendations,
+        metrics: dashboardData.metrics,
         stats: statsData.stats,
         changes: statsData.changes,
         recentActivities: formattedActivities,
@@ -275,6 +301,214 @@ function getTimeAgo(date) {
   return `${Math.floor(diffInSeconds / 2592000)} months ago`;
 }
 
+// Update dashboard data
+const updateDashboardData = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const dashboardData = req.body;
+
+    const result = await DashboardData.upsert(userId, dashboardData);
+
+    // Emit realtime update
+    try {
+      const io = req.app.get('io');
+      if (io) io.to(`dashboard:${userId}`).emit('dashboard:update', { type: 'data_updated' });
+    } catch (_) {}
+
+    res.status(200).json({
+      success: true,
+      message: 'Dashboard data updated successfully',
+      data: result
+    });
+  } catch (error) {
+    console.error('Update dashboard data error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update dashboard data',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+    });
+  }
+};
+
+// Get dashboard data
+const getDashboardData = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const dashboardData = await DashboardData.findByUserId(userId);
+
+    if (!dashboardData) {
+      return res.status(404).json({
+        success: false,
+        message: 'Dashboard data not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: dashboardData
+    });
+  } catch (error) {
+    console.error('Get dashboard data error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get dashboard data',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+    });
+  }
+};
+
+// Reset dashboard data
+const resetDashboardData = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    await DashboardData.delete(userId);
+
+    // Emit realtime update
+    try {
+      const io = req.app.get('io');
+      if (io) io.to(`dashboard:${userId}`).emit('dashboard:update', { type: 'data_reset' });
+    } catch (_) {}
+
+    res.status(200).json({
+      success: true,
+      message: 'Dashboard data reset successfully'
+    });
+  } catch (error) {
+    console.error('Reset dashboard data error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to reset dashboard data',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+    });
+  }
+};
+
+// Add workflows to dashboard
+const addWorkflowsToDashboard = async (req, res) => {
+  try {
+    const { workflows } = req.body;
+    const userId = req.user.id;
+
+    console.log('Adding workflows to dashboard for user:', userId);
+    console.log('Workflows to add:', workflows);
+
+    if (!workflows || !Array.isArray(workflows)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Workflows array is required'
+      });
+    }
+
+    // Get or create dashboard data
+    let dashboardData = await DashboardData.findByUserId(userId);
+    console.log('Existing dashboard data:', dashboardData);
+    
+    if (!dashboardData) {
+      dashboardData = {
+        businessInfo: {},
+        workflows: [],
+        recommendations: [],
+        metrics: {},
+        isConfigured: false
+      };
+      console.log('Created new dashboard data object');
+    }
+
+    // Add selected workflows to dashboard
+    const selectedWorkflows = workflows.map(workflow => ({
+      id: workflow.id,
+      name: workflow.name,
+      description: workflow.description,
+      active: workflow.active,
+      category: getWorkflowCategory(workflow),
+      icon: getWorkflowIcon(workflow),
+      nodes: workflow.nodes,
+      connections: workflow.connections,
+      triggers: workflow.triggers,
+      actions: workflow.actions,
+      createdAt: workflow.createdAt,
+      addedAt: new Date().toISOString(),
+      status: 'inactive' // Start as inactive, user can activate later
+    }));
+
+    // Check for duplicates
+    const existingWorkflowIds = dashboardData.workflows.map(w => w.id);
+    const newWorkflows = selectedWorkflows.filter(w => !existingWorkflowIds.includes(w.id));
+    const duplicateWorkflows = selectedWorkflows.filter(w => existingWorkflowIds.includes(w.id));
+    
+    // If all workflows are duplicates, return early
+    if (newWorkflows.length === 0) {
+      const duplicateNames = duplicateWorkflows.map(w => w.name).join(', ');
+      return res.json({
+        success: true,
+        message: `The workflow${duplicateWorkflows.length > 1 ? 's' : ''} "${duplicateNames}" ${duplicateWorkflows.length > 1 ? 'are' : 'is'} already added to your dashboard`,
+        data: {
+          addedWorkflows: [],
+          duplicateWorkflows: duplicateWorkflows,
+          totalWorkflows: dashboardData.workflows.length
+        }
+      });
+    }
+    
+    // Add new workflows to dashboard
+    dashboardData.workflows = [...dashboardData.workflows, ...newWorkflows];
+    dashboardData.isConfigured = true;
+
+    console.log('Updated dashboard data before save:', {
+      workflows: dashboardData.workflows.length,
+      isConfigured: dashboardData.isConfigured
+    });
+
+    // Save to database
+    console.log('Saving to database...');
+    const savedData = await DashboardData.upsert(userId, dashboardData);
+    console.log('Saved data result:', savedData);
+
+    // Prepare response message
+    let message = `Successfully added ${newWorkflows.length} workflow${newWorkflows.length !== 1 ? 's' : ''} to your dashboard`;
+    if (duplicateWorkflows.length > 0) {
+      const duplicateNames = duplicateWorkflows.map(w => w.name).join(', ');
+      message += `. Note: "${duplicateNames}" ${duplicateWorkflows.length > 1 ? 'were' : 'was'} already in your dashboard`;
+    }
+
+    res.json({
+      success: true,
+      message: message,
+      data: {
+        addedWorkflows: newWorkflows,
+        duplicateWorkflows: duplicateWorkflows,
+        totalWorkflows: dashboardData.workflows.length
+      }
+    });
+
+  } catch (error) {
+    console.error('Error adding workflows to dashboard:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to add workflows to dashboard'
+    });
+  }
+};
+
+// Helper functions
+function getWorkflowCategory(workflow) {
+  const name = workflow.name.toLowerCase();
+  if (name.includes('whatsapp') || name.includes('chatbot')) return 'Communication';
+  if (name.includes('booking') || name.includes('calendar')) return 'Scheduling';
+  if (name.includes('email')) return 'Email Automation';
+  if (name.includes('data') || name.includes('sync')) return 'Data Management';
+  return 'General Automation';
+}
+
+function getWorkflowIcon(workflow) {
+  const name = workflow.name.toLowerCase();
+  if (name.includes('whatsapp') || name.includes('chatbot')) return '💬';
+  if (name.includes('booking') || name.includes('calendar')) return '📅';
+  if (name.includes('email')) return '📧';
+  if (name.includes('data') || name.includes('sync')) return '🔄';
+  return '⚡';
+}
+
 module.exports = {
   getDashboardOverview,
   getUserAgents,
@@ -283,6 +517,10 @@ module.exports = {
   getRecentActivities,
   getNotifications,
   markNotificationAsRead,
-  getStatisticsHistory
+  getStatisticsHistory,
+  updateDashboardData,
+  getDashboardData,
+  resetDashboardData,
+  addWorkflowsToDashboard
 };
 

@@ -106,6 +106,62 @@ CREATE INDEX IF NOT EXISTS idx_user_notifications_is_read ON user_notifications(
 CREATE INDEX IF NOT EXISTS idx_agent_templates_category ON agent_templates(category);
 CREATE INDEX IF NOT EXISTS idx_agent_templates_is_active ON agent_templates(is_active);
 
+-- Business Discovery Sessions
+CREATE TABLE IF NOT EXISTS business_discovery_sessions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE NOT NULL,
+    session_status VARCHAR(50) DEFAULT 'active', -- active, completed, abandoned
+    discovery_data JSONB DEFAULT '{}', -- All discovered business info
+    conversation_history JSONB DEFAULT '[]', -- Chat messages
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    completed_at TIMESTAMP WITH TIME ZONE,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Discovered Business Profile
+CREATE TABLE IF NOT EXISTS business_profiles (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE NOT NULL,
+    session_id UUID REFERENCES business_discovery_sessions(id) ON DELETE CASCADE,
+    industry VARCHAR(100) NOT NULL,
+    business_size VARCHAR(50), -- small, medium, large
+    pain_points TEXT[],
+    current_tools TEXT[],
+    automation_goals TEXT[],
+    integration_preferences JSONB DEFAULT '{}',
+    workflow_priorities JSONB DEFAULT '{}',
+    discovered_workflows JSONB DEFAULT '[]',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- AI Generated Recommendations
+CREATE TABLE IF NOT EXISTS workflow_recommendations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE NOT NULL,
+    session_id UUID REFERENCES business_discovery_sessions(id) ON DELETE CASCADE,
+    workflow_type VARCHAR(100) NOT NULL,
+    priority_score INTEGER DEFAULT 50, -- 1-100
+    recommended_reason TEXT,
+    estimated_impact VARCHAR(100),
+    estimated_setup_time VARCHAR(50),
+    setup_complexity INTEGER DEFAULT 3, -- 1-5
+    n8n_workflow_json JSONB,
+    user_decision VARCHAR(50), -- approved, rejected, deferred
+    deployed_workflow_id VARCHAR(100), -- N8N workflow ID if deployed
+    webhook_url VARCHAR(500), -- N8N webhook URL if applicable
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create indexes for performance
+CREATE INDEX IF NOT EXISTS idx_business_discovery_sessions_user_id ON business_discovery_sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_business_discovery_sessions_status ON business_discovery_sessions(session_status);
+CREATE INDEX IF NOT EXISTS idx_business_profiles_user_id ON business_profiles(user_id);
+CREATE INDEX IF NOT EXISTS idx_business_profiles_session_id ON business_profiles(session_id);
+CREATE INDEX IF NOT EXISTS idx_workflow_recommendations_user_id ON workflow_recommendations(user_id);
+CREATE INDEX IF NOT EXISTS idx_workflow_recommendations_session_id ON workflow_recommendations(session_id);
+CREATE INDEX IF NOT EXISTS idx_workflow_recommendations_decision ON workflow_recommendations(user_decision);
+
 -- Create function to update user statistics
 CREATE OR REPLACE FUNCTION update_user_statistics(p_user_id INTEGER)
 RETURNS VOID AS $$

@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import Particles from '../components/Particles';
 import CardNav from '../components/CardNav';
 import DotGrid from '../components/DotGrid';
+import DashboardAlex from '../components/DashboardAlex';
 import { API_BASE_URL, SOCKET_URL } from '../config/api';
 import './BusinessDashboard.css';
 
@@ -12,11 +13,18 @@ const BusinessDashboard = () => {
   const { user, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
-  const [dashboardData, setDashboardData] = useState(null);
+  const [dashboardData, setDashboardData] = useState({
+    businessInfo: {},
+    workflows: [],
+    recommendations: [],
+    metrics: {},
+    isConfigured: false
+  });
   const [userAgents, setUserAgents] = useState([]);
   const [productTemplates, setProductTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showAlex, setShowAlex] = useState(false);
 
   // API base URL is imported from config
 
@@ -46,13 +54,69 @@ const BusinessDashboard = () => {
     }
   }, [isAuthenticated, navigate]);
 
-  // Fetch dashboard data
+  // Handle dashboard updates from Alex
+  const handleDashboardUpdate = (newData) => {
+    setDashboardData(newData);
+  };
+
+  // Workflow management functions
+  const toggleWorkflowStatus = async (workflowId, currentStatus) => {
+    try {
+      const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+      const response = await fetch(`${API_BASE_URL}/workflows/${workflowId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+
+      if (response.ok) {
+        // Update local state
+        setDashboardData(prev => ({
+          ...prev,
+          workflows: prev.workflows.map(w => 
+            w.id === workflowId ? { ...w, status: newStatus } : w
+          )
+        }));
+      }
+    } catch (error) {
+      console.error('Error toggling workflow status:', error);
+    }
+  };
+
+  const removeWorkflow = async (workflowId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/workflows/${workflowId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        // Update local state
+        setDashboardData(prev => ({
+          ...prev,
+          workflows: prev.workflows.filter(w => w.id !== workflowId)
+        }));
+      }
+    } catch (error) {
+      console.error('Error removing workflow:', error);
+    }
+  };
+
+  // Fetch initial data
   useEffect(() => {
-    const fetchDashboardData = async () => {
+    const fetchInitialData = async () => {
       if (!isAuthenticated) return;
       
       try {
         setLoading(true);
+        
+        // Check if user has existing dashboard data
         const response = await fetch(`${API_BASE_URL}/dashboard/overview`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -62,39 +126,28 @@ const BusinessDashboard = () => {
 
         if (response.ok) {
           const data = await response.json();
-          console.log('Dashboard data received:', data.data);
-          console.log('User agents:', data.data.userAgents);
-          setDashboardData(data.data);
-          setUserAgents(data.data.userAgents || []);
+          if (data.data && data.data.isConfigured) {
+            setDashboardData(data.data);
+            setUserAgents(data.data.userAgents || []);
+          } else {
+            // Show empty state and Alex popup
+            setShowAlex(true);
+          }
         } else {
-          throw new Error('Failed to fetch dashboard data');
+          // Show empty state and Alex popup
+          setShowAlex(true);
         }
       } catch (error) {
         console.error('Dashboard data fetch error:', error);
-        setError(error.message);
+        // Show empty state and Alex popup
+        setShowAlex(true);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchDashboardData();
+    fetchInitialData();
     fetchProductTemplates();
-    // Realtime subscription
-    let socket;
-    try {
-      socket = io(SOCKET_URL, { transports: ['websocket'] });
-      socket.on('connect', () => {
-        if (user?.id) socket.emit('subscribe:dashboard', user.id);
-      });
-      socket.on('dashboard:update', () => {
-        // refetch on update
-        fetchDashboardData();
-      });
-    } catch (_) {}
-
-    return () => {
-      if (socket) socket.disconnect();
-    };
   }, [isAuthenticated]);
 
   if (!isAuthenticated) {
@@ -128,6 +181,67 @@ const BusinessDashboard = () => {
     );
   }
 
+  // Show empty state if dashboard is not configured
+  if (!dashboardData.isConfigured) {
+    return (
+      <div className="dashboard">
+        <Particles
+          particleColors={['#c084fc', '#a855f7', '#7c3aed']}
+          particleCount={150}
+          particleSpread={6}
+          speed={0.03}
+          particleBaseSize={40}
+          moveParticlesOnHover={false}
+          alphaParticles={false}
+          disableRotation={false}
+        />
+        
+        <CardNav
+          items={[
+            { label: 'About', bgColor: '#0D0716', textColor: '#fff', links: [ { label: 'Company', ariaLabel: 'About Company', href: '#company' }, { label: 'Careers', ariaLabel: 'About Careers', href: '#company' } ] },
+            { label: 'Products', bgColor: '#170D27', textColor: '#fff', links: [ { label: 'Featured', ariaLabel: 'Featured Projects', href: '#products' }, { label: 'Case Studies', ariaLabel: 'Project Case Studies', href: '#solutions' } ] },
+            { label: 'Join us', bgColor: '#271E37', textColor: '#fff', links: [ { label: 'Email', ariaLabel: 'Email us', href: '#join' }, { label: 'Twitter', ariaLabel: 'Twitter', href: '#join' }, { label: 'LinkedIn', ariaLabel: 'LinkedIn', href: '#join' } ] }
+          ]}
+          baseColor="rgba(255,255,255,0.08)"
+          menuColor="#fff"
+          buttonBgColor="rgba(17,17,17,0.75)"
+          buttonTextColor="#fff"
+          ease="power3.out"
+        />
+
+        <div className="dashboard-content">
+          <div className="empty-dashboard">
+            <div className="empty-dashboard-content">
+              <div className="empty-dashboard-icon">🤖</div>
+              <h1 className="empty-dashboard-title">
+                Welcome to your Business Dashboard, {user?.firstName}!
+              </h1>
+              <p className="empty-dashboard-subtitle">
+                Let me help you set up your personalized dashboard by learning about your business.
+              </p>
+              <button 
+                className="empty-dashboard-cta"
+                onClick={() => setShowAlex(true)}
+              >
+                <span className="cta-icon">💬</span>
+                Start with Alex
+              </button>
+              <p className="empty-dashboard-hint">
+                Alex will ask you a few questions about your business and automatically configure your dashboard with relevant automations and insights.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <DashboardAlex 
+          isOpen={showAlex}
+          onToggle={() => setShowAlex(!showAlex)}
+          onDashboardUpdate={handleDashboardUpdate}
+        />
+      </div>
+    );
+  }
+
   // Convert templates to product format for display
   const products = productTemplates.map(template => ({
     id: template.id,
@@ -140,13 +254,13 @@ const BusinessDashboard = () => {
 
   // Use dynamic data from API
   const stats = dashboardData ? [
-    { label: 'Active Agents', value: dashboardData.stats.activeAgents.toString(), change: dashboardData.changes.activeAgents },
-    { label: 'Automated Tasks', value: dashboardData.stats.automatedTasks.toLocaleString(), change: dashboardData.changes.automatedTasks },
-    { label: 'Time Saved', value: `${dashboardData.stats.timeSaved}h`, change: dashboardData.changes.timeSaved },
-    { label: 'Success Rate', value: `${dashboardData.stats.successRate}%`, change: dashboardData.changes.successRate }
+    { label: 'Active Agents', value: dashboardData.metrics.activeWorkflows?.toString() || '0', change: '+0' },
+    { label: 'Automated Tasks', value: dashboardData.metrics.automatedTasks?.toLocaleString() || '0', change: '+0' },
+    { label: 'Time Saved', value: dashboardData.metrics.timeSaved || '0 hours', change: '+0' },
+    { label: 'Success Rate', value: dashboardData.metrics.efficiency || '0%', change: '+0' }
   ] : [];
 
-  const recentActivity = dashboardData ? dashboardData.recentActivities : [];
+  const recentActivity = dashboardData ? dashboardData.recentActivities || [] : [];
 
   return (
     <div className="dashboard">
@@ -210,6 +324,53 @@ const BusinessDashboard = () => {
 
         {/* Main Content */}
         <div className="dashboard-main">
+          {/* Workflows Section - Moved to Top */}
+          {dashboardData.workflows && dashboardData.workflows.length > 0 && (
+            <div className="dashboard-section workflows-section">
+              <div className="section-header">
+                <h2 className="section-title">Your Workflows</h2>
+                <p className="section-subtitle">Automation workflows for you.</p>
+              </div>
+              
+              <div className="workflows-grid">
+                {dashboardData.workflows.map((workflow) => (
+                  <div key={workflow.id} className="workflow-card">
+                    <div className="workflow-header">
+                      <div className="workflow-icon">{workflow.icon}</div>
+                      <div className={`workflow-status ${workflow.status}`}>
+                        {workflow.status}
+                      </div>
+                    </div>
+                    <h3 className="workflow-name">{workflow.name}</h3>
+                    <p className="workflow-category">{workflow.category}</p>
+                    <p className="workflow-description">{workflow.description}</p>
+                    <div className="workflow-stats">
+                      <div className="workflow-stat">
+                        <span className="stat-label">Nodes:</span>
+                        <span className="stat-value">{workflow.nodes}</span>
+                      </div>
+                      <div className="workflow-stat">
+                        <span className="stat-label">Connections:</span>
+                        <span className="stat-value">{workflow.connections}</span>
+                      </div>
+                    </div>
+                    <div className="workflow-actions">
+                      <button 
+                        className={`workflow-toggle ${workflow.status === 'active' ? 'deactivate' : 'activate'}`}
+                        onClick={() => toggleWorkflowStatus(workflow.id, workflow.status)}
+                      >
+                        {workflow.status === 'active' ? 'Deactivate' : 'Activate'}
+                      </button>
+                      <button className="workflow-remove" onClick={() => removeWorkflow(workflow.id)}>
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Products Section */}
           <div className="dashboard-section">
             <div className="section-header">
@@ -337,6 +498,16 @@ const BusinessDashboard = () => {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Alex sidebar for configured dashboard */}
+        <div className="alex-sidebar">
+          <DashboardAlex 
+            isOpen={true}
+            onToggle={() => setShowAlex(!showAlex)}
+            onDashboardUpdate={handleDashboardUpdate}
+            isSidebar={true}
+          />
         </div>
       </div>
     </div>

@@ -1,0 +1,170 @@
+[
+  {
+    "timestamp": "2025-09-27T21:34:07.969Z",
+    "user_message": "hi",
+    "ai_response": "I'm having trouble processing your request right now. Could you please try again?",
+    "context": {
+      "sessionId": "7c06b784-5190-4140-b329-b9c0c9a50431",
+      "currentPhase": "Phase 1: Business Overview",
+      "discoveredInfo": {}
+    },
+    "quality_score": null,
+    "category": "greeting"
+  },
+  {
+    "timestamp": "2025-09-28T06:28:20.127Z",
+    "user_message": "i have a real estate business",
+    "ai_response": "I'm having trouble processing your request right now. Could you please try again?",
+    "context": {
+      "sessionId": "37216ef1-8922-4d3f-8543-c81ba6d382ac",
+      "currentPhase": "Phase 1: Business Overview",
+      "discoveredInfo": {}
+    },
+    "quality_score": null,
+    "category": "general_question"
+  },
+  {
+    "timestamp": "2025-09-28T06:34:49.866Z",
+    "user_message": "i have a real estate business",
+    "ai_response": "",
+    "context": {
+      "sessionId": "37216ef1-8922-4d3f-8543-c81ba6d382ac",
+      "currentPhase": "Phase 1: Business Overview",
+      "discoveredInfo": {}
+    },
+    "quality_score": null,
+    "category": "general_question"
+  },
+  {
+    "timestamp": "2025-09-28T06:43:09.174Z",
+    "user_message": "i have a real estate business",
+    "ai_response": "I'm here to help you set up your business dashboard and learn about automation opportunities. Could you tell me what type of business you run?",
+    "context": {
+      "sessionId": "37216ef1-8922-4d3f-8543-c81ba6d382ac",
+      "currentPhase": "Phase 1: Business Overview",
+      "discoveredInfo": {}
+    },
+    "quality_score": null,
+    "category": "general_question"
+  },
+  {
+    "timestamp": "2025-09-28T06:44:52.013Z",
+    "user_message": "i have a real estate business",
+    "ai_response": "I'm here to help you set up your business dashboard and learn about automation opportunities. Could you tell me what type of business you run?",
+    "context": {
+      "sessionId": "37216ef1-8922-4d3f-8543-c81ba6d382ac",
+      "currentPhase": "Phase 1: Business Overview",
+      "discoveredInfo": {}
+    },
+    "quality_score": null,
+    "category": "general_question"
+  },
+  {
+    "timestamp": "2025-09-28T08:03:09.967Z",
+    "user_message": "hi",
+    "ai_response": "I'm having trouble processing your request right now. Could you please try again?",
+    "context": {
+      "sessionId": "37216ef1-8922-4d3f-8543-c81ba6d382ac",
+      "currentPhase": "Phase 1: Business Overview",
+      "discoveredInfo": {}
+    },
+    "quality_score": null,
+    "category": "greeting"
+  },
+  {
+    "timestamp": "2025-09-28T08:05:47.073Z",
+    "user_message": "hi, what is your name",
+    "ai_response": "Hello! Nice to meet you. My name is Alex, but I don't have a personal surname in the classical sense. I'm an artificial intelligence designed to assist and provide value to businesses and individuals alike.",
+    "context": {
+      "sessionId": "37216ef1-8922-4d3f-8543-c81ba6d382ac",
+      "currentPhase": "Phase 1: Business Overview",
+      "discoveredInfo": {}
+    },
+    "quality_score": null,
+    "category": "greeting"
+  },
+  {
+    "timestamp": "2025-09-28T08:06:38.800Z",
+    "user_message": "what can you do for me ",
+    "ai_response": "Welcome to our conversation! I'm thrilled to explore how I can help you achieve your business goals. You've taken the first step by acknowledging that change is needed, and now we're ready to dive into the specifics.",
+    "context": {
+      "sessionId": "37216ef1-8922-4d3f-8543-c81ba6d382ac",
+      "currentPhase": "Phase 1: Business Overview",
+      "discoveredInfo": {}
+    },
+    "quality_score": null,
+    "category": "capabilities_inquiry"
+  },
+  {
+    "timestamp": "2025-09-28T08:14:13.540Z",
+    "user_message": "why is it empty",
+    "ai_response": "I'd be happy to help clarify things for you. Can you please provide more context about what you're referring to? Are we talking about a physical space, a data set, or perhaps something else entirely?",
+    "context": {
+      "sessionId": "37216ef1-8922-4d3f-8543-c81ba6d382ac",
+      "currentPhase": "Phase 1: Business Overview",
+      "discoveredInfo": {}
+    },
+    "quality_score": null,
+    "category": "general_question"
+  },
+  {
+    "timestamp": "2025-09-28T08:20:40.971Z",
+    "user_message": "tell me more about the complete booking system",
+    "ai_response": "The Complete Booking System (CBS) - a comprehensive solution designed to streamline your business's operations and enhance customer experience. As a business consultant, I'd be happy to provide you with an overview of the CBS.",
+    "context": {
+      "sessionId": "37216ef1-8922-4d3f-8543-c81ba6d382ac",
+      "currentPhase": "Phase 1: Business Overview",
+      "discoveredInfo": {}
+    },
+    "quality_score": null,
+    "category": "general_question"
+  },
+  {
+    "timestamp": "2025-09-28T08:21:42.751Z",
+    "user_message": "yes provide m e",
+    "ai_response": "It seems like you'd like me to provide you with something, but I'm not entirely clear what that is.",
+    "context": {
+      "sessionId": "37216ef1-8922-4d3f-8543-c81ba6d382ac",
+      "currentPhase": "Phase 1: Business Overview",
+      "discoveredInfo": {}
+    },
+    "quality_score": null,
+    "category": "general_question"
+  },
+  {
+    "timestamp": "2025-09-28T08:40:58.098Z",
+    "user_message": "i am in real estate business",
+    "ai_response": "Welcome to our conversation! I'm glad you reached out for guidance on leveraging AI in your real estate business.",
+    "context": {
+      "sessionId": "37216ef1-8922-4d3f-8543-c81ba6d382ac",
+      "currentPhase": "Phase 1: Business Overview",
+      "discoveredInfo": {}
+    },
+    "quality_score": null,
+    "category": "general_question"
+  },
+  {
+    "timestamp": "2025-09-28T08:41:49.578Z",
+    "user_message": "how are you",
+    "ai_response": "I'm doing well, thanks for asking! It's great to have a chance to catch up and discuss any new ideas or challenges you're facing in your business.",
+    "context": {
+      "sessionId": "37216ef1-8922-4d3f-8543-c81ba6d382ac",
+      "currentPhase": "Phase 1: Business Overview",
+      "discoveredInfo": {}
+    },
+    "quality_score": null,
+    "category": "general_question"
+  },
+  {
+    "timestamp": "2025-09-28T16:00:57.352Z",
+    "user_message": "i am in the real wstate buisness",
+    "ai_response": "The Real World Business! I'm excited to dive into this topic with you.",
+    "context": {
+      "sessionId": "37216ef1-8922-4d3f-8543-c81ba6d382ac",
+      "currentPhase": "Phase 1: Business Overview",
+      "discoveredInfo": {}
+    },
+    "quality_score": null,
+    "category": "general_question"
+  }
+]

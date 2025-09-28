@@ -1,7 +1,7 @@
 import './App.css'
 import { useEffect, useState } from 'react'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { AuthProvider } from './contexts/AuthContext'
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom'
+import { AuthProvider, useAuth } from './contexts/AuthContext'
 import Particles from './components/Particles'
 import CardNav from './components/CardNav'
 import Hero from './components/Hero'
@@ -21,6 +21,7 @@ import AnimatedHalfBox from './components/AnimatedHalfBox'
 import AuthPage from './pages/AuthPage'
 import BusinessDashboard from './pages/BusinessDashboard'
 import PersonalDashboard from './pages/PersonalDashboard'
+import BusinessDiscoveryChat from './components/BusinessDiscoveryChat'
 
 function App() {
   const [isMobile, setIsMobile] = useState(false)
@@ -127,7 +128,8 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/auth" element={<AuthPage />} />
-            <Route path="/dashboard" element={<BusinessDashboard />} />
+          <Route path="/get-started" element={<BusinessDiscoveryChat />} />
+          <Route path="/dashboard" element={<BusinessDashboard />} />
           <Route path="/personal-dashboard" element={<PersonalDashboard />} />
           <Route path="/" element={<HomePage />} />
         </Routes>
@@ -140,6 +142,8 @@ function HomePage() {
   const [isMobile, setIsMobile] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isChatbotOpen, setIsChatbotOpen] = useState(false)
+  const { user, isAuthenticated } = useAuth()
+  const navigate = useNavigate()
 
   useEffect(() => {
     const checkMobile = () => {
@@ -264,7 +268,14 @@ function HomePage() {
         disableRotation={false}
       />
       <main className="landing-wrap" style={{ position: 'relative', zIndex: 10 }}>
-        <Hero onOpenChat={() => setIsChatbotOpen(true)} />
+        <Hero 
+          onOpenChat={() => setIsChatbotOpen(true)}
+          showDashboardButton={isAuthenticated}
+          onDashboardClick={() => {
+            const dashboardPath = user?.usageType === 'personal' ? '/personal-dashboard' : '/dashboard';
+            navigate(dashboardPath);
+          }}
+        />
 
         <div className="scroll-indicator">
           <span className="dot" />

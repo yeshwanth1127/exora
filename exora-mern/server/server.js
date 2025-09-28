@@ -21,6 +21,8 @@ app.use(express.json());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/discovery', require('./routes/discovery'));
+app.use('/api/workflows', require('./routes/workflows'));
 
 app.get('/health', async (req, res) => {
   try {

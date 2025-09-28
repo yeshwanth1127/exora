@@ -19,11 +19,19 @@ const AuthPage = () => {
   const { login, register, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated (but not after fresh registration)
   useEffect(() => {
     if (isAuthenticated && user) {
-      const redirectPath = user.usageType === 'personal' ? '/personal-dashboard' : '/dashboard';
-      navigate(redirectPath);
+      // Only redirect if we're not in the middle of a fresh registration
+      // The handleSubmit function will handle the redirect for new registrations
+      const isFreshRegistration = localStorage.getItem('freshRegistration') === 'true';
+      if (!isFreshRegistration) {
+        const redirectPath = user.usageType === 'personal' ? '/personal-dashboard' : '/dashboard';
+        navigate(redirectPath);
+      } else {
+        // Clear the fresh registration flag
+        localStorage.removeItem('freshRegistration');
+      }
     }
   }, [isAuthenticated, user, navigate]);
 
@@ -97,6 +105,8 @@ const AuthPage = () => {
       }
 
       if (result.success) {
+        // Set flag to prevent useEffect from redirecting
+        localStorage.setItem('freshRegistration', 'true');
         // Redirect based on usage type
         const redirectPath = result.data.user.usageType === 'personal' ? '/personal-dashboard' : '/dashboard';
         navigate(redirectPath);
