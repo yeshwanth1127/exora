@@ -69,15 +69,33 @@ class ActivationService {
       // Always create a new credential with a unique name to avoid GET (405) on some n8n setups
       const uniqueSuffix = Date.now();
       const credentialName = `google-oauth-user-${userId}-${workflowId}-${uniqueSuffix}`;
+
+      // Build credential body per n8n googleOAuth2Api schema
       const body = {
         name: credentialName,
         type: 'googleOAuth2Api',
         data: {
-          accessToken: tokens.access_token,
-          refreshToken: tokens.refresh_token,
-          scope: tokens.scope,
-          tokenType: tokens.token_type || 'Bearer',
-          expiresAt: tokens.expires_in ? Date.now() + tokens.expires_in * 1000 : undefined,
+          // Required OAuth2 config
+          clientId: process.env.GOOGLE_CLIENT_ID,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+          scope: tokens?.scope || 'openid email profile https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/calendar',
+          authUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
+          accessTokenUrl: 'https://oauth2.googleapis.com/token',
+          grantType: 'authorizationCode',
+          authentication: 'body',
+
+          // Required by schema in some versions
+          sendAdditionalBodyProperties: false,
+          additionalBodyProperties: {},
+
+          // Persist token data in the expected nested field
+          oauthTokenData: {
+            access_token: tokens?.access_token,
+            refresh_token: tokens?.refresh_token,
+            token_type: tokens?.token_type || 'Bearer',
+            scope: tokens?.scope,
+            expiry_date: tokens?.expires_in ? Date.now() + tokens.expires_in * 1000 : undefined,
+          },
         },
       };
 
