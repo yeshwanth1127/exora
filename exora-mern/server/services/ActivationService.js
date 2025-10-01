@@ -69,17 +69,32 @@ class ActivationService {
       const uniqueSuffix = Date.now();
       const credentialName = `google-oauth-user-${userId}-${workflowId}-${uniqueSuffix}`;
 
+      // Build payload per n8n REST API examples for googleOAuth2Api
+      const scopeString = tokens?.scope || [
+        'https://www.googleapis.com/auth/gmail.readonly',
+        'https://www.googleapis.com/auth/gmail.send',
+        'openid',
+        'email',
+        'profile',
+      ].join(' ');
+
       const body = {
         name: credentialName,
         type: 'googleOAuth2Api',
+        nodesAccess: [
+          { nodeType: 'n8n-nodes-base.gmail', nodeTypeVersion: 2 },
+          { nodeType: 'n8n-nodes-base.gmailTrigger', nodeTypeVersion: 1 },
+        ],
         data: {
           clientId: process.env.GOOGLE_CLIENT_ID,
           clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+          scope: scopeString,
           oauthTokenData: {
             access_token: tokens?.access_token,
             refresh_token: tokens?.refresh_token,
+            scope: scopeString,
             token_type: tokens?.token_type || 'Bearer',
-            scope: tokens?.scope,
+            expires_in: tokens?.expires_in || 3600,
             expiry_date: tokens?.expires_in ? Date.now() + tokens.expires_in * 1000 : undefined,
           },
         },
