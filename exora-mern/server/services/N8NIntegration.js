@@ -101,6 +101,7 @@ class N8NIntegration {
   // Create a new workflow
   async createWorkflow(workflowData) {
     try {
+      console.log('Creating workflow with data:', JSON.stringify(workflowData, null, 2));
       const response = await axios.post(`${this.baseURL}/api/v1/workflows`, 
         workflowData,
         { headers: this.headers }
@@ -112,7 +113,10 @@ class N8NIntegration {
       };
     } catch (error) {
       console.error('Failed to create workflow:', error.message);
-      return { success: false, error: error.message };
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
+      console.error('Workflow data sent:', JSON.stringify(workflowData, null, 2));
+      return { success: false, error: error.response?.data || error.message };
     }
   }
 
