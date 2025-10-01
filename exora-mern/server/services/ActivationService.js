@@ -131,9 +131,8 @@ class ActivationService {
           clientId: process.env.GOOGLE_CLIENT_ID,
           clientSecret: process.env.GOOGLE_CLIENT_SECRET,
           scope: scopeString,
-          // Some n8n versions require these flags
           sendAdditionalBodyProperties: false,
-          additionalBodyProperties: {},
+          additionalBodyProperties: "",
           oauthTokenData: {
             access_token: tokens?.access_token,
             refresh_token: tokens?.refresh_token,

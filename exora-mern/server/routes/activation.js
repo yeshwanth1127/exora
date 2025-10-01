@@ -75,9 +75,20 @@ router.get('/oauth/callback', async (req, res) => {
       detectedServices: requiredServices
     });
 
+    // Fetch the full workflow from n8n to ensure we have all metadata
+    const fullWorkflow = await activation.n8n.getWorkflow(cloned.id);
+    if (!fullWorkflow.success) {
+      throw new Error(`Failed to fetch workflow: ${fullWorkflow.error}`);
+    }
+
     // Attach credential to all Google nodes
-    const updated = activation.attachCredentialToGoogleNodes(cloned, cred.id || cred.data?.id || cred._id || cred.uid);
-    await activation.n8n.updateWorkflow(cloned.id, updated);
+    const updated = activation.attachCredentialToGoogleNodes(fullWorkflow.workflow, cred.id || cred.data?.id || cred._id || cred.uid);
+    
+    // Update the workflow with the full object including all metadata
+    const updateResult = await activation.n8n.updateWorkflow(cloned.id, updated);
+    if (!updateResult.success) {
+      throw new Error(`Failed to update workflow: ${updateResult.error}`);
+    }
 
     // Activate user's cloned workflow
     await activation.activateWorkflow(cloned.id);

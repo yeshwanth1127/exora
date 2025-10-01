@@ -123,18 +123,22 @@ class N8NIntegration {
   // Update workflow
   async updateWorkflow(workflowId, workflowData) {
     try {
+      console.log(`Updating workflow ${workflowId} with data:`, JSON.stringify(workflowData, null, 2));
       const response = await axios.put(`${this.baseURL}/api/v1/workflows/${workflowId}`, 
         workflowData,
         { headers: this.headers }
       );
       
+      console.log(`Workflow ${workflowId} updated successfully`);
       return {
         success: true,
         workflow: response.data
       };
     } catch (error) {
       console.error(`Failed to update workflow ${workflowId}:`, error.message);
-      return { success: false, error: error.message };
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
+      return { success: false, error: error.response?.data?.message || error.message };
     }
   }
 
