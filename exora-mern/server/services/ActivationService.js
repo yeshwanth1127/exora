@@ -66,8 +66,9 @@ class ActivationService {
 
   async createOrUpdateGoogleCredentialForUser({ userId, workflowId, tokens }) {
     try {
-      // Create n8n credential of type 'googleOAuth2Api'
-      const credentialName = `google-oauth-user-${userId}-${workflowId}`;
+      // Always create a new credential with a unique name to avoid GET (405) on some n8n setups
+      const uniqueSuffix = Date.now();
+      const credentialName = `google-oauth-user-${userId}-${workflowId}-${uniqueSuffix}`;
       const body = {
         name: credentialName,
         type: 'googleOAuth2Api',
@@ -80,16 +81,6 @@ class ActivationService {
         },
       };
 
-      // Try upsert via search by name
-      const existing = await axios.get(`${this.n8nApiUrl}/api/v1/credentials`, { headers: this.headers });
-      const found = (existing.data.data || existing.data).find((c) => c.name === credentialName);
-      
-      if (found) {
-        console.log(`Updating existing credential: ${found.id}`);
-        const updated = await axios.patch(`${this.n8nApiUrl}/api/v1/credentials/${found.id}`, body, { headers: this.headers });
-        return updated.data;
-      }
-      
       console.log(`Creating new credential: ${credentialName}`);
       const created = await axios.post(`${this.n8nApiUrl}/api/v1/credentials`, body, { headers: this.headers });
       return created.data;
