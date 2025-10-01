@@ -175,9 +175,9 @@ class ActivationService {
   async activateWorkflow(workflowId) {
     try {
       console.log(`Activating workflow: ${workflowId}`);
-      const res = await axios.patch(
-        `${this.n8nApiUrl}/api/v1/workflows/${workflowId}`,
-        { active: true },
+      const res = await axios.post(
+        `${this.n8nApiUrl}/api/v1/workflows/${workflowId}/activate`,
+        {},
         { headers: this.headers }
       );
       console.log(`Workflow ${workflowId} activated successfully`);
