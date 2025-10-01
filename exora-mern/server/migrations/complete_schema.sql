@@ -98,7 +98,7 @@ CREATE INDEX IF NOT EXISTS idx_user_workflow_instances_user ON user_workflow_ins
 CREATE TABLE IF NOT EXISTS business_discovery_sessions (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    session_id VARCHAR(255) UNIQUE NOT NULL,
+    session_id VARCHAR(255) UNIQUE DEFAULT gen_random_uuid()::text,
     session_status VARCHAR(50) DEFAULT 'active',
     discovery_data JSONB DEFAULT '{}',
     conversation_history JSONB DEFAULT '[]',
@@ -547,4 +547,14 @@ CREATE TRIGGER update_stats_on_activity_change
 -- ================================================================
 -- END OF SCHEMA
 -- ================================================================
+
+-- FIXED: All model-schema mismatches resolved - 2025-10-01
+-- - Added usage_type to users and agent_templates
+-- - Fixed business_discovery_sessions (session_id auto-generated, session_status, discovery_data, completed_at)
+-- - Completely rewrote business_profiles to match model
+-- - Added title to agent_activities
+-- - Completely rewrote workflow_recommendations to match model
+-- - Fixed user_notifications (type, action_url, read_at)
+-- - Fixed user_statistics (value, unit, period, calculated_at)
+-- - Updated BusinessDiscoverySession.js model to include session_id in all queries
 

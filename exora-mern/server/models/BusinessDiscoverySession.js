@@ -4,6 +4,7 @@ class BusinessDiscoverySession {
   constructor(data) {
     this.id = data.id;
     this.userId = data.user_id;
+    this.sessionId = data.session_id;
     this.sessionStatus = data.session_status;
     this.discoveryData = data.discovery_data;
     this.conversationHistory = data.conversation_history;
@@ -18,7 +19,7 @@ class BusinessDiscoverySession {
       const query = `
         INSERT INTO business_discovery_sessions (user_id, session_status, discovery_data, conversation_history)
         VALUES ($1, $2, $3, $4)
-        RETURNING id, user_id, session_status, discovery_data, conversation_history, created_at, completed_at, updated_at
+        RETURNING id, user_id, session_id, session_status, discovery_data, conversation_history, created_at, completed_at, updated_at
       `;
       
       const values = [userId, sessionStatus, JSON.stringify(discoveryData), JSON.stringify(conversationHistory)];
@@ -34,7 +35,7 @@ class BusinessDiscoverySession {
   static async findActiveByUserId(userId) {
     try {
       const query = `
-        SELECT id, user_id, session_status, discovery_data, conversation_history, created_at, completed_at, updated_at
+        SELECT id, user_id, session_id, session_status, discovery_data, conversation_history, created_at, completed_at, updated_at
         FROM business_discovery_sessions
         WHERE user_id = $1 AND session_status = 'active'
         ORDER BY created_at DESC
@@ -57,7 +58,7 @@ class BusinessDiscoverySession {
   static async findById(id) {
     try {
       const query = `
-        SELECT id, user_id, session_status, discovery_data, conversation_history, created_at, completed_at, updated_at
+        SELECT id, user_id, session_id, session_status, discovery_data, conversation_history, created_at, completed_at, updated_at
         FROM business_discovery_sessions
         WHERE id = $1
       `;
@@ -108,7 +109,7 @@ class BusinessDiscoverySession {
         UPDATE business_discovery_sessions 
         SET ${fields.join(', ')}
         WHERE id = $${paramCount}
-        RETURNING id, user_id, session_status, discovery_data, conversation_history, created_at, completed_at, updated_at
+        RETURNING id, user_id, session_id, session_status, discovery_data, conversation_history, created_at, completed_at, updated_at
       `;
       
       const result = await pool.query(query, values);
@@ -139,6 +140,7 @@ class BusinessDiscoverySession {
     return {
       id: this.id,
       userId: this.userId,
+      sessionId: this.sessionId,
       sessionStatus: this.sessionStatus,
       discoveryData: this.discoveryData,
       conversationHistory: this.conversationHistory,
