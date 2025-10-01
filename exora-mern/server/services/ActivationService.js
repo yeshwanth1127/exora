@@ -155,21 +155,50 @@ class ActivationService {
     }
   }
 
+  // Map node.type to the exact credential key expected by n8n
+  mapNodeTypeToCredentialKey(nodeType) {
+    const t = String(nodeType || '').toLowerCase();
+    if (t === 'n8n-nodes-base.gmail' || t === 'n8n-nodes-base.gmailtrigger') return 'gmailOAuth2Api';
+    if (t === 'n8n-nodes-base.googlesheets') return 'googleSheetsOAuth2Api';
+    if (t === 'n8n-nodes-base.googlecalendar' || t === 'n8n-nodes-base.googlecalendartrigger') return 'googleCalendarOAuth2Api';
+    if (t === 'n8n-nodes-base.googledrive') return 'googleDriveOAuth2Api';
+    if (t === 'n8n-nodes-base.googledocs') return 'googleDocsOAuth2Api';
+    // Fallback: generic google nodes sometimes accept googleOAuth2Api
+    if (t.includes('google')) return 'googleOAuth2Api';
+    return null;
+  }
+
   attachCredentialToGoogleNodes(workflow, credentialId) {
     const updated = {
       ...workflow,
       nodes: (workflow.nodes || []).map((node) => {
-        const typeStr = String(node.type || '').toLowerCase();
-        const isGoogleNode = typeStr.includes('google') || typeStr.includes('gmail');
-        if (!isGoogleNode) return node;
+        const key = this.mapNodeTypeToCredentialKey(node.type);
+        if (!key) return node;
         const newNode = { ...node };
         newNode.credentials = newNode.credentials || {};
-        newNode.credentials.googleOAuth2Api = { id: credentialId };
-        console.log(`Attached credential ${credentialId} to node: ${node.name} (${node.type})`);
+        newNode.credentials[key] = { id: credentialId };
+        console.log(`Attached credential ${credentialId} with key '${key}' to node: ${node.name} (${node.type})`);
         return newNode;
       })
     };
     return updated;
+  }
+
+  // Validate that all nodes needing Google creds have them set
+  validateGoogleCredentials(workflow) {
+    const missing = [];
+    (workflow.nodes || []).forEach((node) => {
+      const key = this.mapNodeTypeToCredentialKey(node.type);
+      if (!key) return;
+      const hasCred = node.credentials && node.credentials[key] && node.credentials[key].id;
+      if (!hasCred) {
+        missing.push({ name: node.name, type: node.type, expectedKey: key });
+      }
+    });
+    if (missing.length) {
+      const details = missing.map(m => `${m.name} [${m.type}] -> ${m.expectedKey}`).join('; ');
+      throw new Error(`Missing credentials on nodes: ${details}`);
+    }
   }
 
   async activateWorkflow(workflowId) {
