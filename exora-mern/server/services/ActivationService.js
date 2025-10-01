@@ -9,22 +9,75 @@ class ActivationService {
     this.headers = { 'X-N8N-API-KEY': this.n8nApiKey, 'Content-Type': 'application/json' };
   }
 
+  // Detect which Google services are required based on nodes
+  detectRequiredGoogleServices(workflow) {
+    const services = new Set();
+    const nodes = workflow?.nodes || [];
+    nodes.forEach((node) => {
+      const type = String(node.type || '').toLowerCase();
+      if (type.includes('gmail')) services.add('gmail');
+      if (type.includes('googlesheets') || type.includes('sheets')) services.add('sheets');
+      if (type.includes('calendar')) services.add('calendar');
+      if (type.includes('googledrive') || type.includes('drive')) services.add('drive');
+      if (type.includes('googledocs') || type.includes('docs')) services.add('docs');
+    });
+    return Array.from(services);
+  }
+
+  // Build comprehensive scopes string for detected services
+  getComprehensiveGoogleScopes(services) {
+    const scopeSets = [];
+    const s = new Set(services || []);
+    if (s.has('gmail')) {
+      scopeSets.push('https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.modify');
+    }
+    if (s.has('sheets')) {
+      scopeSets.push('https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file');
+    }
+    if (s.has('calendar')) {
+      scopeSets.push('https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events');
+    }
+    if (s.has('drive')) {
+      scopeSets.push('https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/drive.file');
+    }
+    if (s.has('docs')) {
+      scopeSets.push('https://www.googleapis.com/auth/documents');
+    }
+    // Always include base identity scopes
+    scopeSets.push('openid email profile');
+    return scopeSets.join(' ');
+  }
+
+  // Map services to nodesAccess entries
+  getNodesAccessForServices(services) {
+    const access = [];
+    const add = (nodeType, nodeTypeVersion) => access.push({ nodeType, nodeTypeVersion });
+    const s = new Set(services || []);
+    if (s.has('gmail')) {
+      add('n8n-nodes-base.gmail', 2);
+      add('n8n-nodes-base.gmailTrigger', 1);
+    }
+    if (s.has('sheets')) {
+      add('n8n-nodes-base.googleSheets', 2);
+    }
+    if (s.has('calendar')) {
+      add('n8n-nodes-base.googleCalendar', 1);
+      add('n8n-nodes-base.googleCalendarTrigger', 1);
+    }
+    if (s.has('drive')) {
+      add('n8n-nodes-base.googleDrive', 2);
+    }
+    if (s.has('docs')) {
+      add('n8n-nodes-base.googleDocs', 1);
+    }
+    return access;
+  }
+
   async cloneWorkflowForUser(originalWorkflowId, userId) {
     const source = await this.n8n.getWorkflow(originalWorkflowId);
     if (!source.success) throw new Error(source.error || 'Failed to get source workflow');
     const src = source.workflow;
-    
-    // Clean up tags - n8n API expects just tag names or IDs, not full objects
-    let cleanTags = [];
-    if (src.tags && Array.isArray(src.tags)) {
-      cleanTags = src.tags.map(tag => {
-        if (typeof tag === 'string') return tag;
-        if (tag.name) return tag.name;
-        if (tag.id) return tag.id;
-        return null;
-      }).filter(Boolean);
-    }
-    
+
     // Clean nodes - remove read-only fields and runtime data
     const cleanNodes = src.nodes.map(node => {
       const cleanNode = {
@@ -34,8 +87,6 @@ class ActivationService {
         typeVersion: node.typeVersion,
         position: node.position,
       };
-      
-      // Only include optional fields if they exist
       if (node.credentials) cleanNode.credentials = node.credentials;
       if (node.disabled !== undefined) cleanNode.disabled = node.disabled;
       if (node.notes) cleanNode.notes = node.notes;
@@ -45,50 +96,44 @@ class ActivationService {
       if (node.waitBetweenTries) cleanNode.waitBetweenTries = node.waitBetweenTries;
       if (node.alwaysOutputData !== undefined) cleanNode.alwaysOutputData = node.alwaysOutputData;
       if (node.executeOnce !== undefined) cleanNode.executeOnce = node.executeOnce;
-      
-      // EXCLUDE read-only/runtime fields: id, webhookId
       return cleanNode;
     });
-    
+
     const payload = {
       name: `${src.name} — User ${userId}`,
       nodes: cleanNodes,
       connections: src.connections,
       settings: src.settings || {},
       staticData: src.staticData || {},
-      // EXCLUDED read-only fields: id, active, tags, createdAt, updatedAt, versionId
     };
-    
+
     const created = await this.n8n.createWorkflow(payload);
     if (!created.success) throw new Error(created.error || 'Failed to create workflow clone');
-    return created.workflow;
+
+    const clonedWorkflow = created.workflow;
+    const requiredServices = this.detectRequiredGoogleServices(clonedWorkflow);
+    return { workflow: clonedWorkflow, requiredServices };
   }
 
-  async createOrUpdateGoogleCredentialForUser({ userId, workflowId, tokens }) {
+  // Create a single comprehensive Google credential per user per workflow
+  async createUserSpecificGoogleCredential({ userId, workflowId, tokens, detectedServices }) {
     try {
       const uniqueSuffix = Date.now();
-      const credentialName = `google-oauth-user-${userId}-${workflowId}-${uniqueSuffix}`;
-
-      // Build payload per n8n REST API examples for googleOAuth2Api
-      const scopeString = tokens?.scope || [
-        'https://www.googleapis.com/auth/gmail.readonly',
-        'https://www.googleapis.com/auth/gmail.send',
-        'openid',
-        'email',
-        'profile',
-      ].join(' ');
+      const credentialName = `google-oauth-user-${userId}-workflow-${workflowId}-${uniqueSuffix}`;
+      const scopeString = this.getComprehensiveGoogleScopes(detectedServices);
+      const nodesAccess = this.getNodesAccessForServices(detectedServices);
 
       const body = {
         name: credentialName,
         type: 'googleOAuth2Api',
-        nodesAccess: [
-          { nodeType: 'n8n-nodes-base.gmail', nodeTypeVersion: 2 },
-          { nodeType: 'n8n-nodes-base.gmailTrigger', nodeTypeVersion: 1 },
-        ],
+        nodesAccess,
         data: {
           clientId: process.env.GOOGLE_CLIENT_ID,
           clientSecret: process.env.GOOGLE_CLIENT_SECRET,
           scope: scopeString,
+          // Some n8n versions require these flags
+          sendAdditionalBodyProperties: false,
+          additionalBodyProperties: {},
           oauthTokenData: {
             access_token: tokens?.access_token,
             refresh_token: tokens?.refresh_token,
@@ -104,31 +149,25 @@ class ActivationService {
       const created = await axios.post(`${this.n8nApiUrl}/api/v1/credentials`, body, { headers: this.headers });
       return created.data;
     } catch (error) {
-      console.error('Failed to create/update credential:', error.message);
+      console.error('Failed to create comprehensive credential:', error.message);
       console.error('Error response:', error.response?.data);
       throw new Error(error.response?.data?.message || error.message);
     }
   }
 
-  attachCredentialToGoogleNodes(workflow, credentialId, credentialName) {
-    const updated = { 
-      ...workflow, 
-      nodes: workflow.nodes.map((node) => {
-        const isGoogleNode = typeof node.type === 'string' && node.type.toLowerCase().includes('google');
+  attachCredentialToGoogleNodes(workflow, credentialId) {
+    const updated = {
+      ...workflow,
+      nodes: (workflow.nodes || []).map((node) => {
+        const typeStr = String(node.type || '').toLowerCase();
+        const isGoogleNode = typeStr.includes('google') || typeStr.includes('gmail');
         if (!isGoogleNode) return node;
-        
         const newNode = { ...node };
         newNode.credentials = newNode.credentials || {};
-        
-        // n8n uses credential type keys, for Google nodes typically 'googleOAuth2Api'
-        // Only include id, n8n will resolve the rest
-        newNode.credentials.googleOAuth2Api = { 
-          id: credentialId
-        };
-        
-        console.log(`Attached credential ${credentialId} to node: ${node.name}`);
+        newNode.credentials.googleOAuth2Api = { id: credentialId };
+        console.log(`Attached credential ${credentialId} to node: ${node.name} (${node.type})`);
         return newNode;
-      }) 
+      })
     };
     return updated;
   }

@@ -17,22 +17,28 @@ router.post('/activate-workflow', async (req, res) => {
     return res.status(500).json({ success: false, error: 'Missing Google OAuth env' });
   }
 
+  // Comprehensive default scopes covering Gmail, Sheets, Calendar, Drive, Docs + identity
+  const defaultScopes = [
+    'https://www.googleapis.com/auth/gmail.readonly',
+    'https://www.googleapis.com/auth/gmail.send',
+    'https://www.googleapis.com/auth/spreadsheets',
+    'https://www.googleapis.com/auth/drive.file',
+    'https://www.googleapis.com/auth/calendar',
+    'https://www.googleapis.com/auth/calendar.events',
+    'https://www.googleapis.com/auth/documents',
+    'openid', 'email', 'profile'
+  ];
+
   const scope = Array.isArray(scopes) && scopes.length
     ? scopes.join(' ')
-    : 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile';
+    : defaultScopes.join(' ');
 
   const state = JSON.stringify({ userId, workflowId });
   const url = OAuthService.buildAuthUrl({ clientId: GOOGLE_CLIENT_ID, redirectUri: GOOGLE_REDIRECT_URI, scopes: scope, state });
   return res.status(200).json({ success: true, authorizationUrl: url });
 });
 
-// After /oauth/callback completes successfully, we will:
-//  - upsert tokens
-//  - clone workflow
-//  - create/update credential
-//  - attach credential
-//  - activate
-
+// GET /oauth/callback - per-user clone, credential, attach, activate, track
 router.get('/oauth/callback', async (req, res) => {
   const { code, state } = req.query || {};
   const redirectBase = process.env.FRONTEND_URL || 'https://exora.solutions';
@@ -57,25 +63,39 @@ router.get('/oauth/callback', async (req, res) => {
       scope: tokens.scope,
     });
 
-    // Provision workflow in n8n
+    // Provision per-user workflow instance
     const activation = new ActivationService();
-    // Reuse existing instance if present; else clone
-    const UserWorkflowInstance = require('../models/UserWorkflowInstance');
-    const existing = await UserWorkflowInstance.findByUserSource({ userId: Number(userId), sourceWorkflowId: String(workflowId) });
-    const workflow = existing
-      ? (await activation.n8n.getWorkflow(existing.instanceWorkflowId)).workflow
-      : await activation.cloneWorkflowForUser(workflowId, userId);
-    const cred = await activation.createOrUpdateGoogleCredentialForUser({ userId, workflowId: workflow.id, tokens });
-    const updated = activation.attachCredentialToGoogleNodes(workflow, cred.id || cred.data?.id || cred._id || cred.uid);
-    await activation.n8n.updateWorkflow(workflow.id, updated);
-    await activation.activateWorkflow(workflow.id);
-    await UserWorkflowInstance.upsert({ userId: Number(userId), sourceWorkflowId: String(workflowId), instanceWorkflowId: String(workflow.id), status: 'active' });
+    const { workflow: cloned, requiredServices } = await activation.cloneWorkflowForUser(workflowId, userId);
 
-    // Redirect back with success
+    // Create comprehensive credential for this user+workflow
+    const cred = await activation.createUserSpecificGoogleCredential({
+      userId,
+      workflowId: cloned.id,
+      tokens,
+      detectedServices: requiredServices
+    });
+
+    // Attach credential to all Google nodes
+    const updated = activation.attachCredentialToGoogleNodes(cloned, cred.id || cred.data?.id || cred._id || cred.uid);
+    await activation.n8n.updateWorkflow(cloned.id, updated);
+
+    // Activate user's cloned workflow
+    await activation.activateWorkflow(cloned.id);
+
+    // Track mapping in DB
+    const UserWorkflowInstance = require('../models/UserWorkflowInstance');
+    await UserWorkflowInstance.upsert({
+      userId: Number(userId),
+      sourceWorkflowId: String(workflowId),
+      instanceWorkflowId: String(cloned.id),
+      status: 'active'
+    });
+
     const params = new URLSearchParams({
       success: 'true',
       userId: String(userId),
-      workflowId: String(workflow.id),
+      workflowId: String(cloned.id),
+      services: (requiredServices || []).join(',')
     }).toString();
     return res.redirect(`${redirectBase}/workflow-activation?${params}`);
   } catch (err) {

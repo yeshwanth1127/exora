@@ -85,6 +85,9 @@ CREATE TABLE IF NOT EXISTS user_workflow_instances (
     source_workflow_id VARCHAR(64) NOT NULL,
     instance_workflow_id VARCHAR(64) NOT NULL,
     status VARCHAR(24) DEFAULT 'active',
+    activated_at TIMESTAMPTZ,
+    services_used TEXT[] DEFAULT '{}',
+    credential_id VARCHAR(128),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE(user_id, source_workflow_id)
