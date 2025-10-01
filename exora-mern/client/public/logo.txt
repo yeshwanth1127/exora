@@ -1,0 +1,11 @@
+EXORA
+
+Font: Press Start 2P (fallback: VT323, monospace)
+Color (hex): #b794f4
+Color (RGB): 183, 148, 244
+
+ANSI-colored (for compatible terminals):
+[38;2;183;148;244mEXORA[0m
+
+Note: Plain .txt files cannot embed fonts or colors in editors like Notepad.
+Use the ANSI-colored line in a terminal that supports truecolor to see the color.

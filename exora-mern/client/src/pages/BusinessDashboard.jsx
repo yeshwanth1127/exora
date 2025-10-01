@@ -59,30 +59,66 @@ const BusinessDashboard = () => {
     setDashboardData(newData);
   };
 
-  // Workflow management functions
+  // Workflow management functions - Handle Activation Flow
   const toggleWorkflowStatus = async (workflowId, currentStatus) => {
     try {
-      const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
-      const response = await fetch(`${API_BASE_URL}/workflows/${workflowId}/status`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ status: newStatus })
-      });
+      // If activating, initiate OAuth flow
+      if (currentStatus !== 'active') {
+        const response = await fetch(`${API_BASE_URL.replace('/api', '')}/activate-workflow`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ 
+            userId: user.id,
+            workflowId: workflowId,
+            scopes: [
+              'https://www.googleapis.com/auth/calendar',
+              'https://www.googleapis.com/auth/gmail.send',
+              'https://www.googleapis.com/auth/userinfo.email',
+              'https://www.googleapis.com/auth/userinfo.profile'
+            ]
+          })
+        });
 
-      if (response.ok) {
-        // Update local state
-        setDashboardData(prev => ({
-          ...prev,
-          workflows: prev.workflows.map(w => 
-            w.id === workflowId ? { ...w, status: newStatus } : w
-          )
-        }));
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.authorizationUrl) {
+            // Redirect to Google OAuth consent page
+            window.location.href = data.authorizationUrl;
+          } else {
+            console.error('Failed to get authorization URL:', data);
+            alert('Failed to initiate activation. Please try again.');
+          }
+        } else {
+          console.error('Activation request failed:', response.status);
+          alert('Failed to activate workflow. Please try again.');
+        }
+      } else {
+        // Deactivating - simple status toggle
+        const response = await fetch(`${API_BASE_URL}/workflows/${workflowId}/status`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ status: 'inactive' })
+        });
+
+        if (response.ok) {
+          // Update local state
+          setDashboardData(prev => ({
+            ...prev,
+            workflows: prev.workflows.map(w => 
+              w.id === workflowId ? { ...w, status: 'inactive' } : w
+            )
+          }));
+        }
       }
     } catch (error) {
       console.error('Error toggling workflow status:', error);
+      alert('An error occurred. Please try again.');
     }
   };
 

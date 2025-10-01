@@ -1,0 +1,42 @@
+0 verbose cli D:\node.exe D:\node_modules\npm\bin\npm-cli.js
+1 info using npm@10.9.3
+2 info using node@v22.19.0
+3 silly config load:file:D:\node_modules\npm\npmrc
+4 silly config load:file:C:\Users\len\.npmrc
+5 silly config load:file:D:\npm-global\etc\npmrc
+6 verbose title npm exec @modelcontextprotocol/remote https://react-bits-mcp.davidhzdev.workers.dev/sse
+7 verbose argv "exec" "--" "@modelcontextprotocol/remote" "https://react-bits-mcp.davidhzdev.workers.dev/sse"
+8 verbose logfile logs-max:10 dir:D:\exora\prism\exora\exora-mern\server\npm-cache\_logs\2025-09-30T07_10_06_953Z-
+9 verbose logfile D:\exora\prism\exora\exora-mern\server\npm-cache\_logs\2025-09-30T07_10_06_953Z-debug-0.log
+10 silly logfile start cleaning logs, removing 1 files
+11 silly logfile done cleaning log files
+12 silly packumentCache heap:2197815296 maxSize:549453824 maxEntrySize:274726912
+13 http fetch GET 404 https://registry.npmjs.org/@modelcontextprotocol%2fremote 317ms (cache skip)
+14 http fetch GET 404 https://registry.npmjs.org/@modelcontextprotocol%2fremote 41ms (cache skip)
+15 verbose stack HttpErrorGeneral: 404 Not Found - GET https://registry.npmjs.org/@modelcontextprotocol%2fremote - Not found
+15 verbose stack     at D:\node_modules\npm\node_modules\npm-registry-fetch\lib\check-response.js:103:15
+15 verbose stack     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+15 verbose stack     at async RegistryFetcher.packument (D:\node_modules\npm\node_modules\pacote\lib\registry.js:90:19)
+15 verbose stack     at async RegistryFetcher.manifest (D:\node_modules\npm\node_modules\pacote\lib\registry.js:128:23)
+15 verbose stack     at async getManifest (D:\node_modules\npm\node_modules\libnpmexec\lib\index.js:27:22)
+15 verbose stack     at async missingFromTree (D:\node_modules\npm\node_modules\libnpmexec\lib\index.js:60:22)
+15 verbose stack     at async D:\node_modules\npm\node_modules\libnpmexec\lib\index.js:182:32
+15 verbose stack     at async Promise.all (index 0)
+15 verbose stack     at async exec (D:\node_modules\npm\node_modules\libnpmexec\lib\index.js:180:3)
+15 verbose stack     at async Npm.exec (D:\node_modules\npm\lib\npm.js:207:9)
+16 verbose statusCode 404
+17 verbose pkgid @modelcontextprotocol/remote@*
+18 error code E404
+19 error 404 Not Found - GET https://registry.npmjs.org/@modelcontextprotocol%2fremote - Not found
+20 error 404
+21 error 404  '@modelcontextprotocol/remote@*' is not in this registry.
+22 error 404
+23 error 404 Note that you can also install from a
+24 error 404 tarball, folder, http url, or git url.
+25 verbose cwd C:\Users\len
+26 verbose os Windows_NT 10.0.22631
+27 verbose node v22.19.0
+28 verbose npm  v10.9.3
+29 verbose exit 1
+30 verbose code 1
+31 error A complete log of this run can be found in: D:\exora\prism\exora\exora-mern\server\npm-cache\_logs\2025-09-30T07_10_06_953Z-debug-0.log

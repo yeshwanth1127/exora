@@ -5,6 +5,9 @@ const cors = require('cors');
 const { connectToDatabase, getDbHealth } = require('./config/db');
 const authRoutes = require('./routes/auth');
 const dashboardRoutes = require('./routes/dashboard');
+// const oauthRoutes = require('./routes/oauth'); // Deprecated: handled by activation route
+const activationRoutes = require('./routes/activation');
+const privacyRoutes = require('./routes/privacy');
 
 // Load env from server/.env first, then fall back to project root .env
 dotenv.config({ path: path.join(__dirname, '.env') });
@@ -18,11 +21,17 @@ let io = null;
 app.use(cors());
 app.use(express.json());
 
+// Serve static public assets (e.g., privacy policy)
+app.use(express.static(path.join(__dirname, 'public')));
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/discovery', require('./routes/discovery'));
 app.use('/api/workflows', require('./routes/workflows'));
+// app.use('/', oauthRoutes);
+app.use('/', privacyRoutes);
+app.use('/', activationRoutes);
 
 app.get('/health', async (req, res) => {
   try {

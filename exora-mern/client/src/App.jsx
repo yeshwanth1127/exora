@@ -22,6 +22,7 @@ import AuthPage from './pages/AuthPage'
 import BusinessDashboard from './pages/BusinessDashboard'
 import PersonalDashboard from './pages/PersonalDashboard'
 import BusinessDiscoveryChat from './components/BusinessDiscoveryChat'
+import WorkflowActivation from './pages/WorkflowActivation'
 
 function App() {
   const [isMobile, setIsMobile] = useState(false)
@@ -131,6 +132,7 @@ function App() {
           <Route path="/get-started" element={<BusinessDiscoveryChat />} />
           <Route path="/dashboard" element={<BusinessDashboard />} />
           <Route path="/personal-dashboard" element={<PersonalDashboard />} />
+          <Route path="/workflow-activation" element={<WorkflowActivation />} />
           <Route path="/" element={<HomePage />} />
         </Routes>
       </AuthProvider>
