@@ -171,6 +171,7 @@ class ActivationService {
     // Clean the workflow to only include fields allowed by n8n PUT API
     const cleanWorkflow = {
       name: workflow.name,
+      active: workflow.active,
       nodes: (workflow.nodes || []).map((node) => {
         const key = this.mapNodeTypeToCredentialKey(node.type);
         const cleanNode = {
@@ -195,7 +196,6 @@ class ActivationService {
       }),
       connections: workflow.connections || {},
       settings: workflow.settings || {},
-      tags: workflow.tags || [],
       staticData: workflow.staticData || {}
     };
     
