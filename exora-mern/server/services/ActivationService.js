@@ -170,7 +170,6 @@ class ActivationService {
   attachCredentialToGoogleNodes(workflow, credentialId) {
     // Clean the workflow to only include fields allowed by n8n PUT API
     const cleanWorkflow = {
-      id: workflow.id,
       name: workflow.name,
       active: workflow.active,
       nodes: (workflow.nodes || []).map((node) => {
