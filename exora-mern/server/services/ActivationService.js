@@ -56,8 +56,7 @@ class ActivationService {
       connections: src.connections,
       settings: src.settings || {},
       staticData: src.staticData || {},
-      tags: cleanTags,
-      // EXCLUDED read-only fields: id, active, createdAt, updatedAt, versionId
+      // EXCLUDED read-only fields: id, active, tags, createdAt, updatedAt, versionId
     };
     
     const created = await this.n8n.createWorkflow(payload);
