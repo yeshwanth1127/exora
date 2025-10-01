@@ -168,19 +168,40 @@ class ActivationService {
   }
 
   attachCredentialToGoogleNodes(workflow, credentialId) {
-    const updated = {
-      ...workflow,
+    // Clean the workflow to only include fields allowed by n8n PUT API
+    const cleanWorkflow = {
+      id: workflow.id,
+      name: workflow.name,
+      active: workflow.active,
       nodes: (workflow.nodes || []).map((node) => {
         const key = this.mapNodeTypeToCredentialKey(node.type);
-        if (!key) return node;
-        const newNode = { ...node };
-        newNode.credentials = newNode.credentials || {};
-        newNode.credentials[key] = { id: credentialId };
-        console.log(`Attached credential ${credentialId} with key '${key}' to node: ${node.name} (${node.type})`);
-        return newNode;
-      })
+        const cleanNode = {
+          id: node.id,
+          name: node.name,
+          type: node.type,
+          typeVersion: node.typeVersion,
+          position: node.position,
+          parameters: node.parameters || {},
+        };
+        
+        // Add credentials if this is a Google node
+        if (key) {
+          cleanNode.credentials = { [key]: { id: credentialId } };
+          console.log(`Attached credential ${credentialId} with key '${key}' to node: ${node.name} (${node.type})`);
+        } else if (node.credentials) {
+          // Preserve existing credentials for non-Google nodes
+          cleanNode.credentials = node.credentials;
+        }
+        
+        return cleanNode;
+      }),
+      connections: workflow.connections || {},
+      settings: workflow.settings || {},
+      tags: workflow.tags || [],
+      staticData: workflow.staticData || {}
     };
-    return updated;
+    
+    return cleanWorkflow;
   }
 
   // Validate that all nodes needing Google creds have them set

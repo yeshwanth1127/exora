@@ -84,7 +84,10 @@ router.get('/oauth/callback', async (req, res) => {
     // Attach credential to all Google nodes
     const updated = activation.attachCredentialToGoogleNodes(fullWorkflow.workflow, cred.id || cred.data?.id || cred._id || cred.uid);
     
-    // Update the workflow with the full object including all metadata
+    // Validate that all Google nodes have credentials
+    activation.validateGoogleCredentials(updated);
+    
+    // Update the workflow with the clean object
     const updateResult = await activation.n8n.updateWorkflow(cloned.id, updated);
     if (!updateResult.success) {
       throw new Error(`Failed to update workflow: ${updateResult.error}`);
