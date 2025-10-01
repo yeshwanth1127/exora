@@ -13,13 +13,25 @@ class ActivationService {
     const source = await this.n8n.getWorkflow(originalWorkflowId);
     if (!source.success) throw new Error(source.error || 'Failed to get source workflow');
     const src = source.workflow;
+    
+    // Clean up tags - n8n API expects just tag names or IDs, not full objects
+    let cleanTags = [];
+    if (src.tags && Array.isArray(src.tags)) {
+      cleanTags = src.tags.map(tag => {
+        if (typeof tag === 'string') return tag;
+        if (tag.name) return tag.name;
+        if (tag.id) return tag.id;
+        return null;
+      }).filter(Boolean);
+    }
+    
     const payload = {
       name: `${src.name} — User ${userId}`,
       nodes: src.nodes,
       connections: src.connections,
       settings: src.settings || {},
       staticData: src.staticData || {},
-      tags: src.tags || [],
+      tags: cleanTags,
       active: false,
     };
     const created = await this.n8n.createWorkflow(payload);
