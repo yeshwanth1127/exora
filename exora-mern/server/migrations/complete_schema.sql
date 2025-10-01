@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash VARCHAR(255) NOT NULL,
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
+    usage_type VARCHAR(50) DEFAULT 'business',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     is_verified BOOLEAN DEFAULT FALSE,
@@ -98,9 +99,10 @@ CREATE TABLE IF NOT EXISTS business_discovery_sessions (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     session_id VARCHAR(255) UNIQUE NOT NULL,
+    session_status VARCHAR(50) DEFAULT 'active',
+    discovery_data JSONB DEFAULT '{}',
     conversation_history JSONB DEFAULT '[]',
-    discovered_info JSONB DEFAULT '{}',
-    status VARCHAR(50) DEFAULT 'active',
+    completed_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -114,18 +116,21 @@ CREATE INDEX IF NOT EXISTS idx_discovery_sessions_session_id ON business_discove
 CREATE TABLE IF NOT EXISTS business_profiles (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    business_name VARCHAR(255),
+    session_id INTEGER REFERENCES business_discovery_sessions(id) ON DELETE CASCADE,
     industry VARCHAR(100),
-    business_type VARCHAR(100),
-    employee_count VARCHAR(50),
-    business_description TEXT,
-    pain_points JSONB DEFAULT '[]',
-    goals JSONB DEFAULT '[]',
+    business_size VARCHAR(50),
+    pain_points TEXT[],
+    current_tools TEXT[],
+    automation_goals TEXT[],
+    integration_preferences JSONB DEFAULT '{}',
+    workflow_priorities JSONB DEFAULT '{}',
+    discovered_workflows JSONB DEFAULT '[]',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_business_profiles_user_id ON business_profiles(user_id);
+CREATE INDEX IF NOT EXISTS idx_business_profiles_session_id ON business_profiles(session_id);
 
 -- ================================================================
 -- 7. USER AGENTS TABLE
@@ -153,7 +158,8 @@ CREATE TABLE IF NOT EXISTS agent_activities (
     agent_id INTEGER NOT NULL REFERENCES user_agents(id) ON DELETE CASCADE,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     activity_type VARCHAR(100) NOT NULL,
-    description TEXT,
+    title VARCHAR(255) NOT NULL,
+    description TEXT DEFAULT '',
     metadata JSONB DEFAULT '{}',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -168,17 +174,23 @@ CREATE INDEX IF NOT EXISTS idx_agent_activities_created_at ON agent_activities(c
 CREATE TABLE IF NOT EXISTS workflow_recommendations (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    workflow_id VARCHAR(64) NOT NULL,
-    workflow_name VARCHAR(255) NOT NULL,
-    recommendation_reason TEXT,
-    priority VARCHAR(50) DEFAULT 'medium',
-    status VARCHAR(50) DEFAULT 'pending',
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    session_id INTEGER REFERENCES business_discovery_sessions(id) ON DELETE CASCADE,
+    workflow_type VARCHAR(100) NOT NULL,
+    priority_score INTEGER DEFAULT 50,
+    recommended_reason TEXT,
+    estimated_impact TEXT,
+    estimated_setup_time VARCHAR(100),
+    setup_complexity INTEGER DEFAULT 3,
+    n8n_workflow_json JSONB,
+    user_decision VARCHAR(50) DEFAULT 'pending',
+    deployed_workflow_id VARCHAR(100),
+    webhook_url VARCHAR(500),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_workflow_recommendations_user_id ON workflow_recommendations(user_id);
-CREATE INDEX IF NOT EXISTS idx_workflow_recommendations_status ON workflow_recommendations(status);
+CREATE INDEX IF NOT EXISTS idx_workflow_recommendations_session_id ON workflow_recommendations(session_id);
+CREATE INDEX IF NOT EXISTS idx_workflow_recommendations_user_decision ON workflow_recommendations(user_decision);
 
 -- ================================================================
 -- 10. USER NOTIFICATIONS TABLE
@@ -186,11 +198,12 @@ CREATE INDEX IF NOT EXISTS idx_workflow_recommendations_status ON workflow_recom
 CREATE TABLE IF NOT EXISTS user_notifications (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    notification_type VARCHAR(100) NOT NULL,
+    type VARCHAR(100) NOT NULL,
     title VARCHAR(255) NOT NULL,
     message TEXT NOT NULL,
     is_read BOOLEAN DEFAULT FALSE,
-    metadata JSONB DEFAULT '{}',
+    action_url VARCHAR(500),
+    read_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -204,13 +217,16 @@ CREATE TABLE IF NOT EXISTS user_statistics (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     stat_type VARCHAR(100) NOT NULL,
-    stat_value JSONB DEFAULT '{}',
-    recorded_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    UNIQUE(user_id, stat_type, recorded_at)
+    value DECIMAL(15,4) NOT NULL DEFAULT 0,
+    unit VARCHAR(50),
+    period VARCHAR(50) DEFAULT 'total',
+    calculated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_user_statistics_user_id ON user_statistics(user_id);
-CREATE INDEX IF NOT EXISTS idx_user_statistics_recorded_at ON user_statistics(recorded_at);
+CREATE INDEX IF NOT EXISTS idx_user_statistics_stat_type ON user_statistics(stat_type);
+CREATE INDEX IF NOT EXISTS idx_user_statistics_period ON user_statistics(period);
+CREATE INDEX IF NOT EXISTS idx_user_statistics_calculated_at ON user_statistics(calculated_at);
 
 -- ================================================================
 -- 12. AGENT METRICS TABLE
@@ -253,6 +269,7 @@ CREATE TABLE IF NOT EXISTS agent_templates (
     icon VARCHAR(50),
     features TEXT[],
     pricing_tier VARCHAR(50) DEFAULT 'basic',
+    usage_type VARCHAR(50) DEFAULT 'business',
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -447,22 +464,29 @@ CREATE INDEX IF NOT EXISTS idx_workflow_templates_is_featured ON workflow_templa
 -- Function to update user statistics automatically
 CREATE OR REPLACE FUNCTION update_user_statistics(p_user_id INTEGER)
 RETURNS VOID AS $$
+DECLARE
+    v_active_agents INTEGER;
+    v_automated_tasks INTEGER;
 BEGIN
-    -- Update active agents count
-    INSERT INTO user_statistics (user_id, stat_type, stat_value)
-    SELECT p_user_id, 'active_agents', jsonb_build_object('count', COUNT(*))
+    -- Count active agents
+    SELECT COUNT(*) INTO v_active_agents
     FROM user_agents 
-    WHERE user_id = p_user_id AND status = 'active'
-    ON CONFLICT (user_id, stat_type, recorded_at) 
-    DO UPDATE SET stat_value = EXCLUDED.stat_value;
+    WHERE user_id = p_user_id AND status = 'active';
 
-    -- Update automated tasks count
-    INSERT INTO user_statistics (user_id, stat_type, stat_value)
-    SELECT p_user_id, 'automated_tasks', jsonb_build_object('count', COUNT(*))
+    -- Insert or update active agents statistic
+    INSERT INTO user_statistics (user_id, stat_type, value, unit, period, calculated_at)
+    VALUES (p_user_id, 'active_agents', v_active_agents, 'count', 'total', NOW())
+    ON CONFLICT DO NOTHING;
+
+    -- Count automated tasks
+    SELECT COUNT(*) INTO v_automated_tasks
     FROM agent_activities 
-    WHERE user_id = p_user_id AND activity_type = 'task_completed'
-    ON CONFLICT (user_id, stat_type, recorded_at) 
-    DO UPDATE SET stat_value = EXCLUDED.stat_value;
+    WHERE user_id = p_user_id AND activity_type = 'task_completed';
+
+    -- Insert or update automated tasks statistic
+    INSERT INTO user_statistics (user_id, stat_type, value, unit, period, calculated_at)
+    VALUES (p_user_id, 'automated_tasks', v_automated_tasks, 'count', 'total', NOW())
+    ON CONFLICT DO NOTHING;
 END;
 $$ LANGUAGE plpgsql;
 

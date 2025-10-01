@@ -96,12 +96,12 @@ class BusinessDiscoveryAgent {
       
       // Update session data
           try {
-            await this.updateDiscoverySession(sessionId, {
-              userMessage,
-              aiResponse: parsedResponse.message,
-              discoveredInfo: parsedResponse.discoveredInfo,
-              currentPhase: parsedResponse.currentPhase
-            });
+      await this.updateDiscoverySession(sessionId, {
+        userMessage,
+        aiResponse: parsedResponse.message,
+        discoveredInfo: parsedResponse.discoveredInfo,
+        currentPhase: parsedResponse.currentPhase
+      });
 
             // Also update dashboard data if we have discovered information
             if (parsedResponse.discoveredInfo && Object.keys(parsedResponse.discoveredInfo).length > 0) {

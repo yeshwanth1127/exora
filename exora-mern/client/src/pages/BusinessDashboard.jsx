@@ -166,17 +166,17 @@ const BusinessDashboard = () => {
             setDashboardData(data.data);
             setUserAgents(data.data.userAgents || []);
           } else {
-            // Show empty state and Alex popup
+            // First time user - show setup
             setShowAlex(true);
           }
         } else {
-          // Show empty state and Alex popup
-          setShowAlex(true);
+          // API error - show error, don't force setup
+          setError('Failed to load dashboard. Please try again.');
         }
       } catch (error) {
         console.error('Dashboard data fetch error:', error);
-        // Show empty state and Alex popup
-        setShowAlex(true);
+        // Network error - show error, don't force setup
+        setError('Unable to connect to server. Please check your connection and try again.');
       } finally {
         setLoading(false);
       }
