@@ -92,13 +92,17 @@ router.get('/oauth/callback', async (req, res) => {
     console.log(`Processing OAuth callback for user ${userId}, workflow ${workflowId}`);
 
     // Exchange code for tokens
-    const tokens = await OAuthService.handleOAuthCallback('google', code, state);
+    const session = await OAuthService.handleOAuthCallback('google', code, state);
+    const tokens = session?.tokens || {};
+    // Prefer IDs from parsed state, but fall back to service-returned values
+    const resolvedUserId = parsedState.userId || session.userId;
+    const resolvedWorkflowId = parsedState.workflowId || session.workflowId;
     console.log('OAuth tokens obtained successfully');
 
     // Store tokens in database
     await OAuthTokens.upsert({
-      userId,
-      workflowId,
+      userId: resolvedUserId,
+      workflowId: resolvedWorkflowId,
       provider: 'google',
       access_token: tokens.access_token,
       refresh_token: tokens.refresh_token,
@@ -118,8 +122,8 @@ router.get('/oauth/callback', async (req, res) => {
       const orchestratorResponse = await axios.post(
         `${webhookBase}/webhook/activate-workflow`,
         {
-          userId: userId,
-          workflowId: workflowId,
+          userId: resolvedUserId,
+          workflowId: resolvedWorkflowId,
           oauthToken: tokens.access_token,
           refreshToken: tokens.refresh_token,
           expiresIn: tokens.expires_in,
@@ -140,8 +144,8 @@ router.get('/oauth/callback', async (req, res) => {
 
       // Store the user-workflow mapping
       await UserWorkflowInstance.upsert({
-        userId,
-        templateWorkflowId: workflowId,
+        userId: resolvedUserId,
+        templateWorkflowId: resolvedWorkflowId,
         clonedWorkflowId: orchestratorResponse.data.workflowId,
         activated_at: new Date(),
         services_used: [], // Will be populated by orchestrator if needed
@@ -151,7 +155,7 @@ router.get('/oauth/callback', async (req, res) => {
       console.log(`Workflow ${orchestratorResponse.data.workflowId} activated successfully for user ${userId}`);
 
       // Redirect to frontend with success
-      res.redirect(`${process.env.FRONTEND_URL}/workflow-activation?success=true&userId=${userId}&workflowId=${orchestratorResponse.data.workflowId}`);
+      res.redirect(`${process.env.FRONTEND_URL}/workflow-activation?success=true&userId=${resolvedUserId}&workflowId=${orchestratorResponse.data.workflowId}`);
 
     } catch (orchestratorError) {
       const respData = orchestratorError.response?.data;
