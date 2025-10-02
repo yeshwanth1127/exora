@@ -121,58 +121,37 @@ class ActivationService {
       const uniqueSuffix = Date.now();
       const scopeString = this.getComprehensiveGoogleScopes(detectedServices);
       
-      // Create separate credentials for each service type
-      const credentials = {};
+      // Create ONE comprehensive credential that works for all Google services
+      const credentialName = `google-oauth-user-${userId}-workflow-${workflowId}-${uniqueSuffix}`;
       
-      for (const service of detectedServices) {
-        const credentialType = this.getCredentialTypeForService(service);
-        const credentialName = `${service}-oauth-user-${userId}-workflow-${workflowId}-${uniqueSuffix}`;
-        
-        // Different credential types have different schemas
-        let data;
-        if (credentialType === 'gmailOAuth2') {
-          // Gmail OAuth2 has a simpler schema without scope
-          data = {
-            clientId: process.env.GOOGLE_CLIENT_ID,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-            accessToken: tokens?.access_token,
-            refreshToken: tokens?.refresh_token,
-            expires: tokens?.expires_in ? Date.now() + tokens.expires_in * 1000 : undefined,
-            tokenType: tokens?.token_type || 'Bearer'
-          };
-        } else {
-          // Other Google services use the comprehensive schema
-          data = {
-            clientId: process.env.GOOGLE_CLIENT_ID,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      const body = {
+        name: credentialName,
+        type: 'googleOAuth2Api', // Use the generic type for all
+        nodesAccess: this.getNodesAccessForServices(detectedServices),
+        data: {
+          clientId: process.env.GOOGLE_CLIENT_ID,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+          scope: scopeString,
+          sendAdditionalBodyProperties: false,
+          additionalBodyProperties: "",
+          oauthTokenData: {
+            access_token: tokens?.access_token,
+            refresh_token: tokens?.refresh_token,
             scope: scopeString,
-            sendAdditionalBodyProperties: false,
-            additionalBodyProperties: "",
-            oauthTokenData: {
-              access_token: tokens?.access_token,
-              refresh_token: tokens?.refresh_token,
-              scope: scopeString,
-              token_type: tokens?.token_type || 'Bearer',
-              expires_in: tokens?.expires_in || 3600,
-              expiry_date: tokens?.expires_in ? Date.now() + tokens.expires_in * 1000 : undefined,
-            },
-          };
+            token_type: tokens?.token_type || 'Bearer',
+            expires_in: tokens?.expires_in || 3600,
+            expiry_date: tokens?.expires_in ? Date.now() + tokens.expires_in * 1000 : undefined,
+          }
         }
-        
-        const body = {
-          name: credentialName,
-          type: credentialType,
-          data
-        };
+      };
 
-        console.log(`Creating ${service} credential: ${credentialName}`);
-        const created = await axios.post(`${this.n8nApiUrl}/api/v1/credentials`, body, { headers: this.headers });
-        credentials[service] = created.data;
-      }
+      console.log(`Creating comprehensive credential: ${credentialName}`);
+      const created = await axios.post(`${this.n8nApiUrl}/api/v1/credentials`, body, { headers: this.headers });
       
-      return credentials;
+      return created.data; // Return single credential object, not an object with service keys
+      
     } catch (error) {
-      console.error('Failed to create service credentials:', error.message);
+      console.error('Failed to create credential:', error.message);
       console.error('Error response:', error.response?.data);
       throw new Error(error.response?.data?.message || error.message);
     }
@@ -202,12 +181,10 @@ class ActivationService {
     return null;
   }
 
-  attachCredentialToGoogleNodes(workflow, credentials) {
-    // Clean the workflow to only include fields allowed by n8n PUT API
+  attachCredentialToGoogleNodes(workflow, credential) {
     const cleanWorkflow = {
       name: workflow.name,
       nodes: (workflow.nodes || []).map((node) => {
-        const key = this.mapNodeTypeToCredentialKey(node.type);
         const cleanNode = {
           id: node.id,
           name: node.name,
@@ -216,28 +193,31 @@ class ActivationService {
           position: node.position,
           parameters: node.parameters || {},
         };
-        
-        // Add credentials if this is a Google node
-        if (key) {
-          const service = this.getServiceFromNodeType(node.type);
-          const credentialId = credentials[service]?.id;
-          if (credentialId) {
-            cleanNode.credentials = { [key]: { id: credentialId } };
-            console.log(`Attached credential ${credentialId} with key '${key}' to node: ${node.name} (${node.type})`);
-          }
+
+        // Attach credential to ALL Google nodes using the generic key
+        if (this.isGoogleNode(node.type)) {
+          cleanNode.credentials = { 
+            googleOAuth2Api: { id: credential.id } 
+          };
+          console.log(`Attached credential ${credential.id} to node: ${node.name} (${node.type})`);
         } else if (node.credentials) {
-          // Preserve existing credentials for non-Google nodes
           cleanNode.credentials = node.credentials;
         }
-        
+
         return cleanNode;
       }),
       connections: workflow.connections || {},
       settings: workflow.settings || {},
       staticData: workflow.staticData || {}
     };
-    
+
     return cleanWorkflow;
+  }
+
+  // Helper method to check if node is Google-related
+  isGoogleNode(nodeType) {
+    const t = String(nodeType || '').toLowerCase();
+    return t.includes('gmail') || t.includes('google');
   }
 
   getServiceFromNodeType(nodeType) {
