@@ -163,9 +163,9 @@ const BusinessDashboard = () => {
         if (response.ok) {
           const data = await response.json();
           if (data.data && data.data.isConfigured) {
-            setDashboardData(data.data);
-            setUserAgents(data.data.userAgents || []);
-          } else {
+          setDashboardData(data.data);
+          setUserAgents(data.data.userAgents || []);
+        } else {
             // First time user - show setup
             setShowAlex(true);
           }

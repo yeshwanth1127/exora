@@ -1,122 +1,161 @@
 const express = require('express');
-const ActivationService = require('../services/ActivationService');
-const { OAuthService } = require('../services/OAuthService');
-const OAuthTokens = require('../models/OAuthTokens');
-
 const router = express.Router();
+const axios = require('axios');
+const OAuthService = require('../services/OAuthService');
+const OAuthTokens = require('../models/OAuthTokens');
+const UserWorkflowInstance = require('../models/UserWorkflowInstance');
 
-// POST /activate-workflow
+// POST /activate-workflow - Initiate OAuth flow for workflow activation
 router.post('/activate-workflow', async (req, res) => {
-  const { userId, workflowId, scopes } = req.body || {};
-  if (!userId || !workflowId) {
-    return res.status(400).json({ success: false, error: 'userId and workflowId required' });
+  try {
+    const { userId, workflowId, scopes } = req.body;
+
+    if (!userId || !workflowId) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'userId and workflowId are required' 
+      });
+    }
+
+    // Default comprehensive Google scopes if not provided
+    const defaultScopes = [
+      'https://www.googleapis.com/auth/gmail.readonly',
+      'https://www.googleapis.com/auth/gmail.send',
+      'https://www.googleapis.com/auth/gmail.modify',
+      'https://www.googleapis.com/auth/spreadsheets',
+      'https://www.googleapis.com/auth/drive.file',
+      'https://www.googleapis.com/auth/calendar',
+      'https://www.googleapis.com/auth/calendar.events',
+      'https://www.googleapis.com/auth/userinfo.email',
+      'https://www.googleapis.com/auth/userinfo.profile'
+    ];
+
+    const requestedScopes = scopes && scopes.length > 0 ? scopes : defaultScopes;
+
+    // Generate OAuth authorization URL
+    const authorizationUrl = OAuthService.buildAuthUrl({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      redirectUri: process.env.GOOGLE_REDIRECT_URI,
+      scopes: requestedScopes,
+      state: JSON.stringify({ userId, workflowId })
+    });
+
+    console.log(`Generated OAuth URL for user ${userId}, workflow ${workflowId}`);
+    console.log(`Scopes: ${requestedScopes.join(' ')}`);
+
+    res.json({
+      success: true,
+      authorizationUrl,
+      message: 'Redirect to authorization URL to complete activation'
+    });
+
+  } catch (error) {
+    console.error('Activation initiation error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to initiate workflow activation' 
+    });
   }
-
-  const { GOOGLE_CLIENT_ID, GOOGLE_REDIRECT_URI } = process.env;
-  if (!GOOGLE_CLIENT_ID || !GOOGLE_REDIRECT_URI) {
-    return res.status(500).json({ success: false, error: 'Missing Google OAuth env' });
-  }
-
-  // Comprehensive default scopes covering Gmail, Sheets, Calendar, Drive, Docs + identity
-  const defaultScopes = [
-    'https://www.googleapis.com/auth/gmail.readonly',
-    'https://www.googleapis.com/auth/gmail.send',
-    'https://www.googleapis.com/auth/spreadsheets',
-    'https://www.googleapis.com/auth/drive.file',
-    'https://www.googleapis.com/auth/calendar',
-    'https://www.googleapis.com/auth/calendar.events',
-    'https://www.googleapis.com/auth/documents',
-    'openid', 'email', 'profile'
-  ];
-
-  const scope = Array.isArray(scopes) && scopes.length
-    ? scopes.join(' ')
-    : defaultScopes.join(' ');
-
-  const state = JSON.stringify({ userId, workflowId });
-  const url = OAuthService.buildAuthUrl({ clientId: GOOGLE_CLIENT_ID, redirectUri: GOOGLE_REDIRECT_URI, scopes: scope, state });
-  return res.status(200).json({ success: true, authorizationUrl: url });
 });
 
-// GET /oauth/callback - per-user clone, credential, attach, activate, track
+// GET /oauth/callback - Handle Google OAuth callback and call n8n orchestrator
 router.get('/oauth/callback', async (req, res) => {
-  const { code, state } = req.query || {};
-  const redirectBase = process.env.FRONTEND_URL || 'https://exora.solutions';
-  if (!code || !state) {
-    return res.redirect(`${redirectBase}/workflow-activation?error=missing_params`);
-  }
   try {
-    const session = await OAuthService.handleOAuthCallback('google', code, state);
-    const { userId, workflowId, tokens } = session;
+    const { code, state, error } = req.query;
+
+    if (error) {
+      console.error('OAuth error:', error);
+      return res.redirect(`${process.env.FRONTEND_URL}/workflow-activation?error=oauth_denied`);
+    }
+
+    if (!code || !state) {
+      console.error('Missing code or state parameter');
+      return res.redirect(`${process.env.FRONTEND_URL}/workflow-activation?error=invalid_request`);
+    }
+
+    let parsedState;
+    try {
+      parsedState = JSON.parse(state);
+    } catch (parseError) {
+      console.error('Invalid state parameter:', parseError);
+      return res.redirect(`${process.env.FRONTEND_URL}/workflow-activation?error=invalid_state`);
+    }
+
+    const { userId, workflowId } = parsedState;
+
     if (!userId || !workflowId) {
-      return res.redirect(`${redirectBase}/workflow-activation?error=invalid_state`);
+      console.error('Missing userId or workflowId in state');
+      return res.redirect(`${process.env.FRONTEND_URL}/workflow-activation?error=invalid_state`);
     }
 
-    // Store tokens
+    console.log(`Processing OAuth callback for user ${userId}, workflow ${workflowId}`);
+
+    // Exchange code for tokens
+    const tokens = await OAuthService.handleOAuthCallback('google', code, state);
+    console.log('OAuth tokens obtained successfully');
+
+    // Store tokens in database
     await OAuthTokens.upsert({
-      userId: Number(userId),
-      workflowId: String(workflowId),
-      provider: 'google',
-      accessToken: tokens.access_token,
-      refreshToken: tokens.refresh_token,
-      expiryDate: tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000) : null,
-      scope: tokens.scope,
-    });
-
-    // Provision per-user workflow instance
-    const activation = new ActivationService();
-    const { workflow: cloned, requiredServices } = await activation.cloneWorkflowForUser(workflowId, userId);
-
-    // Create comprehensive credential for this user+workflow
-    const credential = await activation.createUserSpecificGoogleCredential({
       userId,
-      workflowId: cloned.id,
-      tokens,
-      detectedServices: requiredServices
+      workflowId,
+      provider: 'google',
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
+      expires_in: tokens.expires_in,
+      token_type: tokens.token_type || 'Bearer'
     });
 
-    // Fetch the full workflow from n8n to ensure we have all metadata
-    const fullWorkflow = await activation.n8n.getWorkflow(cloned.id);
-    if (!fullWorkflow.success) {
-      throw new Error(`Failed to fetch workflow: ${fullWorkflow.error}`);
+    console.log('OAuth tokens stored in database');
+
+    // Call n8n orchestrator webhook
+    try {
+      const orchestratorResponse = await axios.post(
+        `${process.env.N8N_WEBHOOK_BASE_URL}/webhook/activate-workflow`,
+        {
+          userId: userId,
+          workflowId: workflowId,
+          oauthToken: tokens.access_token,
+          refreshToken: tokens.refresh_token,
+          expiresIn: tokens.expires_in,
+          tokenType: tokens.token_type || 'Bearer'
+        },
+        {
+          headers: { 'Content-Type': 'application/json' },
+          timeout: 30000 // 30 second timeout
+        }
+      );
+
+      if (!orchestratorResponse.data.success) {
+        throw new Error(`Orchestrator failed: ${orchestratorResponse.data.error || orchestratorResponse.data.message}`);
+      }
+
+      console.log('n8n orchestrator completed successfully:', orchestratorResponse.data);
+
+      // Store the user-workflow mapping
+      await UserWorkflowInstance.upsert({
+        userId,
+        templateWorkflowId: workflowId,
+        clonedWorkflowId: orchestratorResponse.data.workflowId,
+        activated_at: new Date(),
+        services_used: [], // Will be populated by orchestrator if needed
+        credential_id: orchestratorResponse.data.credentialId || null
+      });
+
+      console.log(`Workflow ${orchestratorResponse.data.workflowId} activated successfully for user ${userId}`);
+
+      // Redirect to frontend with success
+      res.redirect(`${process.env.FRONTEND_URL}/workflow-activation?success=true&userId=${userId}&workflowId=${orchestratorResponse.data.workflowId}`);
+
+    } catch (orchestratorError) {
+      console.error('n8n orchestrator error:', orchestratorError.message);
+      console.error('Orchestrator response:', orchestratorError.response?.data);
+      res.redirect(`${process.env.FRONTEND_URL}/workflow-activation?error=orchestrator_failed`);
     }
 
-    // Attach credential to all Google nodes
-    const updated = activation.attachCredentialToGoogleNodes(fullWorkflow.workflow, credential);
-    
-    // Validate that all Google nodes have credentials
-    activation.validateGoogleCredentials(updated);
-    
-    // Update the workflow with the clean object
-    const updateResult = await activation.n8n.updateWorkflow(cloned.id, updated);
-    if (!updateResult.success) {
-      throw new Error(`Failed to update workflow: ${updateResult.error}`);
-    }
-
-    // Activate user's cloned workflow
-    await activation.activateWorkflow(cloned.id);
-
-    // Track mapping in DB
-    const UserWorkflowInstance = require('../models/UserWorkflowInstance');
-    await UserWorkflowInstance.upsert({
-      userId: Number(userId),
-      sourceWorkflowId: String(workflowId),
-      instanceWorkflowId: String(cloned.id),
-      status: 'active'
-    });
-
-    const params = new URLSearchParams({
-      success: 'true',
-      userId: String(userId),
-      workflowId: String(cloned.id),
-      services: (requiredServices || []).join(',')
-    }).toString();
-    return res.redirect(`${redirectBase}/workflow-activation?${params}`);
-  } catch (err) {
-    return res.redirect(`${redirectBase}/workflow-activation?error=${encodeURIComponent(err.message || 'oauth_activation_failed')}`);
+  } catch (error) {
+    console.error('OAuth callback error:', error);
+    res.redirect(`${process.env.FRONTEND_URL}/workflow-activation?error=activation_failed`);
   }
 });
 
 module.exports = router;
-
-
