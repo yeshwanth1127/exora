@@ -31,17 +31,18 @@ router.post('/activate-workflow', async (req, res) => {
     ];
 
     const requestedScopes = scopes && scopes.length > 0 ? scopes : defaultScopes;
+    const scopeString = Array.isArray(requestedScopes) ? requestedScopes.join(' ') : String(requestedScopes);
 
     // Generate OAuth authorization URL
     const authorizationUrl = OAuthService.buildAuthUrl({
       clientId: process.env.GOOGLE_CLIENT_ID,
       redirectUri: process.env.GOOGLE_REDIRECT_URI,
-      scopes: requestedScopes,
+      scopes: scopeString,
       state: JSON.stringify({ userId, workflowId })
     });
 
     console.log(`Generated OAuth URL for user ${userId}, workflow ${workflowId}`);
-    console.log(`Scopes: ${requestedScopes.join(' ')}`);
+    console.log(`Scopes: ${scopeString}`);
 
     res.json({
       success: true,
