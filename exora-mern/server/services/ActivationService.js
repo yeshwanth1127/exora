@@ -128,10 +128,21 @@ class ActivationService {
         const credentialType = this.getCredentialTypeForService(service);
         const credentialName = `${service}-oauth-user-${userId}-workflow-${workflowId}-${uniqueSuffix}`;
         
-        const body = {
-          name: credentialName,
-          type: credentialType,
-          data: {
+        // Different credential types have different schemas
+        let data;
+        if (credentialType === 'gmailOAuth2') {
+          // Gmail OAuth2 has a simpler schema without scope
+          data = {
+            clientId: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            accessToken: tokens?.access_token,
+            refreshToken: tokens?.refresh_token,
+            expires: tokens?.expires_in ? Date.now() + tokens.expires_in * 1000 : undefined,
+            tokenType: tokens?.token_type || 'Bearer'
+          };
+        } else {
+          // Other Google services use the comprehensive schema
+          data = {
             clientId: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
             scope: scopeString,
@@ -145,7 +156,13 @@ class ActivationService {
               expires_in: tokens?.expires_in || 3600,
               expiry_date: tokens?.expires_in ? Date.now() + tokens.expires_in * 1000 : undefined,
             },
-          },
+          };
+        }
+        
+        const body = {
+          name: credentialName,
+          type: credentialType,
+          data
         };
 
         console.log(`Creating ${service} credential: ${credentialName}`);
