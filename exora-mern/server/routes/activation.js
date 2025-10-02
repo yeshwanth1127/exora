@@ -109,8 +109,10 @@ router.get('/oauth/callback', async (req, res) => {
 
     // Call n8n orchestrator webhook
     try {
+      const base = process.env.N8N_WEBHOOK_BASE_URL || process.env.N8N_BASE || process.env.N8N_BASE_URL;
+      const webhookBase = (base || '').replace(/\/$/, '');
       const orchestratorResponse = await axios.post(
-        `${process.env.N8N_WEBHOOK_BASE_URL}/webhook/activate-workflow`,
+        `${webhookBase}/webhook/activate-workflow`,
         {
           userId: userId,
           workflowId: workflowId,
