@@ -119,38 +119,56 @@ class ActivationService {
   async createUserSpecificGoogleCredential({ userId, workflowId, tokens, detectedServices }) {
     try {
       const uniqueSuffix = Date.now();
-      const credentialName = `google-oauth-user-${userId}-workflow-${workflowId}-${uniqueSuffix}`;
       const scopeString = this.getComprehensiveGoogleScopes(detectedServices);
-      const nodesAccess = this.getNodesAccessForServices(detectedServices);
-
-      const body = {
-        name: credentialName,
-        type: 'googleOAuth2Api',
-        nodesAccess,
-        data: {
-          clientId: process.env.GOOGLE_CLIENT_ID,
-          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-          scope: scopeString,
-          sendAdditionalBodyProperties: false,
-          additionalBodyProperties: "",
-          oauthTokenData: {
-            access_token: tokens?.access_token,
-            refresh_token: tokens?.refresh_token,
+      
+      // Create separate credentials for each service type
+      const credentials = {};
+      
+      for (const service of detectedServices) {
+        const credentialType = this.getCredentialTypeForService(service);
+        const credentialName = `${service}-oauth-user-${userId}-workflow-${workflowId}-${uniqueSuffix}`;
+        
+        const body = {
+          name: credentialName,
+          type: credentialType,
+          data: {
+            clientId: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
             scope: scopeString,
-            token_type: tokens?.token_type || 'Bearer',
-            expires_in: tokens?.expires_in || 3600,
-            expiry_date: tokens?.expires_in ? Date.now() + tokens.expires_in * 1000 : undefined,
+            sendAdditionalBodyProperties: false,
+            additionalBodyProperties: "",
+            oauthTokenData: {
+              access_token: tokens?.access_token,
+              refresh_token: tokens?.refresh_token,
+              scope: scopeString,
+              token_type: tokens?.token_type || 'Bearer',
+              expires_in: tokens?.expires_in || 3600,
+              expiry_date: tokens?.expires_in ? Date.now() + tokens.expires_in * 1000 : undefined,
+            },
           },
-        },
-      };
+        };
 
-      console.log(`Creating new credential: ${credentialName}`);
-      const created = await axios.post(`${this.n8nApiUrl}/api/v1/credentials`, body, { headers: this.headers });
-      return created.data;
+        console.log(`Creating ${service} credential: ${credentialName}`);
+        const created = await axios.post(`${this.n8nApiUrl}/api/v1/credentials`, body, { headers: this.headers });
+        credentials[service] = created.data;
+      }
+      
+      return credentials;
     } catch (error) {
-      console.error('Failed to create comprehensive credential:', error.message);
+      console.error('Failed to create service credentials:', error.message);
       console.error('Error response:', error.response?.data);
       throw new Error(error.response?.data?.message || error.message);
+    }
+  }
+
+  getCredentialTypeForService(service) {
+    switch (service) {
+      case 'gmail': return 'gmailOAuth2';
+      case 'sheets': return 'googleSheetsOAuth2Api';
+      case 'calendar': return 'googleCalendarOAuth2Api';
+      case 'drive': return 'googleDriveOAuth2Api';
+      case 'docs': return 'googleDocsOAuth2Api';
+      default: return 'googleOAuth2Api';
     }
   }
 
@@ -167,7 +185,7 @@ class ActivationService {
     return null;
   }
 
-  attachCredentialToGoogleNodes(workflow, credentialId) {
+  attachCredentialToGoogleNodes(workflow, credentials) {
     // Clean the workflow to only include fields allowed by n8n PUT API
     const cleanWorkflow = {
       name: workflow.name,
@@ -184,8 +202,12 @@ class ActivationService {
         
         // Add credentials if this is a Google node
         if (key) {
-          cleanNode.credentials = { [key]: { id: credentialId } };
-          console.log(`Attached credential ${credentialId} with key '${key}' to node: ${node.name} (${node.type})`);
+          const service = this.getServiceFromNodeType(node.type);
+          const credentialId = credentials[service]?.id;
+          if (credentialId) {
+            cleanNode.credentials = { [key]: { id: credentialId } };
+            console.log(`Attached credential ${credentialId} with key '${key}' to node: ${node.name} (${node.type})`);
+          }
         } else if (node.credentials) {
           // Preserve existing credentials for non-Google nodes
           cleanNode.credentials = node.credentials;
@@ -199,6 +221,16 @@ class ActivationService {
     };
     
     return cleanWorkflow;
+  }
+
+  getServiceFromNodeType(nodeType) {
+    const t = String(nodeType || '').toLowerCase();
+    if (t.includes('gmail')) return 'gmail';
+    if (t.includes('sheets')) return 'sheets';
+    if (t.includes('calendar')) return 'calendar';
+    if (t.includes('drive')) return 'drive';
+    if (t.includes('docs')) return 'docs';
+    return null;
   }
 
   // Validate that all nodes needing Google creds have them set

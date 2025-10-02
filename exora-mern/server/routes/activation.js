@@ -67,8 +67,8 @@ router.get('/oauth/callback', async (req, res) => {
     const activation = new ActivationService();
     const { workflow: cloned, requiredServices } = await activation.cloneWorkflowForUser(workflowId, userId);
 
-    // Create comprehensive credential for this user+workflow
-    const cred = await activation.createUserSpecificGoogleCredential({
+    // Create comprehensive credentials for this user+workflow
+    const credentials = await activation.createUserSpecificGoogleCredential({
       userId,
       workflowId: cloned.id,
       tokens,
@@ -81,8 +81,8 @@ router.get('/oauth/callback', async (req, res) => {
       throw new Error(`Failed to fetch workflow: ${fullWorkflow.error}`);
     }
 
-    // Attach credential to all Google nodes
-    const updated = activation.attachCredentialToGoogleNodes(fullWorkflow.workflow, cred.id || cred.data?.id || cred._id || cred.uid);
+    // Attach credentials to all Google nodes
+    const updated = activation.attachCredentialToGoogleNodes(fullWorkflow.workflow, credentials);
     
     // Validate that all Google nodes have credentials
     activation.validateGoogleCredentials(updated);
