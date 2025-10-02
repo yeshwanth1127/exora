@@ -112,6 +112,9 @@ router.get('/oauth/callback', async (req, res) => {
     try {
       const base = process.env.N8N_WEBHOOK_BASE_URL || process.env.N8N_BASE || process.env.N8N_BASE_URL;
       const webhookBase = (base || '').replace(/\/$/, '');
+      if (!webhookBase) {
+        throw new Error('N8N webhook base URL is not configured');
+      }
       const orchestratorResponse = await axios.post(
         `${webhookBase}/webhook/activate-workflow`,
         {
@@ -128,8 +131,9 @@ router.get('/oauth/callback', async (req, res) => {
         }
       );
 
-      if (!orchestratorResponse.data.success) {
-        throw new Error(`Orchestrator failed: ${orchestratorResponse.data.error || orchestratorResponse.data.message}`);
+      if (!orchestratorResponse?.data || orchestratorResponse.data.success === false) {
+        const msg = orchestratorResponse?.data?.error || orchestratorResponse?.data?.message || 'Unknown orchestrator error';
+        throw new Error(`Orchestrator failed: ${msg}`);
       }
 
       console.log('n8n orchestrator completed successfully:', orchestratorResponse.data);
@@ -150,9 +154,18 @@ router.get('/oauth/callback', async (req, res) => {
       res.redirect(`${process.env.FRONTEND_URL}/workflow-activation?success=true&userId=${userId}&workflowId=${orchestratorResponse.data.workflowId}`);
 
     } catch (orchestratorError) {
-      console.error('n8n orchestrator error:', orchestratorError.message);
-      console.error('Orchestrator response:', orchestratorError.response?.data);
-      res.redirect(`${process.env.FRONTEND_URL}/workflow-activation?error=orchestrator_failed`);
+      const respData = orchestratorError.response?.data;
+      const respStatus = orchestratorError.response?.status;
+      let errDetail = orchestratorError.message;
+      if (respData) {
+        if (typeof respData === 'string') errDetail = `${errDetail} | ${respData}`;
+        else if (respData.message) errDetail = `${errDetail} | ${respData.message}`;
+        else errDetail = `${errDetail} | ${JSON.stringify(respData)}`;
+      }
+      if (respStatus) errDetail = `${errDetail} (HTTP ${respStatus})`;
+      console.error('n8n orchestrator error:', errDetail);
+      const redirectBase = process.env.FRONTEND_URL || 'https://exora.solutions';
+      res.redirect(`${redirectBase}/workflow-activation?error=${encodeURIComponent(errDetail)}`);
     }
 
   } catch (error) {
