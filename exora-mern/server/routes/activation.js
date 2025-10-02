@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
-const OAuthService = require('../services/OAuthService');
+const { OAuthService } = require('../services/OAuthService');
 const OAuthTokens = require('../models/OAuthTokens');
 const UserWorkflowInstance = require('../models/UserWorkflowInstance');
 
