@@ -157,7 +157,7 @@ class ActivationService {
   // Map node.type to the exact credential key expected by n8n
   mapNodeTypeToCredentialKey(nodeType) {
     const t = String(nodeType || '').toLowerCase();
-    if (t === 'n8n-nodes-base.gmail' || t === 'n8n-nodes-base.gmailtrigger') return 'gmailOAuth2Api';
+    if (t === 'n8n-nodes-base.gmail' || t === 'n8n-nodes-base.gmailtrigger') return 'gmailOAuth2';
     if (t === 'n8n-nodes-base.googlesheets') return 'googleSheetsOAuth2Api';
     if (t === 'n8n-nodes-base.googlecalendar' || t === 'n8n-nodes-base.googlecalendartrigger') return 'googleCalendarOAuth2Api';
     if (t === 'n8n-nodes-base.googledrive') return 'googleDriveOAuth2Api';
