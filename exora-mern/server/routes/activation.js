@@ -124,7 +124,7 @@ router.get('/oauth/callback', async (req, res) => {
         {
           userId: resolvedUserId,
           workflowId: resolvedWorkflowId,
-          oauthToken: tokens.access_token,
+          accessToken: tokens.access_token,
           refreshToken: tokens.refresh_token,
           expiresIn: tokens.expires_in,
           tokenType: tokens.token_type || 'Bearer'
