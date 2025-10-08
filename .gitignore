@@ -17,6 +17,9 @@ exora-mern/server/google-cloud-console-cred.txt
 # Dependencies
 node_modules/
 **/node_modules/
+npm-cache/
+**/npm-cache/
+**/.package-lock.json
 
 # Logs
 logs/

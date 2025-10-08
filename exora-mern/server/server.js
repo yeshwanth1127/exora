@@ -1,5 +1,14 @@
 const path = require('path');
 const dotenv = require('dotenv');
+
+// ⚠️ IMPORTANT: Load .env BEFORE any other imports that use process.env
+// Load env from server/.env first, then fall back to project root .env
+dotenv.config({ path: path.join(__dirname, '.env') });
+if (!process.env.MONGO_URI || !process.env.PORT) {
+  dotenv.config({ path: path.join(__dirname, '..', '.env') });
+}
+
+// Now import everything else AFTER .env is loaded
 const express = require('express');
 const cors = require('cors');
 const { connectToDatabase, getDbHealth } = require('./config/db');
@@ -8,12 +17,6 @@ const dashboardRoutes = require('./routes/dashboard');
 // const oauthRoutes = require('./routes/oauth'); // Deprecated: handled by activation route
 const activationRoutes = require('./routes/activation');
 const privacyRoutes = require('./routes/privacy');
-
-// Load env from server/.env first, then fall back to project root .env
-dotenv.config({ path: path.join(__dirname, '.env') });
-if (!process.env.MONGO_URI || !process.env.PORT) {
-  dotenv.config({ path: path.join(__dirname, '..', '.env') });
-}
 
 const app = express();
 let io = null;
@@ -31,7 +34,7 @@ app.use('/api/discovery', require('./routes/discovery'));
 app.use('/api/workflows', require('./routes/workflows'));
 // app.use('/', oauthRoutes);
 app.use('/', privacyRoutes);
-app.use('/', activationRoutes);
+app.use('/', activationRoutes);  // ✅ Mounted at root for OAuth callback compatibility
 
 app.get('/health', async (req, res) => {
   try {

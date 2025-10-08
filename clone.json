@@ -1,0 +1,278 @@
+{
+    "name": "Clone Workflow with Dynamic Google OAuth",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "activate-workflow",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "id": "webhookTrigger",
+        "name": "Webhook Trigger",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          -2200,
+          600
+        ],
+        "webhookId": "replace-with-your-webhook-id"
+      },
+      {
+        "parameters": {
+          "url": "={{ 'https://n8n.exora.solutions/api/v1/workflows/' + $json.body.workflowId }}",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "X-N8N-API-KEY",
+                "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1OGM3NzlmMi04M2VmLTRjNGMtYjIyZS1jZDcyNDUxNzQ5N2MiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzU4OTE1NDY4fQ.x-yTAMSzNhdPXXX_xnnZTLWY5VSUQ0oAeim1i0cT3RQ"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "getTemplateWorkflow",
+        "name": "Get Template Workflow",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [
+          -2000,
+          600
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const template = $input.first().json;\nconst userId = $json.body?.userId ?? $json.userId ?? 'unknown';\nconst workflow = { ...template, name: `${template.name} - User ${userId}` };\ndelete workflow.id;\nreturn [{ json: { workflow, userId } }];"
+        },
+        "id": "prepareClone",
+        "name": "Prepare Workflow Clone",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -1800,
+          600
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://n8n.exora.solutions/api/v1/workflows",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "X-N8N-API-KEY",
+                "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1OGM3NzlmMi04M2VmLTRjNGMtYjIyZS1jZDcyNDUxNzQ5N2MiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzU4OTE1NDY4fQ.x-yTAMSzNhdPXXX_xnnZTLWY5VSUQ0oAeim1i0cT3RQ"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ ({ name: $json.workflow.name, nodes: $json.workflow.nodes || [], connections: $json.workflow.connections || {}, settings: $json.workflow.settings || {} }) }}",
+          "options": {}
+        },
+        "id": "createClonedWorkflow",
+        "name": "Create Cloned Workflow",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [
+          -1600,
+          600
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "// Detect Google nodes & assign correct scopes\nconst workflow = $json;\nconst workflowName = workflow.name;\n\nconst serviceTypeMap = {\n  gmail: 'gmailOAuth2',\n  googlesheets: 'googleSheetsOAuth2Api',\n  googledrive: 'googleDriveOAuth2Api',\n  googlecalendar: 'googleCalendarOAuth2Api'\n};\n\nconst googleNodes = (workflow.nodes || []).filter(n =>\n  Object.keys(serviceTypeMap).some(key => n.type.toLowerCase().includes(key))\n);\n\nconst scopeMap = {\n  gmail: 'https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/gmail.send',\n  googlesheets: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive',\n  googledrive: 'https://www.googleapis.com/auth/drive',\n  googlecalendar: 'https://www.googleapis.com/auth/calendar'\n};\n\nlet scopes = [];\ngoogleNodes.forEach(n => {\n  for (const key in scopeMap) {\n    if (n.type.toLowerCase().includes(key)) {\n      scopes.push(scopeMap[key]);\n      break;\n    }\n  }\n});\nscopes = [...new Set(scopes)].join(' ');\n\n// Determine credential type for first Google node\nlet credentialType = googleNodes.length ? Object.keys(serviceTypeMap).find(k => googleNodes[0].type.toLowerCase().includes(k)) : 'googleOAuth2Api';\ncredentialType = serviceTypeMap[credentialType] || 'googleOAuth2Api';\n\nconst refreshToken = $json.body?.refreshToken || $json.refreshToken || $json.oauthToken;\n\nreturn [{\n  json: {\n    credentialPayload: {\n      name: `Dynamic Google OAuth2 - ${workflowName}`,\n      type: credentialType,\n      data: {\n        clientId: '353816148637-6cvk28f15u47073vdlphts24qof3rmne.apps.googleusercontent.com',\n        clientSecret: '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',\n        refreshToken: refreshToken,\n        scope: scopes,\n        sendAdditionalBodyProperties: true,\n        additionalBodyProperties: {}\n      }\n    }\n  }\n}];"
+        },
+        "id": "prepareCredential",
+        "name": "Prepare Credential Payload",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -1400,
+          600
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://n8n.exora.solutions/api/v1/credentials",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "X-N8N-API-KEY",
+                "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1OGM3NzlmMi04M2VmLTRjNGMtYjIyZS1jZDcyNDUxNzQ5N2MiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzU4OTE1NDY4fQ.x-yTAMSzNhdPXXX_xnnZTLWY5VSUQ0oAeim1i0cT3RQ"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.credentialPayload }}",
+          "options": {}
+        },
+        "id": "createDynamicCredential",
+        "name": "Create Dynamic Google OAuth Credential",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [
+          -1200,
+          600
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const workflow = $node['Create Cloned Workflow'].json;\nconst credential = $node['Create Dynamic Google OAuth Credential'].json;\n\nconst credentialKeyMap = {\n  'n8n-nodes-base.gmail': 'gmailOAuth2',\n  'n8n-nodes-base.gmailTrigger': 'gmailOAuth2',\n  'n8n-nodes-base.googleSheets': 'googleSheetsOAuth2Api',\n  'n8n-nodes-base.googleDrive': 'googleDriveOAuth2Api',\n  'n8n-nodes-base.googleCalendar': 'googleCalendarOAuth2Api'\n};\n\nconst updatedNodes = (workflow.nodes || []).map(node => {\n  const key = credentialKeyMap[node.type];\n  if (key) {\n    if (!node.credentials) node.credentials = {};\n    node.credentials[key] = { id: credential.id, name: credential.name };\n  }\n  return node;\n});\n\nreturn [{\n  json: {\n    workflowId: workflow.id,\n    updatedWorkflow: {\n      name: workflow.name,\n      nodes: updatedNodes,\n      connections: workflow.connections,\n      settings: workflow.settings\n    },\n    credentialId: credential.id\n  }\n}];"
+        },
+        "id": "updateWorkflowCredentials",
+        "name": "Update Workflow with Credential",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -1000,
+          600
+        ]
+      },
+      {
+        "parameters": {
+          "method": "PUT",
+          "url": "={{ 'https://n8n.exora.solutions/api/v1/workflows/' + $json.workflowId }}",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "X-N8N-API-KEY",
+                "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1OGM3NzlmMi04M2VmLTRjNGMtYjIyZS1jZDcyNDUxNzQ5N2MiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzU4OTE1NDY4fQ.x-yTAMSzNhdPXXX_xnnZTLWY5VSUQ0oAeim1i0cT3RQ"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ {\n  name: $json.updatedWorkflow.name,\n  nodes: $json.updatedWorkflow.nodes,\n  connections: $json.updatedWorkflow.connections,\n  settings: $json.updatedWorkflow.settings\n} }}",
+          "options": {}
+        },
+        "id": "putUpdatedWorkflow",
+        "name": "PUT Updated Workflow",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [
+          -800,
+          600
+        ]
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ ({ success: true, workflowId: $json.workflowId, credentialId: $json.credentialId, message: 'Workflow cloned, credential assigned, and activated successfully' }) }}",
+          "options": {}
+        },
+        "id": "respondWebhook",
+        "name": "Respond to Webhook",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1,
+        "position": [
+          -600,
+          600
+        ]
+      }
+    ],
+    "connections": {
+      "Webhook Trigger": {
+        "main": [
+          [
+            {
+              "node": "Get Template Workflow",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Template Workflow": {
+        "main": [
+          [
+            {
+              "node": "Prepare Workflow Clone",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Workflow Clone": {
+        "main": [
+          [
+            {
+              "node": "Create Cloned Workflow",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Cloned Workflow": {
+        "main": [
+          [
+            {
+              "node": "Prepare Credential Payload",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Credential Payload": {
+        "main": [
+          [
+            {
+              "node": "Create Dynamic Google OAuth Credential",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Dynamic Google OAuth Credential": {
+        "main": [
+          [
+            {
+              "node": "Update Workflow with Credential",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Update Workflow with Credential": {
+        "main": [
+          [
+            {
+              "node": "PUT Updated Workflow",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "PUT Updated Workflow": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    ],
+    "active": false,
+    "settings": {},
+    "id": "clone-google-workflow"
+  }
+  

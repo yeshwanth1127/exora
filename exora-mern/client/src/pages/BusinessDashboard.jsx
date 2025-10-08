@@ -10,7 +10,7 @@ import { API_BASE_URL, SOCKET_URL } from '../config/api';
 import './BusinessDashboard.css';
 
 const BusinessDashboard = () => {
-  const { user, logout, isAuthenticated } = useAuth();
+  const { user, logout, isAuthenticated, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
   const [dashboardData, setDashboardData] = useState({
@@ -47,12 +47,52 @@ const BusinessDashboard = () => {
     }
   };
 
-  // Redirect if not authenticated
+  // Redirect if not authenticated (but wait for initial load)
   useEffect(() => {
-    if (!isAuthenticated) {
+    // Don't redirect if still loading auth state
+    if (authLoading) return;
+    
+    // Don't redirect if coming back from OAuth callback
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('workflowActivated') || params.has('error')) {
+      // Let the OAuth callback handler deal with it
+      return;
+    }
+    
+    // Only redirect to auth if genuinely not authenticated
+    if (!isAuthenticated && !authLoading) {
+      console.log('Not authenticated, redirecting to login');
       navigate('/auth');
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, authLoading, navigate]);
+
+  // Handle OAuth callback success/error messages
+  useEffect(() => {
+    // Skip if auth still loading
+    if (authLoading) return;
+    
+    const params = new URLSearchParams(window.location.search);
+    const workflowActivated = params.get('workflowActivated');
+    const clonedWorkflowId = params.get('clonedWorkflowId');
+    const workflowName = params.get('workflowName');
+    const error = params.get('error');
+    const errorDetails = params.get('details');
+
+    if (workflowActivated === 'true' && clonedWorkflowId) {
+      const name = workflowName ? decodeURIComponent(workflowName) : 'Workflow';
+      alert(`✅ Success! ${name} has been activated and is now running for you.\n\nWorkflow ID: ${clonedWorkflowId}`);
+      // Clean URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+      // Refresh dashboard data
+      window.location.reload();
+    } else if (error) {
+      const details = errorDetails ? decodeURIComponent(errorDetails) : error;
+      console.error('❌ Activation error:', error, details);
+      alert(`❌ Activation failed: ${details}\n\nPlease try again or contact support if the issue persists.`);
+      // Clean URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [isAuthenticated, authLoading]);
 
   // Handle dashboard updates from Alex
   const handleDashboardUpdate = (newData) => {
@@ -62,41 +102,8 @@ const BusinessDashboard = () => {
   // Workflow management functions - Handle Activation Flow
   const toggleWorkflowStatus = async (workflowId, currentStatus) => {
     try {
-      // If activating, initiate OAuth flow
-      if (currentStatus !== 'active') {
-        const response = await fetch(`${API_BASE_URL.replace('/api', '')}/activate-workflow`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ 
-            userId: user.id,
-            workflowId: workflowId,
-            scopes: [
-              'https://www.googleapis.com/auth/calendar',
-              'https://www.googleapis.com/auth/gmail.send',
-              'https://www.googleapis.com/auth/userinfo.email',
-              'https://www.googleapis.com/auth/userinfo.profile'
-            ]
-          })
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success && data.authorizationUrl) {
-            // Redirect to Google OAuth consent page
-            window.location.href = data.authorizationUrl;
-          } else {
-            console.error('Failed to get authorization URL:', data);
-            alert('Failed to initiate activation. Please try again.');
-          }
-        } else {
-          console.error('Activation request failed:', response.status);
-          alert('Failed to activate workflow. Please try again.');
-        }
-      } else {
-        // Deactivating - simple status toggle
+      // If deactivating, handle simple status toggle
+      if (currentStatus === 'active') {
         const response = await fetch(`${API_BASE_URL}/workflows/${workflowId}/status`, {
           method: 'PATCH',
           headers: {
@@ -115,10 +122,110 @@ const BusinessDashboard = () => {
             )
           }));
         }
+        return;
       }
+
+      // ACTIVATING: First, fetch what credential types this workflow needs
+      console.log(`Checking required credentials for workflow ${workflowId}...`);
+      
+      const backendBaseUrl = API_BASE_URL.replace('/api', '');
+      const credCheckResponse = await fetch(`${backendBaseUrl}/workflow-required-creds`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ workflowId })
+      });
+
+      if (!credCheckResponse.ok) {
+        const errorData = await credCheckResponse.json().catch(() => ({ message: 'Failed to fetch credential requirements' }));
+        alert(`Failed to check workflow credentials: ${errorData.message || 'Unknown error'}`);
+        return;
+      }
+
+      const credInfo = await credCheckResponse.json();
+      
+      if (!credInfo.success) {
+        alert(`Failed to fetch required credentials for this workflow: ${credInfo.message || 'Unknown error'}`);
+        return;
+      }
+
+      // Show the user what credential types will be provisioned
+      const allCreds = credInfo.credentialTypes || [];
+      const oauthCreds = credInfo.oauthCredentialTypes || [];
+      const manualCreds = credInfo.manualCredentialTypes || [];
+
+      console.log('Workflow credential requirements:', {
+        all: allCreds,
+        oauth: oauthCreds,
+        manual: manualCreds,
+        scopes: credInfo.scopes
+      });
+
+      // Build confirmation message
+      let message = `This automation requires the following credentials:\n\n`;
+      
+      if (oauthCreds.length > 0) {
+        message += `📱 Google OAuth (Automatic):\n${oauthCreds.map(c => `  • ${c}`).join('\n')}\n\n`;
+      }
+      
+      if (manualCreds.length > 0) {
+        message += `🔑 Manual Configuration (Future):\n${manualCreds.map(c => `  • ${c}`).join('\n')}\n\n`;
+      }
+
+      if (oauthCreds.length > 0) {
+        message += `Click OK to connect your Google account and automatically set up these credentials.`;
+      } else {
+        message += `This workflow requires manual credential configuration (not yet implemented).`;
+        alert(message);
+        return;
+      }
+
+      const proceed = window.confirm(message);
+      if (!proceed) {
+        console.log('User cancelled activation');
+        return;
+      }
+
+      // Call activate-workflow to build the OAuth URL and redirect
+      console.log('Initiating OAuth flow...');
+      
+      const response = await fetch(`${backendBaseUrl}/activate-workflow`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+          userId: user.id, 
+          workflowId: workflowId 
+        })
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({ message: 'Activation request failed' }));
+        alert(`Activation initiation failed: ${err.message || JSON.stringify(err)}`);
+        return;
+      }
+
+      const data = await response.json();
+      
+      if (data.success && data.authorizationUrl) {
+        console.log('Redirecting to Google OAuth consent screen...');
+        // Redirect the browser to Google consent
+        window.location.href = data.authorizationUrl;
+      } else if (data.success && !data.authorizationUrl) {
+        // No OAuth required; backend can proceed with non-OAuth credentials and cloning
+        alert('This workflow does not need OAuth. It may be activated automatically (feature not yet implemented).');
+      } else {
+        console.error('Failed to get authorization URL:', data);
+        alert(`Failed to prepare OAuth: ${data.message || 'Unknown error'}`);
+      }
+      
     } catch (error) {
       console.error('Error toggling workflow status:', error);
-      alert('An error occurred. Please try again.');
+      alert(`An error occurred during activation: ${error.message || 'Please try again.'}`);
     }
   };
 
