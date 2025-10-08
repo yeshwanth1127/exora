@@ -73,3 +73,8 @@ tmp/
 temp/
 *.tmp
 
+
+# Data files with secrets
+clone.json
+exora-mern/server/gtf.json
+exora-mern/server/test.json
