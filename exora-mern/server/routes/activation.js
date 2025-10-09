@@ -5,6 +5,7 @@ const qs = require('qs');
 const credentialMap = require('../services/credentialMap');
 const UserWorkflowInstance = require('../models/UserWorkflowInstance');
 const OAuthTokens = require('../models/OAuthTokens');
+const DashboardData = require('../models/DashboardData');
 
 const router = express.Router();
 
@@ -456,6 +457,16 @@ router.get('/oauth2/callback', async (req, res) => {
       n8n_credential_ids: credMap // Store the full mapping
     });
     console.log('✓ Workflow mapping stored');
+
+    // Step 9: Update workflow status in dashboard
+    console.log('\nStep 9: Updating workflow status in dashboard...');
+    try {
+      await DashboardData.updateWorkflowStatus(userId, workflowId, 'active');
+      console.log('✓ Dashboard workflow status updated to active');
+    } catch (statusErr) {
+      console.error('Warning: Failed to update dashboard status:', statusErr.message);
+      // Don't fail the whole activation if status update fails
+    }
 
     console.log('\n========== Activation Complete ==========');
     console.log('Summary:');

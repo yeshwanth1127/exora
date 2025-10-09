@@ -498,12 +498,22 @@ const BusinessDashboard = () => {
                       </div>
                     </div>
                     <div className="workflow-actions">
-                      <button 
-                        className={`workflow-toggle ${workflow.status === 'active' ? 'deactivate' : 'activate'}`}
-                        onClick={() => toggleWorkflowStatus(workflow.id, workflow.status)}
-                      >
-                        {workflow.status === 'active' ? 'Deactivate' : 'Activate'}
-                      </button>
+                      {workflow.status !== 'active' && (
+                        <button 
+                          className="workflow-toggle activate"
+                          onClick={() => toggleWorkflowStatus(workflow.id, workflow.status)}
+                        >
+                          Activate
+                        </button>
+                      )}
+                      {workflow.status === 'active' && (
+                        <button 
+                          className="workflow-toggle deactivate"
+                          onClick={() => toggleWorkflowStatus(workflow.id, workflow.status)}
+                        >
+                          Deactivate
+                        </button>
+                      )}
                       <button className="workflow-remove" onClick={() => removeWorkflow(workflow.id)}>
                         Remove
                       </button>

@@ -158,6 +158,37 @@ class DashboardData {
       throw error;
     }
   }
+
+  static async updateWorkflowStatus(userId, workflowId, status) {
+    try {
+      const dashboardData = await this.findByUserId(userId);
+      if (!dashboardData) {
+        console.error('Dashboard data not found for user:', userId);
+        return false;
+      }
+
+      // Update the workflow status in the workflows array
+      const workflows = dashboardData.workflows || [];
+      const updatedWorkflows = workflows.map(workflow => {
+        if (workflow.id === workflowId) {
+          return { ...workflow, status };
+        }
+        return workflow;
+      });
+
+      // Update the dashboard data
+      const updated = await this.update(userId, {
+        ...dashboardData,
+        workflows: updatedWorkflows
+      });
+
+      console.log(`Updated workflow ${workflowId} status to ${status} for user ${userId}`);
+      return !!updated;
+    } catch (error) {
+      console.error('Error updating workflow status:', error);
+      throw error;
+    }
+  }
 }
 
 module.exports = DashboardData;
