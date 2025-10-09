@@ -206,17 +206,33 @@ async function exchangeCodeForTokens(code) {
 async function createN8nCredential(credType, tokens, displayName) {
   console.log(`Creating n8n credential: ${displayName} (type: ${credType})`);
   
+  // Build scopes from credentialMap
+  const scopes = credentialMap[credType] || [];
+  const scopeString = scopes.join(' ');
+  
   const body = {
     name: displayName,
     type: credType,
     data: {
-      access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token,
-      expires_in: tokens.expires_in,
-      token_type: tokens.token_type || 'Bearer',
-      scope: tokens.scope
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      scope: scopeString,
+      sendAdditionalBodyProperties: false,
+      additionalBodyProperties: "",
+      oauthTokenData: {
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token,
+        scope: tokens.scope || scopeString,
+        token_type: tokens.token_type || 'Bearer',
+        expires_in: tokens.expires_in || 3600,
+        expiry_date: tokens.expires_in 
+          ? Date.now() + (tokens.expires_in * 1000) 
+          : Date.now() + (3600 * 1000)
+      }
     }
   };
+
+  console.log(`Credential body for ${credType}:`, JSON.stringify(body, null, 2));
 
   const resp = await n8nAxios.post('/credentials', body);
   
@@ -393,8 +409,8 @@ router.get('/oauth2/callback', async (req, res) => {
     console.log('\nStep 8: Persisting workflow mapping in database...');
     await UserWorkflowInstance.upsert({
       userId: userId,
-      templateWorkflowId: workflowId,
-      clonedWorkflowId: clonedWorkflowId,
+      sourceWorkflowId: workflowId,  // ✅ Use correct field name (maps to source_workflow_id)
+      instanceWorkflowId: clonedWorkflowId,  // ✅ Use correct field name
       activated_at: new Date(),
       services_used: Object.keys(credMap),
       credential_id: createdCredentialIds.join(','),
