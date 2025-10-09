@@ -417,7 +417,15 @@ router.get('/oauth2/callback', async (req, res) => {
 
     // Step 6: Activate the cloned workflow
     console.log('\nStep 6: Activating cloned workflow...');
-    await n8nAxios.patch(`/workflows/${clonedWorkflowId}`, { active: true });
+    // Fetch full workflow first (required for PUT method)
+    const wfToActivateResp = await n8nAxios.get(`/workflows/${clonedWorkflowId}`);
+    const wfToActivate = wfToActivateResp.data;
+    
+    // Set active flag
+    wfToActivate.active = true;
+    
+    // Send back full workflow with PUT
+    await n8nAxios.put(`/workflows/${clonedWorkflowId}`, wfToActivate);
     console.log(`✓ Activated workflow ${clonedWorkflowId}`);
 
     // Step 7: Persist OAuth tokens in database
