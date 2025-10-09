@@ -279,11 +279,11 @@ function injectCredentialsIntoWorkflow(templateWorkflow, credMap, userLabel) {
   
   // Return ONLY the fields n8n accepts for workflow creation
   // See: https://docs.n8n.io/api/v1/#tag/Workflow/operation/createWorkflow
+  // Note: 'active' is read-only, must be set via PATCH after creation
   return {
     name: `${userLabel} — ${wf.name || 'Cloned Workflow'}`,
     nodes: wf.nodes || [],
     connections: wf.connections || {},
-    active: false,  // We'll activate it separately
     settings: wf.settings || {},
     staticData: wf.staticData || null,
     tags: wf.tags || []
