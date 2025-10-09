@@ -257,12 +257,7 @@ function injectCredentialsIntoWorkflow(templateWorkflow, credMap, userLabel) {
   
   const wf = JSON.parse(JSON.stringify(templateWorkflow)); // deep copy
   
-  // Ensure name is unique per user
-  wf.name = `${userLabel} — ${wf.name || 'Cloned Workflow'}`;
-  
-  // Set the workflow not active initially (we'll activate after creation)
-  wf.active = false;
-
+  // Inject credentials into nodes
   let injectCount = 0;
   (wf.nodes || []).forEach(node => {
     if (!node.credentials) return;
@@ -281,7 +276,18 @@ function injectCredentialsIntoWorkflow(templateWorkflow, credMap, userLabel) {
   });
 
   console.log(`✓ Injected ${injectCount} credential references`);
-  return wf;
+  
+  // Return ONLY the fields n8n accepts for workflow creation
+  // See: https://docs.n8n.io/api/v1/#tag/Workflow/operation/createWorkflow
+  return {
+    name: `${userLabel} — ${wf.name || 'Cloned Workflow'}`,
+    nodes: wf.nodes || [],
+    connections: wf.connections || {},
+    active: false,  // We'll activate it separately
+    settings: wf.settings || {},
+    staticData: wf.staticData || null,
+    tags: wf.tags || []
+  };
 }
 
 // callback route - receives code & state; creates credentials, clones & activates workflow
