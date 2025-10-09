@@ -257,22 +257,40 @@ function injectCredentialsIntoWorkflow(templateWorkflow, credMap, userLabel) {
   
   const wf = JSON.parse(JSON.stringify(templateWorkflow)); // deep copy
   
-  // Inject credentials into nodes
+  // Inject credentials into nodes and sanitize
   let injectCount = 0;
-  (wf.nodes || []).forEach(node => {
-    if (!node.credentials) return;
-    
-    Object.keys(node.credentials).forEach(credType => {
-      if (credMap[credType]) {
-        // Set the credential reference object expected by n8n
-        node.credentials[credType] = {
-          id: credMap[credType],
-          name: `${userLabel}-${credType}`
-        };
-        injectCount++;
-        console.log(`  Injected ${credType} credential into node ${node.name || node.type}`);
+  const allowedNodeKeys = [
+    'id', 'name', 'type', 'typeVersion', 'position', 'parameters', 'credentials'
+  ];
+
+  const cleanedNodes = (wf.nodes || []).map((node) => {
+    const cleanNode = {};
+
+    // Keep only allowed properties
+    for (const key of allowedNodeKeys) {
+      if (node[key] !== undefined) {
+        cleanNode[key] = node[key];
       }
-    });
+    }
+
+    // Ensure credentials object exists
+    if (!cleanNode.credentials) cleanNode.credentials = {};
+
+    // Inject credential references where applicable
+    if (node.credentials) {
+      Object.keys(node.credentials).forEach(credType => {
+        if (credMap[credType]) {
+          cleanNode.credentials[credType] = {
+            id: credMap[credType],
+            name: `${userLabel}-${credType}`
+          };
+          injectCount++;
+          console.log(`  Injected ${credType} credential into node ${node.name || node.type}`);
+        }
+      });
+    }
+
+    return cleanNode;
   });
 
   console.log(`✓ Injected ${injectCount} credential references`);
@@ -282,7 +300,7 @@ function injectCredentialsIntoWorkflow(templateWorkflow, credMap, userLabel) {
   // Note: 'active' is read-only, must be set via PATCH after creation
   return {
     name: `${userLabel} — ${wf.name || 'Cloned Workflow'}`,
-    nodes: wf.nodes || [],
+    nodes: cleanedNodes,
     connections: wf.connections || {},
     settings: wf.settings || {},
     staticData: wf.staticData || null,
