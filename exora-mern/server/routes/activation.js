@@ -295,16 +295,22 @@ function injectCredentialsIntoWorkflow(templateWorkflow, credMap, userLabel) {
 
   console.log(`✓ Injected ${injectCount} credential references`);
   
+  // Sanitize read-only fields (future-proof for n8n API changes)
+  delete wf.id;
+  delete wf.versionId;
+  delete wf.meta;
+  delete wf.active;
+  delete wf.tags;
+  
   // Return ONLY the fields n8n accepts for workflow creation
   // See: https://docs.n8n.io/api/v1/#tag/Workflow/operation/createWorkflow
-  // Note: 'active' is read-only, must be set via PATCH after creation
+  // Note: In n8n 1.60+, 'active' and 'tags' are read-only
   return {
     name: `${userLabel} — ${wf.name || 'Cloned Workflow'}`,
     nodes: cleanedNodes,
     connections: wf.connections || {},
     settings: wf.settings || {},
-    staticData: wf.staticData || null,
-    tags: wf.tags || []
+    staticData: wf.staticData || null
   };
 }
 
