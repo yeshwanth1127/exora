@@ -417,24 +417,18 @@ router.get('/oauth2/callback', async (req, res) => {
 
     // Step 6: Activate the cloned workflow
     console.log('\nStep 6: Activating cloned workflow...');
-
-    // Fetch full workflow first (required for PUT method)
-    const wfToActivateResp = await n8nAxios.get(`/workflows/${clonedWorkflowId}`);
-    const wfToActivate = wfToActivateResp.data;
-
-    // Build clean workflow object with ONLY allowed fields
-    const cleanedWorkflow = {
-      name: wfToActivate.name,
-      nodes: wfToActivate.nodes,
-      connections: wfToActivate.connections || {},
-      settings: wfToActivate.settings || {},
-      staticData: wfToActivate.staticData || null,
-      active: true
-    };
-
-    // Send full workflow with PUT (activation)
-    await n8nAxios.put(`/workflows/${clonedWorkflowId}`, cleanedWorkflow);
-    console.log(`✓ Activated workflow ${clonedWorkflowId}`);
+    
+    // Use dedicated activation endpoint (POST /workflows/:id/activate)
+    // Note: 'active' is read-only in PUT, must use activation endpoint
+    try {
+      await n8nAxios.post(`/workflows/${clonedWorkflowId}/activate`);
+      console.log(`✓ Activated workflow ${clonedWorkflowId}`);
+    } catch (activationErr) {
+      // Fallback: try PATCH if POST activate doesn't exist
+      console.log('POST activate failed, trying PATCH...');
+      await n8nAxios.patch(`/workflows/${clonedWorkflowId}/activate`);
+      console.log(`✓ Activated workflow ${clonedWorkflowId}`);
+    }
 
     // Step 7: Persist OAuth tokens in database
     console.log('\nStep 7: Persisting OAuth tokens in database...');
