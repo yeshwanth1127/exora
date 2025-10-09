@@ -216,13 +216,12 @@ async function createN8nCredential(credType, tokens, displayName) {
     data: {
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      scope: scopeString,
       sendAdditionalBodyProperties: false,
       additionalBodyProperties: "",
       oauthTokenData: {
         access_token: tokens.access_token,
         refresh_token: tokens.refresh_token,
-        scope: tokens.scope || scopeString,
+        scope: tokens.scope || scopeString,  // ✅ scope only here, not at top level
         token_type: tokens.token_type || 'Bearer',
         expires_in: tokens.expires_in || 3600,
         expiry_date: tokens.expires_in 
