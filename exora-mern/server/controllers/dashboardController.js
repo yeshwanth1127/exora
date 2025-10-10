@@ -414,6 +414,17 @@ const addWorkflowsToDashboard = async (req, res) => {
       console.log('Created new dashboard data object');
     }
 
+    // Get user's activated workflow instances to check status
+    const UserWorkflowInstance = require('../models/UserWorkflowInstance');
+    const userInstances = await UserWorkflowInstance.getUserWorkflowInstances(userId);
+    const activatedTemplateIds = new Set(
+      userInstances
+        .filter(instance => instance.status === 'active')
+        .map(instance => instance.source_workflow_id)
+    );
+
+    console.log('User has activated instances for templates:', Array.from(activatedTemplateIds));
+
     // Add selected workflows to dashboard
     const selectedWorkflows = workflows.map(workflow => ({
       id: workflow.id,
@@ -428,7 +439,8 @@ const addWorkflowsToDashboard = async (req, res) => {
       actions: workflow.actions,
       createdAt: workflow.createdAt,
       addedAt: new Date().toISOString(),
-      status: workflow.active ? 'active' : 'inactive' // ✅ Preserve actual n8n status
+      // ✅ Check if user has activated their own clone of this template
+      status: activatedTemplateIds.has(workflow.id) ? 'active' : 'inactive'
     }));
 
     // Check for duplicates
