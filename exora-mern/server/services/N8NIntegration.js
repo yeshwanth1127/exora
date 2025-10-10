@@ -164,8 +164,12 @@ class N8NIntegration {
 
       const stats = {
         totalExecutions: executions.executions.length,
-        successfulExecutions: executions.executions.filter(exec => exec.finished && !exec.stoppedAt).length,
-        failedExecutions: executions.executions.filter(exec => exec.stoppedAt).length,
+        successfulExecutions: executions.executions.filter(exec => 
+          exec.finished && exec.status === 'success'
+        ).length,
+        failedExecutions: executions.executions.filter(exec => 
+          exec.finished && exec.status === 'error'
+        ).length,
         lastExecution: executions.executions[0]?.startedAt || null,
         averageExecutionTime: this.calculateAverageExecutionTime(executions.executions)
       };

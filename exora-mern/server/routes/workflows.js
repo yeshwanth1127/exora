@@ -174,6 +174,70 @@ router.patch('/:workflowId/status', authenticateToken, async (req, res) => {
   }
 });
 
+// Get individual workflow statistics
+router.get('/:workflowId/stats', authenticateToken, async (req, res) => {
+  try {
+    const { workflowId } = req.params;
+    const userId = req.user.id;
+    
+    // Verify user owns this workflow
+    const UserWorkflowInstance = require('../models/UserWorkflowInstance');
+    const instance = await UserWorkflowInstance.findByUserSource({ 
+      userId, 
+      sourceWorkflowId: workflowId 
+    });
+    
+    if (!instance) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'Workflow not found or not activated' 
+      });
+    }
+    
+    // Fetch executions from n8n
+    const result = await n8n.getWorkflowExecutions(instance.instance_workflow_id);
+    
+    if (!result.success) {
+      return res.status(500).json({ success: false, error: result.error });
+    }
+    
+    const executions = result.executions || [];
+    const completed = executions.filter(e => e.finished);
+    const successful = completed.filter(e => e.status === 'success');
+    const failed = completed.filter(e => e.status === 'error');
+    
+    // Calculate detailed stats
+    const stats = {
+      workflowName: instance.source_workflow_id,
+      instanceId: instance.instance_workflow_id,
+      totalExecutions: executions.length,
+      successfulExecutions: successful.length,
+      failedExecutions: failed.length,
+      successRate: executions.length > 0 
+        ? Math.round((successful.length / executions.length) * 100) 
+        : 0,
+      lastExecution: executions[0]?.startedAt || null,
+      averageExecutionTime: n8n.calculateAverageExecutionTime(executions),
+      recentExecutions: executions.slice(0, 10).map(e => ({
+        id: e.id,
+        status: e.status,
+        startedAt: e.startedAt,
+        duration: e.startedAt && e.stoppedAt 
+          ? Math.round((new Date(e.stoppedAt) - new Date(e.startedAt)) / 1000)
+          : null
+      }))
+    };
+    
+    res.json({ success: true, data: stats });
+  } catch (error) {
+    console.error('Get workflow stats error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch workflow statistics' 
+    });
+  }
+});
+
 // Remove a workflow from dashboard
 router.delete('/:workflowId', authenticateToken, async (req, res) => {
   try {

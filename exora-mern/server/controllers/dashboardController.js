@@ -521,6 +521,71 @@ function getWorkflowIcon(workflow) {
   return '⚡';
 }
 
+// Get aggregated workflow statistics
+const getAggregatedWorkflowStats = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    // Get all active workflow instances for user
+    const UserWorkflowInstance = require('../models/UserWorkflowInstance');
+    const N8NIntegration = require('../services/N8NIntegration');
+    const n8n = new N8NIntegration();
+    
+    const userWorkflows = await UserWorkflowInstance.getUserWorkflowInstances(userId);
+    const activeWorkflows = userWorkflows.filter(w => w.status === 'active');
+    
+    let totalExecutions = 0;
+    let successfulExecutions = 0;
+    let totalDurationSeconds = 0;
+    
+    // Fetch executions for each active workflow
+    for (const workflow of activeWorkflows) {
+      const result = await n8n.getWorkflowExecutions(workflow.instance_workflow_id);
+      
+      if (result.success) {
+        const executions = result.executions || [];
+        
+        executions.forEach(exec => {
+          if (exec.finished) {
+            totalExecutions++;
+            
+            // Check if successful
+            if (exec.status === 'success' || (exec.finished && !exec.stoppedAt)) {
+              successfulExecutions++;
+            }
+            
+            // Calculate duration
+            if (exec.startedAt && exec.stoppedAt) {
+              const duration = new Date(exec.stoppedAt) - new Date(exec.startedAt);
+              totalDurationSeconds += duration / 1000;
+            }
+          }
+        });
+      }
+    }
+    
+    // Calculate aggregated stats
+    const stats = {
+      activeWorkflows: activeWorkflows.length,
+      automatedTasks: totalExecutions,
+      timeSaved: totalDurationSeconds > 0 
+        ? `${Math.round(totalDurationSeconds / 3600)} hours` 
+        : '0 hours',
+      successRate: totalExecutions > 0
+        ? `${Math.round((successfulExecutions / totalExecutions) * 100)}%`
+        : '0%'
+    };
+    
+    res.json({ success: true, data: stats });
+  } catch (error) {
+    console.error('Get aggregated workflow stats error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch workflow statistics' 
+    });
+  }
+};
+
 module.exports = {
   getDashboardOverview,
   getUserAgents,
@@ -533,6 +598,7 @@ module.exports = {
   updateDashboardData,
   getDashboardData,
   resetDashboardData,
-  addWorkflowsToDashboard
+  addWorkflowsToDashboard,
+  getAggregatedWorkflowStats
 };
 

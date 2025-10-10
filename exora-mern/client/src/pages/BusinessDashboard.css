@@ -968,7 +968,8 @@
 }
 
 .workflow-toggle,
-.workflow-remove {
+.workflow-remove,
+.workflow-stats-btn {
   flex: 1;
   padding: 10px 16px;
   border-radius: 8px;
@@ -995,6 +996,18 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+.workflow-stats-btn {
+  background: rgba(168, 85, 247, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #a855f7;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
 .workflow-toggle:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
@@ -1004,6 +1017,14 @@
   background: rgba(239, 68, 68, 0.1);
   color: #ef4444;
   border-color: rgba(239, 68, 68, 0.3);
+}
+
+.workflow-stats-btn:hover {
+  background: rgba(168, 85, 247, 0.25);
+  color: #c084fc;
+  border-color: rgba(168, 85, 247, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(168, 85, 247, 0.3);
 }
 
 /* Responsive workflow grid */

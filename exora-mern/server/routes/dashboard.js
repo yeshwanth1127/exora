@@ -11,7 +11,8 @@ const {
   updateDashboardData,
   getDashboardData,
   resetDashboardData,
-  addWorkflowsToDashboard
+  addWorkflowsToDashboard,
+  getAggregatedWorkflowStats
 } = require('../controllers/dashboardController');
 const { authenticateToken } = require('../middleware/auth');
 
@@ -47,6 +48,9 @@ router.delete('/data', resetDashboardData);
 
 // Workflow management
 router.post('/workflows', addWorkflowsToDashboard);
+
+// Workflow statistics
+router.get('/workflow-stats/aggregated', getAggregatedWorkflowStats);
 
 module.exports = router;
 

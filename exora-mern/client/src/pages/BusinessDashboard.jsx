@@ -6,6 +6,7 @@ import Particles from '../components/Particles';
 import CardNav from '../components/CardNav';
 import DotGrid from '../components/DotGrid';
 import DashboardAlex from '../components/DashboardAlex';
+import WorkflowStatsModal from '../components/WorkflowStatsModal';
 import { API_BASE_URL, SOCKET_URL } from '../config/api';
 import './BusinessDashboard.css';
 
@@ -25,6 +26,14 @@ const BusinessDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showAlex, setShowAlex] = useState(false);
+  const [statsModalOpen, setStatsModalOpen] = useState(false);
+  const [selectedWorkflowStats, setSelectedWorkflowStats] = useState(null);
+  const [statsData, setStatsData] = useState({
+    activeWorkflows: 0,
+    automatedTasks: 0,
+    timeSaved: '0 hours',
+    successRate: '0%'
+  });
 
   // API base URL is imported from config
 
@@ -44,6 +53,48 @@ const BusinessDashboard = () => {
       }
     } catch (error) {
       console.error('Templates fetch error:', error);
+    }
+  };
+
+  // Fetch aggregated workflow statistics
+  const fetchAggregatedStats = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/dashboard/workflow-stats/aggregated`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setStatsData(data.data);
+      }
+    } catch (error) {
+      console.error('Stats fetch error:', error);
+    }
+  };
+
+  // Show individual workflow statistics
+  const showWorkflowStats = async (workflowId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/workflows/${workflowId}/stats`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setSelectedWorkflowStats(data.data);
+        setStatsModalOpen(true);
+      } else {
+        alert('Failed to load workflow statistics. Make sure the workflow is activated.');
+      }
+    } catch (error) {
+      console.error('Failed to fetch workflow stats:', error);
+      alert('Failed to load workflow statistics');
     }
   };
 
@@ -291,6 +342,11 @@ const BusinessDashboard = () => {
 
     fetchInitialData();
     fetchProductTemplates();
+    
+    // Fetch aggregated stats if authenticated
+    if (isAuthenticated) {
+      fetchAggregatedStats();
+    }
   }, [isAuthenticated]);
 
   if (!isAuthenticated) {
@@ -395,13 +451,13 @@ const BusinessDashboard = () => {
     features: template.features || []
   }));
 
-  // Use dynamic data from API
-  const stats = dashboardData ? [
-    { label: 'Active Agents', value: dashboardData.metrics.activeWorkflows?.toString() || '0', change: '+0' },
-    { label: 'Automated Tasks', value: dashboardData.metrics.automatedTasks?.toLocaleString() || '0', change: '+0' },
-    { label: 'Time Saved', value: dashboardData.metrics.timeSaved || '0 hours', change: '+0' },
-    { label: 'Success Rate', value: dashboardData.metrics.efficiency || '0%', change: '+0' }
-  ] : [];
+  // Use dynamic data from aggregated stats API
+  const stats = [
+    { label: 'Active Workflows', value: statsData.activeWorkflows?.toString() || '0', change: '+0' },
+    { label: 'Automated Tasks', value: statsData.automatedTasks?.toLocaleString() || '0', change: '+0' },
+    { label: 'Time Saved', value: statsData.timeSaved || '0 hours', change: '+0' },
+    { label: 'Success Rate', value: statsData.successRate || '0%', change: '+0' }
+  ];
 
   const recentActivity = dashboardData ? dashboardData.recentActivities || [] : [];
 
@@ -514,8 +570,8 @@ const BusinessDashboard = () => {
                           Deactivate
                         </button>
                       )}
-                      <button className="workflow-remove" onClick={() => removeWorkflow(workflow.id)}>
-                        Remove
+                      <button className="workflow-stats-btn" onClick={() => showWorkflowStats(workflow.id)}>
+                        📊 Get Stats
                       </button>
                     </div>
                   </div>
@@ -659,6 +715,13 @@ const BusinessDashboard = () => {
           onToggle={() => setShowAlex(!showAlex)}
           onDashboardUpdate={handleDashboardUpdate}
           isSidebar={false}
+        />
+
+        {/* Workflow Statistics Modal */}
+        <WorkflowStatsModal 
+          isOpen={statsModalOpen}
+          onClose={() => setStatsModalOpen(false)}
+          stats={selectedWorkflowStats || {}}
         />
       </div>
     </div>
