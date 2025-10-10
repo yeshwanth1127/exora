@@ -521,8 +521,8 @@ const DashboardAlex = ({ isOpen, onToggle, onDashboardUpdate, isSidebar = false 
                             <div className="workflow-icon">
                               {getWorkflowIcon(workflow)}
                             </div>
-                            <div className={`workflow-status ${isAlreadyAdded ? 'added' : (workflow.active ? 'active' : 'inactive')}`}>
-                              {isAlreadyAdded ? '✅ Added' : (workflow.active ? '🟢 Active' : '🔴 Inactive')}
+                            <div className={`workflow-status ${isAlreadyAdded ? 'added' : 'template'}`}>
+                              {isAlreadyAdded ? '✅ Added' : '📋 Template'}
                             </div>
                           </div>
                         
@@ -649,8 +649,8 @@ const DashboardAlex = ({ isOpen, onToggle, onDashboardUpdate, isSidebar = false 
                             <div className="workflow-icon">
                               {getWorkflowIcon(workflow)}
                             </div>
-                            <div className={`workflow-status ${isAlreadyAdded ? 'added' : (workflow.active ? 'active' : 'inactive')}`}>
-                              {isAlreadyAdded ? '✅ Added' : (workflow.active ? '🟢 Active' : '🔴 Inactive')}
+                            <div className={`workflow-status ${isAlreadyAdded ? 'added' : 'template'}`}>
+                              {isAlreadyAdded ? '✅ Added' : '📋 Template'}
                             </div>
                           </div>
                         

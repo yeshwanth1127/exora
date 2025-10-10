@@ -410,7 +410,7 @@ Let's start with the basics - what type of business are you running? For example
   // Handle listing all workflows
   handleListAllWorkflowsRequest(workflows) {
     const workflowList = workflows.map((workflow, index) => {
-      const status = workflow.active ? '🟢 Active' : '🔴 Inactive';
+      const status = '📋 Template'; // Templates are always shown as templates, not active/inactive
       const triggers = workflow.triggers.map(t => t.type).join(', ') || 'No triggers';
       const actions = workflow.actions.map(a => a.type).join(', ') || 'No actions';
       
@@ -423,7 +423,7 @@ Let's start with the basics - what type of business are you running? For example
     }).join('\n\n');
 
     return {
-      message: `Here are all your N8N workflows (${workflows.length} total):\n\n${workflowList}\n\nWhich workflow would you like to know more about?`,
+      message: `Here are all your available workflow templates (${workflows.length} total):\n\n${workflowList}\n\nClick any workflow to add it to your dashboard. You can then activate it with your own credentials.\n\nWhich workflow would you like to add?`,
       currentPhase: 'Phase 1: Business Overview',
       discoveredInfo: { workflows: workflows.length },
       nextQuestions: [
