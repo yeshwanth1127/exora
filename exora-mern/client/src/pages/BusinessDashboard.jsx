@@ -653,15 +653,13 @@ const BusinessDashboard = () => {
           </div>
         </div>
 
-        {/* Alex sidebar for configured dashboard */}
-        <div className="alex-sidebar">
-          <DashboardAlex 
-            isOpen={true}
-            onToggle={() => setShowAlex(!showAlex)}
-            onDashboardUpdate={handleDashboardUpdate}
-            isSidebar={true}
-          />
-        </div>
+        {/* Alex floating chat button for configured dashboard */}
+        <DashboardAlex 
+          isOpen={showAlex}
+          onToggle={() => setShowAlex(!showAlex)}
+          onDashboardUpdate={handleDashboardUpdate}
+          isSidebar={false}
+        />
       </div>
     </div>
   );

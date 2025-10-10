@@ -27,21 +27,16 @@ const DashboardAlex = ({ isOpen, onToggle, onDashboardUpdate, isSidebar = false 
 
   useEffect(() => {
     if (isOpen && messages.length === 0) {
-      // If in sidebar mode, never initialize discovery session
-      if (isSidebar) {
-        console.log('Alex in sidebar mode - adding welcome message');
-        setMessages([{
-          id: Date.now(),
-          type: 'ai',
-          content: "Hello! I'm Alex, your AI assistant. I'm here to help you manage your workflows and dashboard. What would you like to know?",
-          timestamp: new Date()
-        }]);
-      } else {
-        // Only initialize discovery session for popup mode
-        initializeAlex();
-      }
+      // For configured dashboards, skip discovery session and use simple chat
+      console.log('Alex opened - using simple chat mode for configured dashboard');
+      setMessages([{
+        id: Date.now(),
+        type: 'ai',
+        content: "Hello! I'm Alex, your AI assistant. I'm here to help you manage your workflows and dashboard. Try asking me to 'show workflows' or ask any questions!",
+        timestamp: new Date()
+      }]);
     }
-  }, [isOpen, isSidebar]);
+  }, [isOpen]);
 
   const initializeAlex = async () => {
     try {
@@ -481,6 +476,23 @@ const DashboardAlex = ({ isOpen, onToggle, onDashboardUpdate, isSidebar = false 
     }
   };
 
+  // Click outside to close handler
+  const handleOverlayClick = (e) => {
+    if (e.target.classList.contains('dashboard-alex-overlay')) {
+      onToggle();
+    }
+  };
+
+  // If closed, show floating trigger button
+  if (!isOpen && !isSidebar) {
+    return (
+      <div className="alex-floating-trigger" onClick={onToggle}>
+        <div className="trigger-avatar">🤖</div>
+        <div className="trigger-text">Chat with Alex</div>
+      </div>
+    );
+  }
+
   if (!isOpen) return null;
 
   if (isSidebar) {
@@ -613,8 +625,8 @@ const DashboardAlex = ({ isOpen, onToggle, onDashboardUpdate, isSidebar = false 
   }
 
   return (
-    <div className="dashboard-alex-overlay">
-      <div className="dashboard-alex-popup">
+    <div className="dashboard-alex-overlay" onClick={handleOverlayClick}>
+      <div className="dashboard-alex-popup" onClick={(e) => e.stopPropagation()}>
         <div className="dashboard-alex-header">
           <div className="dashboard-alex-title">
             <div className="dashboard-alex-avatar">🤖</div>
