@@ -428,7 +428,7 @@ const addWorkflowsToDashboard = async (req, res) => {
       actions: workflow.actions,
       createdAt: workflow.createdAt,
       addedAt: new Date().toISOString(),
-      status: 'inactive' // Start as inactive, user can activate later
+      status: workflow.active ? 'active' : 'inactive' // ✅ Preserve actual n8n status
     }));
 
     // Check for duplicates

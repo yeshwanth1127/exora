@@ -461,10 +461,14 @@ router.get('/oauth2/callback', async (req, res) => {
     // Step 9: Update workflow status in dashboard
     console.log('\nStep 9: Updating workflow status in dashboard...');
     try {
-      await DashboardData.updateWorkflowStatus(userId, workflowId, 'active');
-      console.log('✓ Dashboard workflow status updated to active');
+      const statusUpdated = await DashboardData.updateWorkflowStatus(userId, workflowId, 'active');
+      if (statusUpdated) {
+        console.log('✓ Dashboard workflow status updated to active');
+      } else {
+        console.warn('⚠️ Warning: Workflow not found in dashboard. User may need to refresh or re-add workflow to dashboard.');
+      }
     } catch (statusErr) {
-      console.error('Warning: Failed to update dashboard status:', statusErr.message);
+      console.error('⚠️ Warning: Failed to update dashboard status:', statusErr.message);
       // Don't fail the whole activation if status update fails
     }
 

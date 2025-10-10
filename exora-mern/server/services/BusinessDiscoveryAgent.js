@@ -352,7 +352,16 @@ Let's start with the basics - what type of business are you running? For example
         };
       }
 
-      const workflows = workflowsResult.workflows;
+      // Filter out user-cloned workflows (those starting with "user-" pattern)
+      // Only show template workflows that users can activate
+      const allWorkflows = workflowsResult.workflows;
+      const workflows = allWorkflows.filter(wf => {
+        const name = wf.name || '';
+        // Exclude workflows that start with "user-" or contain " — " (cloned workflows)
+        return !name.match(/^user-\d+/i) && !name.includes(' — ');
+      });
+      
+      console.log(`[Alex] Filtered workflows: ${allWorkflows.length} total → ${workflows.length} templates (excluded ${allWorkflows.length - workflows.length} user-cloned workflows)`);
       
       if (workflows.length === 0) {
         return {

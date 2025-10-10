@@ -20,10 +20,18 @@ router.get('/', authenticateToken, async (req, res) => {
       });
     }
 
-    console.log(`Found ${result.workflows.length} workflows`);
+    // Filter out user-cloned workflows (only show templates)
+    const allWorkflows = result.workflows;
+    const templateWorkflows = allWorkflows.filter(wf => {
+      const name = wf.name || '';
+      // Exclude workflows that start with "user-" or contain " — " (cloned workflows)
+      return !name.match(/^user-\d+/i) && !name.includes(' — ');
+    });
+
+    console.log(`Found ${allWorkflows.length} workflows (${templateWorkflows.length} templates, ${allWorkflows.length - templateWorkflows.length} user-cloned)`);
     res.json({
       success: true,
-      workflows: result.workflows
+      workflows: templateWorkflows
     });
   } catch (error) {
     console.error('Error fetching workflows:', error);
@@ -73,7 +81,7 @@ router.post('/', authenticateToken, async (req, res) => {
       actions: workflow.actions,
       createdAt: workflow.createdAt,
       addedAt: new Date().toISOString(),
-      status: 'inactive' // Start as inactive, user can activate later
+      status: workflow.active ? 'active' : 'inactive' // ✅ Preserve actual n8n status
     }));
 
     // Merge with existing workflows (avoid duplicates)
