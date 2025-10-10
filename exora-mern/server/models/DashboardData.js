@@ -161,31 +161,51 @@ class DashboardData {
 
   static async updateWorkflowStatus(userId, workflowId, status) {
     try {
+      console.log(`[updateWorkflowStatus] Starting update for user ${userId}, workflow ${workflowId}, status ${status}`);
+      
       const dashboardData = await this.findByUserId(userId);
       if (!dashboardData) {
-        console.error('Dashboard data not found for user:', userId);
+        console.error('[updateWorkflowStatus] Dashboard data not found for user:', userId);
         return false;
       }
 
+      console.log(`[updateWorkflowStatus] Found dashboard data, workflows count:`, dashboardData.workflows?.length || 0);
+
       // Update the workflow status in the workflows array
       const workflows = dashboardData.workflows || [];
+      console.log(`[updateWorkflowStatus] Workflows to check:`, workflows.map(w => ({ id: w.id, name: w.name, currentStatus: w.status })));
+      
+      let foundWorkflow = false;
       const updatedWorkflows = workflows.map(workflow => {
+        console.log(`[updateWorkflowStatus] Comparing: "${workflow.id}" === "${workflowId}"`, workflow.id === workflowId);
         if (workflow.id === workflowId) {
+          foundWorkflow = true;
+          console.log(`[updateWorkflowStatus] ✓ Found matching workflow, updating status from "${workflow.status}" to "${status}"`);
           return { ...workflow, status };
         }
         return workflow;
       });
 
+      if (!foundWorkflow) {
+        console.error(`[updateWorkflowStatus] ❌ Workflow with id ${workflowId} not found in dashboard workflows`);
+        return false;
+      }
+
+      console.log(`[updateWorkflowStatus] Calling update with workflows:`, updatedWorkflows.map(w => ({ id: w.id, status: w.status })));
+
       // Update the dashboard data
       const updated = await this.update(userId, {
-        ...dashboardData,
-        workflows: updatedWorkflows
+        businessInfo: dashboardData.businessInfo,
+        workflows: updatedWorkflows,
+        recommendations: dashboardData.recommendations,
+        metrics: dashboardData.metrics,
+        isConfigured: dashboardData.isConfigured
       });
 
-      console.log(`Updated workflow ${workflowId} status to ${status} for user ${userId}`);
+      console.log(`[updateWorkflowStatus] ✓ Updated workflow ${workflowId} status to ${status} for user ${userId}`);
       return !!updated;
     } catch (error) {
-      console.error('Error updating workflow status:', error);
+      console.error('[updateWorkflowStatus] Error updating workflow status:', error);
       throw error;
     }
   }
