@@ -306,6 +306,52 @@ class N8NIntegration {
       return { success: false, error: error.message };
     }
   }
+
+  // Get webhook URLs for a workflow
+  async getWorkflowWebhooks(workflowId) {
+    try {
+      const result = await this.getWorkflow(workflowId);
+      if (!result.success) return { success: false, error: result.error };
+
+      const workflow = result.workflow;
+      const webhooks = [];
+
+      // Find all webhook nodes
+      const nodes = workflow.nodes || [];
+      nodes.forEach(node => {
+        if (node.type?.toLowerCase().includes('webhook')) {
+          const path = node.parameters?.path || node.id;
+          const method = node.parameters?.httpMethod || 'POST';
+          const isActive = workflow.active;
+
+          // Production webhook (when workflow is active)
+          // Test webhook (when workflow is inactive)
+          const webhookUrl = isActive 
+            ? `${this.baseURL}/webhook/${path}`
+            : `${this.baseURL}/webhook-test/${path}`;
+
+          webhooks.push({
+            nodeId: node.id,
+            nodeName: node.name,
+            path: path,
+            method: method,
+            url: webhookUrl,
+            mode: isActive ? 'production' : 'test',
+            active: isActive
+          });
+        }
+      });
+
+      return {
+        success: true,
+        webhooks: webhooks,
+        workflowActive: workflow.active
+      };
+    } catch (error) {
+      console.error(`Failed to get webhooks for workflow ${workflowId}:`, error.message);
+      return { success: false, error: error.message };
+    }
+  }
 }
 
 module.exports = N8NIntegration;

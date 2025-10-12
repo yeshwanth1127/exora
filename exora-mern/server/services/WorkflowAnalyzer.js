@@ -234,8 +234,10 @@ class WorkflowAnalyzer {
 
   /**
    * Detect workflow triggers (webhook, schedule, manual)
+   * @param {object} workflowJson - Workflow JSON
+   * @param {string} workflowId - The actual workflow ID in n8n (cloned instance)
    */
-  static detectTriggers(workflowJson) {
+  static detectTriggers(workflowJson, workflowId = null) {
     const triggers = [];
     const nodes = workflowJson?.nodes || [];
     
@@ -243,12 +245,26 @@ class WorkflowAnalyzer {
       // Webhook triggers
       if (node.type?.toLowerCase().includes('webhook')) {
         const path = node.parameters?.path || node.id;
+        const webhookMode = node.parameters?.webhookId ? 'production' : 'test';
+        
+        // Construct webhook URL based on mode and workflow
+        // Production webhooks use the path directly
+        // Test webhooks include workflow ID
+        let webhookUrl;
+        if (webhookMode === 'production' || workflowJson.active) {
+          webhookUrl = `${process.env.N8N_BASE_URL}/webhook/${path}`;
+        } else {
+          webhookUrl = `${process.env.N8N_BASE_URL}/webhook-test/${path}`;
+        }
+        
         triggers.push({
           type: 'webhook',
           method: node.parameters?.httpMethod || 'POST',
           path: path,
-          url: `${process.env.N8N_BASE_URL}/webhook/${path}`,
-          node: node.name || 'Webhook'
+          url: webhookUrl,
+          webhookMode: webhookMode,
+          node: node.name || 'Webhook',
+          nodeId: node.id
         });
       }
       

@@ -52,25 +52,34 @@ class WorkflowExecutor {
 
       const workflow = workflowResult.workflow;
 
-      // Analyze workflow to detect parameters
+      // Analyze workflow to detect parameters (pass workflow ID for webhook URL construction)
       const analysis = WorkflowAnalyzer.analyzeWorkflow(workflow);
 
       console.log(`Analyzed workflow ${instance.instance_workflow_id}:`, {
         inputs: analysis.inputs.length,
         triggers: analysis.triggers.length,
-        complexity: analysis.metadata.complexity
+        complexity: analysis.metadata.complexity,
+        executionStrategy: analysis.executionStrategy.method
       });
+
+      // Log webhook info if present
+      if (analysis.triggers.some(t => t.type === 'webhook')) {
+        const webhook = analysis.triggers.find(t => t.type === 'webhook');
+        console.log(`Webhook detected: ${webhook.url} (${webhook.webhookMode} mode)`);
+      }
 
       return {
         success: true,
         workflowId: instance.instance_workflow_id,
         templateWorkflowId: templateWorkflowId,
         workflowName: workflow.name,
+        workflowActive: workflow.active,
         parameters: analysis.inputs,
         triggers: analysis.triggers,
         executionStrategy: analysis.executionStrategy,
         metadata: analysis.metadata,
-        canExecute: true
+        canExecute: true,
+        requiresInput: analysis.inputs.length > 0
       };
     } catch (error) {
       console.error('Error getting workflow parameters:', error);
