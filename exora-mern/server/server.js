@@ -17,6 +17,7 @@ const dashboardRoutes = require('./routes/dashboard');
 // const oauthRoutes = require('./routes/oauth'); // Deprecated: handled by activation route
 const activationRoutes = require('./routes/activation');
 const privacyRoutes = require('./routes/privacy');
+const waitlistRoutes = require('./routes/waitlist');
 
 const app = express();
 let io = null;
@@ -32,6 +33,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/discovery', require('./routes/discovery'));
 app.use('/api/workflows', require('./routes/workflows'));
+app.use('/api/waitlist', waitlistRoutes);
 // app.use('/', oauthRoutes);
 app.use('/', privacyRoutes);
 app.use('/', activationRoutes);  // ✅ Mounted at root for OAuth callback compatibility

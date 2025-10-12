@@ -139,10 +139,6 @@ const AuthPage = () => {
     });
   };
 
-  const goBack = () => {
-    navigate('/');
-  };
-
   return (
     <div className="auth-page">
       <Particles
@@ -171,15 +167,6 @@ const AuthPage = () => {
       />
       
       <div className="auth-page-content">
-        <div className="auth-page-header">
-          <button className="auth-back-btn" onClick={goBack}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            Back to Home
-          </button>
-        </div>
-
         <div className="auth-page-container">
           <div className="auth-page-card">
             <div className="auth-page-header-content">

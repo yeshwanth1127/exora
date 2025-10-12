@@ -34,9 +34,33 @@ const MobileLayout = ({ isChatbotOpen, onChatbotToggle }) => {
       {/* Same CardNav as desktop */}
       <CardNav
         items={[
-          { label: 'About', bgColor: '#0D0716', textColor: '#fff', links: [ { label: 'Company', ariaLabel: 'About Company', href: '#company' }, { label: 'Careers', ariaLabel: 'About Careers', href: '#company' } ] },
-          { label: 'Products', bgColor: '#170D27', textColor: '#fff', links: [ { label: 'Featured', ariaLabel: 'Featured Projects', href: '#products' }, { label: 'Case Studies', ariaLabel: 'Project Case Studies', href: '#solutions' } ] },
-          { label: 'Join us', bgColor: '#271E37', textColor: '#fff', links: [ { label: 'Email', ariaLabel: 'Email us', href: '#join' }, { label: 'Twitter', ariaLabel: 'Twitter', href: '#join' }, { label: 'LinkedIn', ariaLabel: 'LinkedIn', href: '#join' } ] }
+          { 
+            label: 'About', 
+            bgColor: '#0D0716', 
+            textColor: '#fff', 
+            links: [ 
+              { label: 'About', ariaLabel: 'About page', href: '/about' }, 
+              { label: 'Company', ariaLabel: 'Company info', href: '/about#company' } 
+            ] 
+          },
+          { 
+            label: 'Products', 
+            bgColor: '#170D27', 
+            textColor: '#fff', 
+            links: [ 
+              { label: 'Products', ariaLabel: 'Products page', href: '/products' }, 
+              { label: 'Solutions', ariaLabel: 'Solutions', href: '/products#solutions' } 
+            ] 
+          },
+          { 
+            label: 'Join us', 
+            bgColor: '#271E37', 
+            textColor: '#fff', 
+            links: [ 
+              { label: 'Join', ariaLabel: 'Join page', href: '/join' }, 
+              { label: 'Contact', ariaLabel: 'Contact us', href: '/join#contact' } 
+            ] 
+          }
         ]}
         baseColor="rgba(255,255,255,0.08)"
         menuColor="#fff"

@@ -67,6 +67,9 @@ const CardNav = ({
   const tlRef = useRef(null)
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  
+  // Check if we're on the home page
+  const isHomePage = window.location.pathname === '/'
 
   const safeItems = useMemo(() => (items || []).slice(0, 3), [items])
 
@@ -206,20 +209,34 @@ const CardNav = ({
             <ExoraTypeInline />
           </div>
 
-          <button
-            type="button"
-            className="card-nav-cta-button cursor-target"
-            style={{ backgroundColor: buttonBgColor, color: buttonTextColor }}
-            onClick={() => {
-              if (user) {
-                logout()
-              } else {
-                navigate('/auth')
-              }
-            }}
-          >
-            {user ? `Logout (${user.firstName})` : 'Login/Signup'}
-          </button>
+          <div className="nav-buttons-group">
+            {!isHomePage && (
+              <button
+                type="button"
+                className="card-nav-home-button cursor-target"
+                style={{ backgroundColor: buttonBgColor, color: buttonTextColor }}
+                onClick={() => navigate('/')}
+                title="Go to Home"
+              >
+                🏠
+              </button>
+            )}
+            
+            <button
+              type="button"
+              className="card-nav-cta-button cursor-target"
+              style={{ backgroundColor: buttonBgColor, color: buttonTextColor }}
+              onClick={() => {
+                if (user) {
+                  logout()
+                } else {
+                  navigate('/auth')
+                }
+              }}
+            >
+              {user ? `Logout (${user.firstName})` : 'Login/Signup'}
+            </button>
+          </div>
         </div>
 
         <div className="card-nav-content" aria-hidden={!isExpanded}>
@@ -233,10 +250,31 @@ const CardNav = ({
               <div className="nav-card-label">{item.label}</div>
               <div className="nav-card-links">
                 {(item.links || []).map((lnk, i) => (
-                  <a key={`${lnk.label}-${i}`} className="nav-card-link" href={lnk.href || '#'} aria-label={lnk.ariaLabel}>
+                  <button
+                    key={`${lnk.label}-${i}`} 
+                    className="nav-card-link" 
+                    onClick={() => {
+                      const href = lnk.href || '#';
+                      if (href.startsWith('/')) {
+                        navigate(href);
+                        setIsExpanded(false);
+                        setIsHamburgerOpen(false);
+                      } else if (href.startsWith('#')) {
+                        // Handle anchor links for same page
+                        const element = document.querySelector(href);
+                        if (element) {
+                          element.scrollIntoView({ behavior: 'smooth' });
+                        }
+                        setIsExpanded(false);
+                        setIsHamburgerOpen(false);
+                      }
+                    }}
+                    aria-label={lnk.ariaLabel}
+                    style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}
+                  >
                     <ArrowIcon className="nav-card-link-icon" />
                     {lnk.label}
-                  </a>
+                  </button>
                 ))}
               </div>
             </div>

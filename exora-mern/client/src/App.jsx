@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-route
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import Particles from './components/Particles'
 import CardNav from './components/CardNav'
-import Hero from './components/Hero'
+import HeroSection from './components/HeroSection'
 import Features from './components/Features'
 import CircularGallery from './components/CircularGallery'
 import BrandRow from './components/BrandRow'
@@ -18,11 +18,16 @@ import FlowingMenu from './components/FlowingMenu'
 import MobileLayout from './components/MobileLayout'
 import Chatbot from './components/Chatbot'
 import AnimatedHalfBox from './components/AnimatedHalfBox'
+import WaitlistPopup from './components/WaitlistPopup'
 import AuthPage from './pages/AuthPage'
 import BusinessDashboard from './pages/BusinessDashboard'
 import PersonalDashboard from './pages/PersonalDashboard'
-import BusinessDiscoveryChat from './components/BusinessDiscoveryChat'
 import WorkflowActivation from './pages/WorkflowActivation'
+import BusinessSolutions from './pages/BusinessSolutions'
+import PersonalAI from './pages/PersonalAI'
+import About from './pages/About'
+import Products from './pages/Products'
+import JoinUs from './pages/JoinUs'
 
 function App() {
   const [isMobile, setIsMobile] = useState(false)
@@ -129,10 +134,14 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/auth" element={<AuthPage />} />
-          <Route path="/get-started" element={<BusinessDiscoveryChat />} />
           <Route path="/dashboard" element={<BusinessDashboard />} />
           <Route path="/personal-dashboard" element={<PersonalDashboard />} />
           <Route path="/workflow-activation" element={<WorkflowActivation />} />
+          <Route path="/business-solutions" element={<BusinessSolutions />} />
+          <Route path="/personal-ai" element={<PersonalAI />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/products" element={<Products />} />
+          <Route path="/join" element={<JoinUs />} />
           <Route path="/" element={<HomePage />} />
         </Routes>
       </AuthProvider>
@@ -144,6 +153,7 @@ function HomePage() {
   const [isMobile, setIsMobile] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isChatbotOpen, setIsChatbotOpen] = useState(false)
+  const [isWaitlistOpen, setIsWaitlistOpen] = useState(false)
   const { user, isAuthenticated } = useAuth()
   const navigate = useNavigate()
 
@@ -249,9 +259,33 @@ function HomePage() {
       {/* Global orb removed to avoid duplicate with hero's right-side orb */}
               <CardNav
                 items={[
-                  { label: 'About', bgColor: '#0D0716', textColor: '#fff', links: [ { label: 'Company', ariaLabel: 'About Company', href: '#company' }, { label: 'Careers', ariaLabel: 'About Careers', href: '#company' } ] },
-                  { label: 'Products', bgColor: '#170D27', textColor: '#fff', links: [ { label: 'Featured', ariaLabel: 'Featured Projects', href: '#products' }, { label: 'Case Studies', ariaLabel: 'Project Case Studies', href: '#solutions' } ] },
-                  { label: 'Join us', bgColor: '#271E37', textColor: '#fff', links: [ { label: 'Email', ariaLabel: 'Email us', href: '#join' }, { label: 'Twitter', ariaLabel: 'Twitter', href: '#join' }, { label: 'LinkedIn', ariaLabel: 'LinkedIn', href: '#join' } ] }
+                  { 
+                    label: 'About', 
+                    bgColor: '#0D0716', 
+                    textColor: '#fff', 
+                    links: [ 
+                      { label: 'About', ariaLabel: 'About page', href: '/about' }, 
+                      { label: 'Company', ariaLabel: 'Company info', href: '/about#company' } 
+                    ] 
+                  },
+                  { 
+                    label: 'Products', 
+                    bgColor: '#170D27', 
+                    textColor: '#fff', 
+                    links: [ 
+                      { label: 'Products', ariaLabel: 'Products page', href: '/products' }, 
+                      { label: 'Solutions', ariaLabel: 'Solutions', href: '/products#solutions' } 
+                    ] 
+                  },
+                  { 
+                    label: 'Join us', 
+                    bgColor: '#271E37', 
+                    textColor: '#fff', 
+                    links: [ 
+                      { label: 'Join', ariaLabel: 'Join page', href: '/join' }, 
+                      { label: 'Contact', ariaLabel: 'Contact us', href: '/join#contact' } 
+                    ] 
+                  }
                 ]}
                 baseColor="rgba(255,255,255,0.08)"
                 menuColor="#fff"
@@ -270,19 +304,15 @@ function HomePage() {
         disableRotation={false}
       />
       <main className="landing-wrap" style={{ position: 'relative', zIndex: 10 }}>
-        <Hero 
+        <HeroSection 
           onOpenChat={() => setIsChatbotOpen(true)}
           showDashboardButton={isAuthenticated}
           onDashboardClick={() => {
             const dashboardPath = user?.usageType === 'personal' ? '/personal-dashboard' : '/dashboard';
             navigate(dashboardPath);
           }}
+          onOpenWaitlist={() => setIsWaitlistOpen(true)}
         />
-
-        <div className="scroll-indicator">
-          <span className="dot" />
-          <span className="label">Scroll</span>
-        </div>
 
         <section id="products" className="section reveal-on-scroll" data-delay="0ms">
           <div className="section-header">
@@ -319,6 +349,20 @@ function HomePage() {
 
 
         <section id="company" className="section futuristic-section reveal-on-scroll" data-delay="0ms">
+          <div className="section-header" style={{ marginBottom: '40px', background: 'none', backdropFilter: 'none' }}>
+            <div className="powers-exora-title-container">
+              <div className="powers-exora-title-single">
+                <div className="marquee-single">
+                  <div className="marquee__inner-single">
+                    <span>What Powers Exora&nbsp;&nbsp;*&nbsp;&nbsp;</span>
+                    <span>What Powers Exora&nbsp;&nbsp;*&nbsp;&nbsp;</span>
+                    <span>What Powers Exora&nbsp;&nbsp;*&nbsp;&nbsp;</span>
+                    <span>What Powers Exora&nbsp;&nbsp;*&nbsp;&nbsp;</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
           <div className="futuristic-grid">
             <div className="futuristic-card" data-card="1">
               <div className="card-glow"></div>
@@ -337,7 +381,8 @@ function HomePage() {
               </div>
               <div className="card-content">
                 <h3 className="card-title">Our Story</h3>
-                <p className="card-description">Founded to deliver AI that truly understands your business—not just automate it.</p>
+                <p className="card-description">Born from a simple belief — AI should think like your business, not just automate it. Exora was built to bridge human insight with machine precision, helping teams move faster, smarter, and effortlessly.</p>
+                <p className="card-tagline">"Built for those who want their AI to understand, not just execute."</p>
               </div>
               <div className="card-border"></div>
             </div>
@@ -358,7 +403,8 @@ function HomePage() {
               </div>
               <div className="card-content">
                 <h3 className="card-title">Our Mission</h3>
-                <p className="card-description">Empower teams with intelligent agents that operate as seamlessly as humans.</p>
+                <p className="card-description">To empower businesses and individuals with intelligent agents that feel less like tools and more like teammates. Exora's mission is to make AI collaboration as natural as working with a human expert — only faster, scalable, and available 24/7.</p>
+                <p className="card-tagline">"AI that works with you, not just for you."</p>
               </div>
               <div className="card-border"></div>
             </div>
@@ -379,7 +425,8 @@ function HomePage() {
               </div>
               <div className="card-content">
                 <h3 className="card-title">Our Vision</h3>
-                <p className="card-description">AI agents that amplify human potential for every business, at any scale.</p>
+                <p className="card-description">A world where every business, from startup to enterprise, runs on personalized AI agents — amplifying human potential and redefining productivity. We see AI not as a replacement for people, but as the most powerful partner they've ever had.</p>
+                <p className="card-tagline">"AI that scales human ambition."</p>
               </div>
               <div className="card-border"></div>
             </div>
@@ -400,7 +447,8 @@ function HomePage() {
               </div>
               <div className="card-content">
                 <h3 className="card-title">Core Values</h3>
-                <p className="card-description">Innovation, Business‑centricity, Transparency, and Partnership in every engagement.</p>
+                <p className="card-description">Innovation that never stops learning. Partnerships built on trust. Transparency in every process. And an unshakable focus on the people and businesses we serve. These values power every solution we create — and every automation we deliver.</p>
+                <p className="card-tagline">"Built on intelligence. Driven by integrity."</p>
               </div>
               <div className="card-border"></div>
             </div>
@@ -421,7 +469,8 @@ function HomePage() {
               </div>
               <div className="card-content">
                 <h3 className="card-title">Custom AI Agents</h3>
-                <p className="card-description">Task‑specific desktop or web agents with human‑in‑the‑loop controls.</p>
+                <p className="card-description">Tailored to your business. Designed to think, decide, and act — just like your best employee would. Whether it's a desktop assistant or a web agent, Exora builds task-specific AI that integrates seamlessly into your daily operations.</p>
+                <p className="card-tagline">"Your business, powered by purpose-built AI."</p>
               </div>
               <div className="card-border"></div>
             </div>
@@ -442,59 +491,14 @@ function HomePage() {
               </div>
               <div className="card-content">
                 <h3 className="card-title">Data & Integration</h3>
-                <p className="card-description">ETL, vector search, RAG pipelines and secure integrations into your stack.</p>
+                <p className="card-description">Your data is your edge — we make sure it stays that way. From ETL and RAG pipelines to secure integrations and private vector search, Exora ensures your AI has context, accuracy, and complete security.</p>
+                <p className="card-tagline">"Intelligence powered by your data — protected, connected, perfected."</p>
               </div>
               <div className="card-border"></div>
             </div>
           </div>
         </section>
 
-        <section className="section futuristic-section reveal-on-scroll" data-delay="40ms">
-          <div className="futuristic-grid">
-            <div className="futuristic-card" data-card="7">
-              <div className="card-glow"></div>
-              <div className="card-dotgrid">
-                <DotGrid
-                  dotSize={4}
-                  gap={16}
-                  baseColor="rgba(168, 85, 247, 0.2)"
-                  activeColor="rgba(168, 85, 247, 0.6)"
-                  proximity={80}
-                  shockRadius={120}
-                  shockStrength={2}
-                  resistance={900}
-                  returnDuration={1.0}
-                />
-              </div>
-              <div className="card-content">
-                <h3 className="card-title">Automation Consulting</h3>
-                <p className="card-description">Identify high‑ROI workflows and ship pilots in weeks, not months.</p>
-              </div>
-              <div className="card-border"></div>
-            </div>
-            <div className="futuristic-card" data-card="8">
-              <div className="card-glow"></div>
-              <div className="card-dotgrid">
-                <DotGrid
-                  dotSize={4}
-                  gap={16}
-                  baseColor="rgba(168, 85, 247, 0.2)"
-                  activeColor="rgba(168, 85, 247, 0.6)"
-                  proximity={80}
-                  shockRadius={120}
-                  shockStrength={2}
-                  resistance={900}
-                  returnDuration={1.0}
-                />
-              </div>
-              <div className="card-content">
-                <h3 className="card-title">Customer Experience</h3>
-                <p className="card-description">Self‑serve assistants, knowledge search and proactive support tooling.</p>
-              </div>
-              <div className="card-border"></div>
-            </div>
-          </div>
-        </section>
 
         {/* Removed BrandRow animated EXORA logo section as requested */}
 
@@ -521,7 +525,10 @@ function HomePage() {
       </main>
       
       {/* Chatbot */}
-      <Chatbot isOpen={isChatbotOpen} onToggle={() => setIsChatbotOpen(!isChatbotOpen)} hideFloatingButton={true} />
+      <Chatbot isOpen={isChatbotOpen} onToggle={() => setIsChatbotOpen(!isChatbotOpen)} />
+      
+      {/* Waitlist Popup */}
+      <WaitlistPopup isOpen={isWaitlistOpen} onClose={() => setIsWaitlistOpen(false)} />
     </div>
   )
 }

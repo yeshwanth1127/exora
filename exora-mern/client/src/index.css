@@ -353,7 +353,7 @@ html, body, #root {
 
 .futuristic-card {
   position: relative;
-  height: 240px;
+  height: 320px;
   width: 400px;
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -447,8 +447,10 @@ html, body, #root {
   height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 12px;
   padding: 20px;
+  overflow-y: auto;
 }
 
 .card-title {
@@ -467,8 +469,75 @@ html, body, #root {
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.7);
   line-height: 1.6;
-  margin: 0;
-  flex-grow: 1;
+  margin: 0 0 8px 0;
+}
+
+.card-tagline {
+  font-size: 0.9rem;
+  color: rgba(168, 85, 247, 0.9);
+  font-style: italic;
+  line-height: 1.4;
+  margin: 12px 0 0 0;
+  font-weight: 500;
+  text-shadow: 0 0 10px rgba(168, 85, 247, 0.3);
+}
+
+/* Powers Exora Title Styling - Single Line */
+.powers-exora-title-container {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  overflow: hidden;
+  background: none !important;
+  backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.powers-exora-title-single {
+  position: relative;
+  width: 100%;
+  background: none !important;
+  backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.marquee-single {
+  position: relative;
+  overflow: hidden;
+  background: none !important;
+  backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.marquee__inner-single {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: marquee-single 25s linear infinite;
+  background: none !important;
+  backdrop-filter: none !important;
+}
+
+.marquee__inner-single span {
+  font-size: clamp(28px, 4vw, 48px);
+  font-weight: 700;
+  background: linear-gradient(135deg, #ffffff, #c084fc, #a855f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-color: transparent;
+  text-shadow: 
+    0 0 40px rgba(168, 85, 247, 0.6),
+    0 0 80px rgba(168, 85, 247, 0.4),
+    0 0 120px rgba(168, 85, 247, 0.2);
+  letter-spacing: 2px;
+  backdrop-filter: none !important;
+}
+
+@keyframes marquee-single {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }
 
 .card-border {
@@ -962,7 +1031,8 @@ button:focus-visible {
   }
   
   .futuristic-card {
-    height: 180px;
+    height: auto;
+    min-height: 240px;
     width: 100%;
     max-width: 100%;
     padding: 16px;
@@ -986,6 +1056,10 @@ button:focus-visible {
   
   .card-description {
     font-size: 0.9rem;
+  }
+
+  .card-tagline {
+    font-size: 0.8rem;
   }
   
   .section {
@@ -1078,7 +1152,8 @@ button:focus-visible {
   }
   
   .futuristic-card {
-    height: 200px;
+    height: auto;
+    min-height: 260px;
     width: 100%;
     max-width: 400px;
     padding: 20px;
@@ -1130,7 +1205,7 @@ button:focus-visible {
   }
   
   .futuristic-card {
-    height: 220px;
+    height: 300px;
     width: 380px;
   }
   
@@ -1164,7 +1239,7 @@ button:focus-visible {
   }
   
   .futuristic-card {
-    height: 240px;
+    height: 320px;
     width: 400px;
   }
   
@@ -1221,7 +1296,8 @@ button:focus-visible {
   }
   
   .futuristic-card {
-    height: 160px;
+    height: auto;
+    min-height: 200px;
     margin: 12px 0;
   }
 }

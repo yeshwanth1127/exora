@@ -1,0 +1,315 @@
+/* Personal AI Page */
+.personal-ai-page {
+  min-height: 100vh;
+  background: #000000;
+  color: white;
+  padding: 80px 24px 60px;
+  position: relative;
+  overflow: hidden;
+}
+
+.personal-ai-page::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 600px;
+  background: radial-gradient(
+    ellipse 80% 50% at 50% 0%,
+    rgba(168, 85, 247, 0.15),
+    transparent
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Header */
+.pai-header {
+  position: relative;
+  z-index: 1;
+  max-width: 900px;
+  margin: 0 auto 60px;
+  text-align: center;
+}
+
+.pai-title {
+  font-size: clamp(36px, 5vw, 60px);
+  font-weight: 800;
+  line-height: 1.1;
+  margin: 0 0 20px 0;
+  background: linear-gradient(135deg, #ffffff 0%, #c084fc 50%, #a855f7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.pai-subtitle {
+  font-size: clamp(16px, 2vw, 20px);
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* Hero Visual */
+.pai-hero-visual {
+  position: relative;
+  z-index: 1;
+  max-width: 700px;
+  margin: 0 auto 80px;
+  text-align: center;
+  padding: 60px 32px;
+  background: rgba(168, 85, 247, 0.05);
+  border: 1px solid rgba(168, 85, 247, 0.2);
+  border-radius: 24px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.visual-orb {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 32px;
+  background: radial-gradient(circle, #a855f7, #7c3aed);
+  border-radius: 50%;
+  box-shadow: 0 0 60px rgba(168, 85, 247, 0.6);
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+.visual-tagline {
+  font-family: 'Press Start 2P', 'VT323', monospace;
+  font-size: clamp(14px, 2vw, 18px);
+  color: #e9d5ff;
+  margin: 0 0 16px 0;
+  letter-spacing: 0.1em;
+  text-shadow: 0 0 6px rgba(167, 139, 250, 0.55);
+}
+
+.visual-description {
+  font-size: clamp(15px, 2vw, 18px);
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* Features Grid */
+.pai-features-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 32px;
+  max-width: 1200px;
+  margin: 0 auto 80px;
+}
+
+.pai-feature-card {
+  background: rgba(15, 15, 15, 0.8);
+  border: 1px solid rgba(168, 85, 247, 0.2);
+  border-radius: 20px;
+  padding: 40px 32px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.pai-feature-card:hover {
+  border-color: rgba(168, 85, 247, 0.5);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(168, 85, 247, 0.2);
+}
+
+.pai-feature-icon {
+  font-size: 48px;
+  margin-bottom: 20px;
+}
+
+.pai-feature-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 16px 0;
+}
+
+.pai-feature-description {
+  font-size: 15px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 20px 0;
+}
+
+.pai-feature-highlights {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pai-feature-highlights li {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.highlight-dot {
+  color: #a855f7;
+  font-size: 20px;
+}
+
+/* Use Cases Section */
+.pai-use-cases {
+  position: relative;
+  z-index: 1;
+  max-width: 1000px;
+  margin: 0 auto 80px;
+}
+
+.use-cases-title {
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 700;
+  text-align: center;
+  margin: 0 0 48px 0;
+  color: white;
+}
+
+.use-cases-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+}
+
+.use-case-card {
+  background: rgba(168, 85, 247, 0.05);
+  border: 1px solid rgba(168, 85, 247, 0.2);
+  border-radius: 16px;
+  padding: 28px 24px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.use-case-card:hover {
+  border-color: rgba(168, 85, 247, 0.4);
+  background: rgba(168, 85, 247, 0.08);
+}
+
+.use-case-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #a855f7;
+  margin: 0 0 12px 0;
+}
+
+.use-case-description {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* CTA Section */
+.pai-cta {
+  position: relative;
+  z-index: 1;
+  max-width: 700px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 60px 32px;
+  background: rgba(168, 85, 247, 0.05);
+  border: 1px solid rgba(168, 85, 247, 0.2);
+  border-radius: 24px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.pai-cta h2 {
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 700;
+  margin: 0 0 16px 0;
+  color: white;
+}
+
+.pai-cta p {
+  font-size: clamp(15px, 2vw, 18px);
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 32px 0;
+}
+
+.pai-cta-button {
+  background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+  color: white;
+  border: none;
+  padding: 16px 40px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 24px rgba(168, 85, 247, 0.3);
+}
+
+.pai-cta-button:hover {
+  box-shadow: 0 12px 32px rgba(168, 85, 247, 0.5);
+}
+
+.pai-cta-note {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 24px 0 0 0;
+  font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .personal-ai-page {
+    padding: 60px 20px 40px;
+  }
+
+  .pai-header {
+    margin-bottom: 40px;
+  }
+
+  .pai-hero-visual {
+    padding: 40px 24px;
+    margin-bottom: 60px;
+  }
+
+  .visual-orb {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 24px;
+  }
+
+  .pai-features-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    margin-bottom: 60px;
+  }
+
+  .pai-feature-card {
+    padding: 32px 24px;
+  }
+
+  .use-cases-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .pai-cta {
+    padding: 40px 24px;
+  }
+
+  .pai-cta-button {
+    width: 100%;
+  }
+}
+

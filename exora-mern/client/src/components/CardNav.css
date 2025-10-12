@@ -129,6 +129,36 @@
 
 @keyframes caret-blink { 0%,49%{opacity:1} 50%,100%{opacity:0} }
 
+.nav-buttons-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.card-nav-home-button {
+  background: rgba(168, 85, 247, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  color: white;
+  border-radius: 8px;
+  width: 42px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.card-nav-home-button:hover {
+  background: rgba(168, 85, 247, 0.25);
+  border-color: rgba(168, 85, 247, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.5);
+}
+
 .card-nav-cta-button {
   background-color: rgba(17,17,17,0.75);
   color: white;
@@ -175,7 +205,22 @@
 
 .nav-card-label { font-weight: 500; font-size: 18px; letter-spacing: -0.25px; }
 .nav-card-links { margin-top: auto; display: flex; flex-direction: column; gap: 2px; }
-.nav-card-link { font-size: 14px; cursor: pointer; text-decoration: none; transition: opacity 0.3s ease; display: inline-flex; align-items: center; gap: 6px; }
+.nav-card-link { 
+  font-size: 14px; 
+  cursor: pointer; 
+  text-decoration: none; 
+  transition: opacity 0.3s ease; 
+  display: inline-flex; 
+  align-items: center; 
+  gap: 6px; 
+  background: transparent !important;
+  border: none;
+  padding: 4px 0;
+  color: inherit;
+  font-family: inherit;
+  text-align: left;
+  width: fit-content;
+}
 .nav-card-link:hover { opacity: 0.8; }
 
 /* Mobile styles */
