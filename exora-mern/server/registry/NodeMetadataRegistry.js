@@ -83,10 +83,10 @@ module.exports = {
           },
           { 
             name: 'values', 
-            label: 'Values to Append', 
-            type: 'json', 
+            label: 'Rows to Append', 
+            type: 'array', 
             required: true,
-            hint: 'Array of arrays. Example: [["A1", "B1"], ["A2", "B2"]]',
+            hint: 'Add rows of data to append to your spreadsheet',
             default: [["Value 1", "Value 2"]]
           }
         ]
@@ -103,7 +103,7 @@ module.exports = {
         parameters: [
           { name: 'spreadsheetId', label: 'Spreadsheet ID', type: 'string', required: true },
           { name: 'range', label: 'Range', type: 'string', required: true },
-          { name: 'values', label: 'New Values', type: 'json', required: true }
+          { name: 'values', label: 'New Values', type: 'array', required: true, hint: 'Enter the new data for these cells' }
         ]
       }
     }
@@ -126,6 +126,14 @@ module.exports = {
         parameters: [
           { name: 'name', label: 'Folder Name', type: 'string', required: true },
           { name: 'parentFolderId', label: 'Parent Folder ID', type: 'string', required: false }
+        ]
+      },
+      createFromText: {
+        label: 'Create File from Text',
+        parameters: [
+          { name: 'name', label: 'File Name', type: 'string', required: true, placeholder: 'document.txt' },
+          { name: 'text', label: 'File Content', type: 'text', required: true, placeholder: 'Enter file content...' },
+          { name: 'folderId', label: 'Folder ID', type: 'string', required: false, hint: 'Leave empty for root folder' }
         ]
       }
     }
@@ -251,7 +259,7 @@ module.exports = {
         parameters: [
           { name: 'databaseId', label: 'Database ID', type: 'string', required: true },
           { name: 'title', label: 'Page Title', type: 'string', required: true },
-          { name: 'properties', label: 'Properties', type: 'json', required: false }
+          { name: 'properties', label: 'Properties', type: 'object', required: false, hint: 'Additional properties as key-value pairs' }
         ]
       }
     }
@@ -269,9 +277,9 @@ module.exports = {
           { 
             name: 'webhookPayload', 
             label: 'Request Payload', 
-            type: 'json', 
+            type: 'object', 
             required: false,
-            hint: 'Data to send in the webhook request body'
+            hint: 'Data to send in the webhook request body (JSON object)'
           }
         ]
       }
@@ -286,7 +294,7 @@ module.exports = {
         label: 'HTTP Request',
         parameters: [
           { name: 'url', label: 'URL', type: 'url', required: true },
-          { name: 'body', label: 'Request Body', type: 'json', required: false }
+          { name: 'body', label: 'Request Body', type: 'object', required: false, hint: 'JSON object to send in request body' }
         ]
       }
     }
@@ -303,7 +311,7 @@ module.exports = {
         parameters: [
           { name: 'baseId', label: 'Base ID', type: 'string', required: true },
           { name: 'table', label: 'Table Name', type: 'string', required: true },
-          { name: 'fields', label: 'Fields', type: 'json', required: true }
+          { name: 'fields', label: 'Record Fields', type: 'object', required: true, hint: 'Field names and values for the new record' }
         ]
       }
     }

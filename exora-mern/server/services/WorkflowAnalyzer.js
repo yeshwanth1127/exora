@@ -116,9 +116,12 @@ class WorkflowAnalyzer {
     if (lower.includes('count') || lower.includes('number') || lower.includes('amount') || 
         lower.includes('quantity') || lower.includes('id') && lower.includes('numeric')) return 'number';
     
-    // JSON/Object detection
-    if (lower.includes('values') || lower.includes('data') || lower.includes('payload') ||
-        lower.includes('items') || lower.includes('array')) return 'json';
+    // Array detection (spreadsheet rows, lists, items)
+    if (lower.includes('values') || lower.includes('rows') || lower.includes('items') || 
+        lower.includes('data') && (lower.includes('row') || lower.includes('list'))) return 'array';
+    
+    // Object/Complex data detection
+    if (lower.includes('payload') || lower.includes('properties') || lower.includes('fields')) return 'object';
     
     // Text/Long content detection
     if (lower.includes('message') || lower.includes('content') || lower.includes('body') ||
@@ -157,24 +160,15 @@ class WorkflowAnalyzer {
    * @private
    */
   static _detectWebhookInputs(node, fields) {
-    // Webhook nodes typically accept any POST body
-    // Look at downstream nodes to see what fields they expect
-    // For now, mark webhook as accepting generic payload
-    if (!fields.has('webhookPayload')) {
-      fields.set('webhookPayload', {
-        field: 'webhookPayload',
-        source: 'webhook',
-        nodeContext: node.name || 'Webhook',
-        type: 'json',
-        label: 'Webhook Payload',
-        required: false,
-        hint: 'JSON object that will be passed to the workflow'
-      });
-    }
+    // DON'T add generic webhookPayload field
+    // Webhook inputs will be inferred from downstream nodes
+    // This prevents confusing "webhook request body" fields
+    // The actual webhook will receive whatever the downstream nodes need
   }
 
   /**
    * Enrich detected fields with registry metadata
+   * ALSO adds fields from registry if node has operation but no expressions (empty params)
    * @private
    */
   static _enrichWithRegistry(fields, nodes) {
@@ -182,16 +176,30 @@ class WorkflowAnalyzer {
       const registry = NodeMetadataRegistry[node.type];
       if (!registry) return;
       
-      const operation = node.parameters?.operation || 
-                       node.parameters?.resource || 
-                       'default';
+      // Get operation from parameters OR infer from node name
+      let operation = node.parameters?.operation || 
+                     node.parameters?.resource;
+      
+      // If no operation found, try to infer from node name
+      if (!operation) {
+        operation = this._inferOperationFromNodeName(node.name, node.type);
+      }
+      
+      // Fall back to default
+      if (!operation) {
+        operation = 'default';
+      }
       
       const opMetadata = registry.operations?.[operation];
       if (!opMetadata?.parameters) return;
       
+      // Check if this node has NO expressions (empty/hardcoded parameters)
+      const hasExpressions = this._nodeHasExpressions(node);
+      
       // Merge registry metadata with detected fields
       opMetadata.parameters.forEach(registryParam => {
         const existing = fields.get(registryParam.name);
+        
         if (existing) {
           // Enrich existing field with registry data
           Object.assign(existing, {
@@ -202,18 +210,68 @@ class WorkflowAnalyzer {
             hint: registryParam.hint,
             default: registryParam.default
           });
-        } else {
-          // Add new field from registry
+        } else if (!hasExpressions && this._shouldAddRegistryField(node, registryParam)) {
+          // Node has operation but no expressions - add registry fields as suggestions
+          // This handles workflows where nodes have empty parameters
           fields.set(registryParam.name, {
             field: registryParam.name,
-            source: 'registry',
+            source: 'registry-default',
             nodeContext: node.name || node.type,
             nodeType: node.type,
-            ...registryParam
+            operation: operation,
+            ...registryParam,
+            // Mark as suggested since it wasn't explicitly in the workflow
+            suggested: true
           });
         }
       });
     });
+  }
+
+  /**
+   * Infer operation from node name when not in parameters
+   * @private
+   */
+  static _inferOperationFromNodeName(nodeName, nodeType) {
+    if (!nodeName) return null;
+    
+    const lower = nodeName.toLowerCase();
+    
+    // Common operation keywords
+    if (lower.includes('create')) return 'create';
+    if (lower.includes('send')) return 'send';
+    if (lower.includes('get') || lower.includes('fetch') || lower.includes('read')) return 'get';
+    if (lower.includes('update') || lower.includes('edit') || lower.includes('modify')) return 'update';
+    if (lower.includes('delete') || lower.includes('remove')) return 'delete';
+    if (lower.includes('append') || lower.includes('add')) return 'append';
+    if (lower.includes('upload')) return 'upload';
+    if (lower.includes('download')) return 'download';
+    
+    return null;
+  }
+
+  /**
+   * Check if node has any {{ }} expressions in parameters
+   * @private
+   */
+  static _nodeHasExpressions(node) {
+    const jsonStr = JSON.stringify(node.parameters || {});
+    return jsonStr.includes('$json.') || jsonStr.includes('$parameter.');
+  }
+
+  /**
+   * Determine if we should add a registry field for a node with empty params
+   * @private
+   */
+  static _shouldAddRegistryField(node, registryParam) {
+    // Add ALL registry fields for action nodes with empty parameters
+    // This gives users full capabilities even if workflow doesn't have expressions
+    const isActionNode = !node.type?.toLowerCase().includes('trigger') && 
+                        !node.type?.toLowerCase().includes('webhook');
+    
+    // Add all fields (required + optional) for action nodes with no expressions
+    // This enables users to provide data that the workflow builder didn't anticipate
+    return isActionNode;
   }
 
   /**

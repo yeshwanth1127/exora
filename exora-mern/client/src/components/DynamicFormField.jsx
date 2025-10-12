@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import './DynamicFormField.css';
+import ArrayInputBuilder from './ArrayInputBuilder';
 
 /**
  * Dynamic Form Field Component
@@ -94,12 +95,45 @@ function DynamicFormField({ parameter, value, onChange, error }) {
           />
         );
 
+      case 'array':
+        return (
+          <ArrayInputBuilder
+            value={value || [['']]}
+            onChange={onChange}
+            parameter={parameter}
+          />
+        );
+
+      case 'object':
+        return (
+          <div className="object-input-container">
+            <div className="object-hint">
+              {hint || 'Enter key-value pairs for this object'}
+            </div>
+            <textarea
+              className="form-textarea json-textarea"
+              value={typeof value === 'string' ? value : JSON.stringify(value || {}, null, 2)}
+              onChange={handleChange}
+              placeholder={placeholder || '{\n  "key": "value"\n}'}
+              required={required}
+              rows={6}
+              spellCheck={false}
+            />
+            {jsonError && (
+              <div className="json-error">⚠️ {jsonError}</div>
+            )}
+          </div>
+        );
+
       case 'json':
         return (
           <div className="json-input-container">
+            <div className="json-hint">
+              💡 {hint || 'Enter valid JSON data'}
+            </div>
             <textarea
               className="form-textarea json-textarea"
-              value={value || ''}
+              value={typeof value === 'string' ? value : JSON.stringify(value || '', null, 2)}
               onChange={handleChange}
               placeholder={placeholder || '{"key": "value"}'}
               required={required}
@@ -108,9 +142,6 @@ function DynamicFormField({ parameter, value, onChange, error }) {
             />
             {jsonError && (
               <div className="json-error">⚠️ {jsonError}</div>
-            )}
-            {hint && (
-              <div className="json-hint">💡 {hint}</div>
             )}
           </div>
         );
