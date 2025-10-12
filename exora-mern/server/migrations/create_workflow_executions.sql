@@ -66,3 +66,4 @@ COMMENT ON COLUMN workflow_executions.status IS
 COMMENT ON COLUMN workflow_executions.trigger_type IS 
   'How execution was triggered: manual, api, webhook, scheduled';
 
+

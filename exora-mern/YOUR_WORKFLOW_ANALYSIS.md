@@ -255,3 +255,4 @@ You need to update your workflow in n8n:
 ---
 
 **Your system is smart - it shows the right fields! But the n8n workflow needs expressions to actually USE those inputs.** 🎯
+

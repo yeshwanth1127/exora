@@ -264,14 +264,14 @@ class WorkflowAnalyzer {
    * @private
    */
   static _shouldAddRegistryField(node, registryParam) {
-    // Add ALL registry fields for action nodes with empty parameters
-    // This gives users full capabilities even if workflow doesn't have expressions
-    const isActionNode = !node.type?.toLowerCase().includes('trigger') && 
-                        !node.type?.toLowerCase().includes('webhook');
-    
-    // Add all fields (required + optional) for action nodes with no expressions
-    // This enables users to provide data that the workflow builder didn't anticipate
-    return isActionNode;
+    // DO NOT add registry fields automatically
+    // Only add fields that are EXPLICITLY referenced in workflow via expressions
+    // 
+    // Why: Nodes often get data from previous nodes in the workflow chain
+    // We shouldn't ask users for data that comes from automation itself
+    //
+    // If workflow creator wants user input, they must add {{ $json.xxx }} expressions
+    return false;
   }
 
   /**
