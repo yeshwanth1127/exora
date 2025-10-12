@@ -2,6 +2,7 @@ import './App.css'
 import { useEffect, useState } from 'react'
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { ActivationProvider } from './contexts/ActivationContext'
 import Particles from './components/Particles'
 import CardNav from './components/CardNav'
 import HeroSection from './components/HeroSection'
@@ -23,6 +24,7 @@ import AuthPage from './pages/AuthPage'
 import BusinessDashboard from './pages/BusinessDashboard'
 import PersonalDashboard from './pages/PersonalDashboard'
 import WorkflowActivation from './pages/WorkflowActivation'
+import OAuthCallback from './pages/OAuthCallback'
 import BusinessSolutions from './pages/BusinessSolutions'
 import PersonalAI from './pages/PersonalAI'
 import About from './pages/About'
@@ -132,18 +134,21 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <Routes>
-          <Route path="/auth" element={<AuthPage />} />
-          <Route path="/dashboard" element={<BusinessDashboard />} />
-          <Route path="/personal-dashboard" element={<PersonalDashboard />} />
-          <Route path="/workflow-activation" element={<WorkflowActivation />} />
-          <Route path="/business-solutions" element={<BusinessSolutions />} />
-          <Route path="/personal-ai" element={<PersonalAI />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/products" element={<Products />} />
-          <Route path="/join" element={<JoinUs />} />
-          <Route path="/" element={<HomePage />} />
-        </Routes>
+        <ActivationProvider>
+          <Routes>
+            <Route path="/auth" element={<AuthPage />} />
+            <Route path="/dashboard" element={<BusinessDashboard />} />
+            <Route path="/personal-dashboard" element={<PersonalDashboard />} />
+            <Route path="/workflow-activation" element={<WorkflowActivation />} />
+            <Route path="/oauth/callback" element={<OAuthCallback />} />
+            <Route path="/business-solutions" element={<BusinessSolutions />} />
+            <Route path="/personal-ai" element={<PersonalAI />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/products" element={<Products />} />
+            <Route path="/join" element={<JoinUs />} />
+            <Route path="/" element={<HomePage />} />
+          </Routes>
+        </ActivationProvider>
       </AuthProvider>
     </Router>
   )

@@ -1,19 +1,25 @@
 import { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useActivation } from '../contexts/ActivationContext';
 import Particles from '../components/Particles';
 import CardNav from '../components/CardNav';
 import DotGrid from '../components/DotGrid';
 import DashboardAlex from '../components/DashboardAlex';
 import WorkflowStatsModal from '../components/WorkflowStatsModal';
+import ActivationWizard from '../components/ActivationWizard';
 import { API_BASE_URL, SOCKET_URL } from '../config/api';
 import './BusinessDashboard.css';
 
 const BusinessDashboard = () => {
   const { user, logout, isAuthenticated, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { startActivation, activationSession, isActivating } = useActivation();
   const [activeTab, setActiveTab] = useState('overview');
+  const [showActivationWizard, setShowActivationWizard] = useState(false);
+  const [activatingWorkflow, setActivatingWorkflow] = useState(null);
   const [dashboardData, setDashboardData] = useState({
     businessInfo: {},
     workflows: [],
@@ -143,7 +149,16 @@ const BusinessDashboard = () => {
       // Clean URL
       window.history.replaceState({}, document.title, window.location.pathname);
     }
-  }, [isAuthenticated, authLoading]);
+
+    // NEW: Handle resumeActivation query parameter (after OAuth redirect)
+    const resumeActivation = params.get('resumeActivation');
+    if (resumeActivation === 'true' && activationSession) {
+      console.log('[NEW] Resuming activation session after OAuth callback');
+      setShowActivationWizard(true);
+      // Clean URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [isAuthenticated, authLoading, activationSession]);
 
   // Handle dashboard updates from Alex
   const handleDashboardUpdate = (newData) => {
@@ -262,16 +277,33 @@ const BusinessDashboard = () => {
 
       const data = await response.json();
       
-      if (data.success && data.authorizationUrl) {
-        console.log('Redirecting to Google OAuth consent screen...');
-        // Redirect the browser to Google consent
-        window.location.href = data.authorizationUrl;
-      } else if (data.success && !data.authorizationUrl) {
-        // No OAuth required; backend can proceed with non-OAuth credentials and cloning
-        alert('This workflow does not need OAuth. It may be activated automatically (feature not yet implemented).');
+      // NEW: Multi-provider activation flow
+      if (data.success && data.requiresActivation) {
+        console.log('[NEW] Starting multi-provider activation...');
+        
+        // Find the workflow to get its name
+        const workflow = dashboardData.workflows.find(w => w.id === workflowId);
+        
+        // Store activation session in context
+        startActivation({
+          sessionId: data.sessionId,
+          workflowId: workflowId,
+          providers: data.providers,
+          providersCompleted: [],
+          workflowName: workflow?.name || 'Workflow'
+        });
+
+        // Set the current activating workflow
+        setActivatingWorkflow(workflow);
+        
+        // Show ActivationWizard modal
+        setShowActivationWizard(true);
+      } else if (data.success && !data.requiresActivation) {
+        // No OAuth required
+        alert(data.message || 'This workflow does not require OAuth credentials.');
       } else {
-        console.error('Failed to get authorization URL:', data);
-        alert(`Failed to prepare OAuth: ${data.message || 'Unknown error'}`);
+        console.error('Failed to initiate activation:', data);
+        alert(`Failed to prepare activation: ${data.message || 'Unknown error'}`);
       }
       
     } catch (error) {
@@ -722,6 +754,13 @@ const BusinessDashboard = () => {
           isOpen={statsModalOpen}
           onClose={() => setStatsModalOpen(false)}
           stats={selectedWorkflowStats || {}}
+        />
+
+        {/* NEW: Activation Wizard Modal */}
+        <ActivationWizard
+          isOpen={showActivationWizard}
+          onClose={() => setShowActivationWizard(false)}
+          workflowName={activatingWorkflow?.name}
         />
       </div>
     </div>

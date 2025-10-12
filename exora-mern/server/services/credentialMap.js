@@ -1,4 +1,7 @@
 // server/services/credentialMap.js
+// LEGACY: Used as fallback when googleScopeRegistry.js doesn't match
+// New flows use googleScopeRegistry.js for dynamic scope detection
+// 
 // Map n8n credential type keys (as found in workflow.nodes[].credentials keys)
 // to the Google OAuth scopes required by that credential.
 // Extend this map as you add more node credential types.

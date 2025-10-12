@@ -2,7 +2,9 @@
 const express = require('express');
 const axios = require('axios');
 const qs = require('qs');
-const credentialMap = require('../services/credentialMap');
+const credentialMap = require('../services/credentialMap'); // Legacy fallback
+const ProviderOrchestrator = require('../services/ProviderOrchestrator');
+const ActivationSession = require('../models/ActivationSession');
 const UserWorkflowInstance = require('../models/UserWorkflowInstance');
 const OAuthTokens = require('../models/OAuthTokens');
 const DashboardData = require('../models/DashboardData');
@@ -45,6 +47,7 @@ function buildGoogleAuthUrl({ clientId, redirectUri, scopes, state }) {
 }
 
 // route: compute required credential types and union scopes for a workflow
+// NEW: Uses ProviderOrchestrator for dynamic detection with registry-based scope detection
 router.post('/workflow-required-creds', async (req, res) => {
   try {
     const { workflowId } = req.body;
@@ -52,46 +55,40 @@ router.post('/workflow-required-creds', async (req, res) => {
       return res.status(400).json({ success: false, message: 'workflowId required' });
     }
 
-    console.log(`Fetching required credentials for workflow ${workflowId}`);
+    console.log(`[NEW] Fetching required credentials for workflow ${workflowId}`);
 
     // Fetch workflow from n8n
     const wfResp = await n8nAxios.get(`/workflows/${workflowId}`);
     const workflow = wfResp.data;
     
-    // Extract unique credential types from all nodes
-    const credSet = new Set();
-    (workflow.nodes || []).forEach(node => {
-      if (node.credentials) {
-        Object.keys(node.credentials).forEach(k => credSet.add(k));
-      }
-    });
-
-    const credentialTypes = [...credSet];
-
-    // Compute union of scopes for OAuth credential types
-    const scopeSet = new Set();
-    const oauthCredTypes = [];
-    const manualCredTypes = [];
+    // Use new ProviderOrchestrator for comprehensive detection
+    const providers = ProviderOrchestrator.detectAllProvidersAndScopes(workflow);
     
-    credentialTypes.forEach(ct => {
-      const scopes = credentialMap[ct];
-      if (scopes && Array.isArray(scopes) && scopes.length > 0) {
-        scopes.forEach(s => scopeSet.add(s));
-        oauthCredTypes.push(ct);
-      } else {
-        manualCredTypes.push(ct);
-      }
-    });
-
-    console.log(`Found ${credentialTypes.length} credential types:`, credentialTypes);
-    console.log(`OAuth types: ${oauthCredTypes.length}, Manual types: ${manualCredTypes.length}`);
+    // Group by type for frontend
+    const grouped = ProviderOrchestrator.groupProvidersByType(providers);
+    
+    console.log(`[NEW] Detected ${providers.length} providers:`, 
+      providers.map(p => `${p.credentialType} (${p.type}${p.autoDetected ? ', auto' : ''})`));
+    
+    // Extract all scopes for backward compatibility
+    const allScopes = [...new Set(
+      providers.flatMap(p => p.scopes || [])
+    )];
 
     res.json({
       success: true,
-      credentialTypes,
-      oauthCredentialTypes: oauthCredTypes,
-      manualCredentialTypes: manualCredTypes,
-      scopes: [...scopeSet]
+      // New structured response
+      providers: providers,
+      providersByType: grouped,
+      // Backward compatible fields
+      credentialTypes: providers.map(p => p.credentialType),
+      oauthCredentialTypes: grouped.oauth2.map(p => p.credentialType),
+      manualCredentialTypes: [...grouped.apikey, ...grouped.manual].map(p => p.credentialType),
+      scopes: allScopes,
+      // Metadata
+      detectionMethod: 'registry',
+      totalProviders: providers.length,
+      autoDetectedCount: providers.filter(p => p.autoDetected).length
     });
   } catch (err) {
     console.error('workflow-required-creds error:', err.response?.data || err.message);
@@ -103,7 +100,8 @@ router.post('/workflow-required-creds', async (req, res) => {
   }
 });
 
-// route: begin activation / get OAuth URL
+// route: begin activation / create session and return provider requirements
+// NEW: Creates activation session for multi-provider flow
 router.post('/activate-workflow', async (req, res) => {
   try {
     const { userId, workflowId } = req.body;
@@ -115,62 +113,85 @@ router.post('/activate-workflow', async (req, res) => {
       });
     }
 
-    console.log(`Initiating activation for user ${userId}, workflow ${workflowId}`);
+    console.log(`[NEW] Initiating activation for user ${userId}, workflow ${workflowId}`);
 
-    // Get workflow and required scopes
+    // Get workflow from n8n
     const wfResp = await n8nAxios.get(`/workflows/${workflowId}`);
     const workflow = wfResp.data;
     
-    const credSet = new Set();
-    (workflow.nodes || []).forEach(node => {
-      if (node.credentials) {
-        Object.keys(node.credentials).forEach(k => credSet.add(k));
-      }
-    });
-    const credentialTypes = [...credSet];
-
-    // Build union of scopes for those credential types using credentialMap
-    const scopeSet = new Set();
-    const oauthCredTypes = [];
+    // Use new ProviderOrchestrator for comprehensive detection
+    const providers = ProviderOrchestrator.detectAllProvidersAndScopes(workflow);
     
-    credentialTypes.forEach(ct => {
-      const scopes = credentialMap[ct];
-      if (scopes && Array.isArray(scopes)) {
-        scopes.forEach(s => scopeSet.add(s));
-        oauthCredTypes.push(ct);
-      }
-    });
-
-    // If no OAuth credential types found, respond that no OAuth required
-    if (scopeSet.size === 0) {
-      console.log('No OAuth credentials required for this workflow');
+    if (providers.length === 0) {
+      console.log('[NEW] No providers required for this workflow');
       return res.json({ 
         success: true, 
-        authorizationUrl: null, 
-        message: 'No OAuth credentials required for this workflow', 
-        credentialTypes 
+        requiresActivation: false,
+        message: 'No OAuth or API credentials required for this workflow',
+        providers: []
       });
     }
 
-    const scopes = [...scopeSet];
-    const state = JSON.stringify({ userId, workflowId, credentialTypes: oauthCredTypes });
-
-    const authorizationUrl = buildGoogleAuthUrl({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      redirectUri: process.env.GOOGLE_REDIRECT_URI,
-      scopes,
-      state
+    // Create activation session in database
+    const session = await ActivationSession.create({
+      userId,
+      workflowId,
+      providersRequired: providers,
+      sessionData: {
+        workflowName: workflow.name,
+        initiatedAt: new Date().toISOString()
+      }
     });
 
-    console.log(`Generated OAuth URL for user ${userId}`);
-    console.log(`Required scopes: ${scopes.join(', ')}`);
-    console.log(`OAuth credential types: ${oauthCredTypes.join(', ')}`);
+    console.log(`[NEW] Created activation session ${session.id} with ${providers.length} providers`);
+
+    // Group providers by type
+    const grouped = ProviderOrchestrator.groupProvidersByType(providers);
+    
+    // Generate OAuth URLs for OAuth2 providers
+    const oauthProviders = grouped.oauth2.map(provider => {
+      // For now, only Google OAuth is supported
+      if (provider.provider === 'google') {
+        const state = JSON.stringify({
+          sessionId: session.id,
+          userId,
+          workflowId,
+          credentialType: provider.credentialType,
+          provider: provider.provider
+        });
+
+        const authUrl = buildGoogleAuthUrl({
+          clientId: process.env.GOOGLE_CLIENT_ID,
+          redirectUri: process.env.GOOGLE_REDIRECT_URI,
+          scopes: provider.scopes,
+          state
+        });
+
+        return {
+          ...provider,
+          authorizationUrl: authUrl
+        };
+      }
+      
+      return {
+        ...provider,
+        authorizationUrl: null,
+        error: 'Provider not yet supported'
+      };
+    });
 
     res.json({ 
-      success: true, 
-      authorizationUrl, 
-      message: 'Redirect user to Google OAuth consent', 
-      credentialTypes: oauthCredTypes 
+      success: true,
+      requiresActivation: true,
+      sessionId: session.id,
+      providers: providers,
+      providersByType: {
+        oauth2: oauthProviders,
+        apikey: grouped.apikey,
+        manual: grouped.manual
+      },
+      totalProviders: providers.length,
+      message: 'Multi-provider activation session created'
     });
   } catch (err) {
     console.error('activate-workflow error:', err.response?.data || err.message);
@@ -316,8 +337,9 @@ function injectCredentialsIntoWorkflow(templateWorkflow, credMap, userLabel) {
 }
 
 // callback route - receives code & state; creates credentials, clones & activates workflow
+// NEW: Multi-provider session-based callback handler
 router.get('/oauth2/callback', async (req, res) => {
-  console.log('\n========== OAuth2 Callback Received ==========');
+  console.log('\n========== [NEW] OAuth2 Callback Received ==========');
   
   try {
     const { code, state, error } = req.query;
@@ -325,83 +347,125 @@ router.get('/oauth2/callback', async (req, res) => {
     // Handle OAuth errors (user denied consent, etc.)
     if (error) {
       console.error('OAuth error from Google:', error);
-      const redirectUrl = `${process.env.FRONTEND_URL}/dashboard?error=oauth_denied&details=${encodeURIComponent(error)}`;
+      const redirectUrl = `${process.env.FRONTEND_URL}/oauth/callback?error=oauth_denied&details=${encodeURIComponent(error)}`;
       return res.redirect(302, redirectUrl);
     }
     
     if (!code || !state) {
       console.error('Missing code or state parameter');
-      const redirectUrl = `${process.env.FRONTEND_URL}/dashboard?error=missing_params`;
+      const redirectUrl = `${process.env.FRONTEND_URL}/oauth/callback?error=missing_params`;
       return res.redirect(302, redirectUrl);
     }
 
-    // Parse state
+    // Parse state (now includes sessionId)
     let parsed;
     try {
       parsed = JSON.parse(state);
     } catch (parseErr) {
       console.error('Failed to parse state:', parseErr);
-      const redirectUrl = `${process.env.FRONTEND_URL}/dashboard?error=invalid_state`;
+      const redirectUrl = `${process.env.FRONTEND_URL}/oauth/callback?error=invalid_state`;
       return res.redirect(302, redirectUrl);
     }
     
-    const { userId, workflowId, credentialTypes } = parsed;
+    const { sessionId, userId, workflowId, credentialType, provider } = parsed;
     
-    if (!userId || !workflowId) {
-      console.error('Missing userId or workflowId in state');
-      const redirectUrl = `${process.env.FRONTEND_URL}/dashboard?error=invalid_state_data`;
+    if (!sessionId || !userId || !workflowId) {
+      console.error('Missing sessionId, userId or workflowId in state');
+      const redirectUrl = `${process.env.FRONTEND_URL}/oauth/callback?error=invalid_state_data`;
       return res.redirect(302, redirectUrl);
     }
 
-    console.log(`Processing activation for user ${userId}, workflow ${workflowId}`);
-    console.log(`Credential types to create: ${(credentialTypes || []).join(', ')}`);
+    console.log(`[NEW] Processing OAuth callback for session ${sessionId}`);
+    console.log(`Provider: ${provider}, Credential Type: ${credentialType}`);
+
+    // Load activation session
+    const session = await ActivationSession.findById(sessionId);
+    if (!session) {
+      console.error(`Session ${sessionId} not found or expired`);
+      const redirectUrl = `${process.env.FRONTEND_URL}/oauth/callback?error=session_expired`;
+      return res.redirect(302, redirectUrl);
+    }
 
     // Step 1: Exchange authorization code for tokens
     const tokens = await exchangeCodeForTokens(code);
 
     if (!tokens || !tokens.access_token) {
       console.error('No access token returned from Google', tokens);
-      const redirectUrl = `${process.env.FRONTEND_URL}/dashboard?error=token_exchange_failed`;
+      const redirectUrl = `${process.env.FRONTEND_URL}/oauth/callback?error=token_exchange_failed&sessionId=${sessionId}`;
       return res.redirect(302, redirectUrl);
     }
 
-    // Step 2: Get template workflow from n8n
-    console.log('\nStep 2: Fetching template workflow from n8n...');
+    // Step 2: Store OAuth tokens in database
+    console.log('\n[NEW] Step 2: Storing OAuth tokens...');
+    await OAuthTokens.upsert({
+      userId: userId,
+      workflowId: workflowId,
+      provider: provider || 'google',
+      accessToken: tokens.access_token,
+      refreshToken: tokens.refresh_token,
+      expiryDate: tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000) : null,
+      scope: tokens.scope
+    });
+    console.log('✓ OAuth tokens stored');
+
+    // Step 3: Create credential in n8n for this provider
+    console.log(`\n[NEW] Step 3: Creating n8n credential for ${credentialType}...`);
+    const userLabel = `user-${userId}`;
+    const displayName = `${userLabel}-${credentialType}-${Date.now()}`;
+    
+    let credentialId = null;
+    try {
+      const result = await createN8nCredential(credentialType, tokens, displayName);
+      credentialId = result?.createdId;
+      console.log(`✓ Created credential ${displayName} with ID: ${credentialId}`);
+    } catch (err) {
+      console.error(`Error creating credential ${credentialType}:`, err.response?.data || err.message);
+      const redirectUrl = `${process.env.FRONTEND_URL}/oauth/callback?error=credential_creation_failed&sessionId=${sessionId}`;
+      return res.redirect(302, redirectUrl);
+    }
+
+    // Step 4: Mark this provider as completed in session
+    console.log(`\n[NEW] Step 4: Marking provider ${credentialType} as completed...`);
+    const updatedSession = await ActivationSession.markProviderCompleted(sessionId, credentialType, {
+      credentialId,
+      provider
+    });
+    
+    // Store credential mapping in session data
+    const sessionData = updatedSession.sessionData || {};
+    const credMap = sessionData.credentialMap || {};
+    credMap[credentialType] = credentialId;
+    await ActivationSession.updateSessionData(sessionId, { credentialMap: credMap });
+
+    // Step 5: Check if all providers are completed
+    const remaining = await ActivationSession.getRemainingProviders(sessionId);
+    
+    if (remaining.length > 0) {
+      console.log(`\n[NEW] Remaining providers: ${remaining.map(p => p.credentialType).join(', ')}`);
+      console.log(`Redirecting to frontend for next provider...`);
+      const redirectUrl = `${process.env.FRONTEND_URL}/oauth/callback?success=partial&sessionId=${sessionId}&remaining=${remaining.length}`;
+      return res.redirect(302, redirectUrl);
+    }
+
+    console.log(`\n[NEW] ✓ All providers completed! Proceeding with workflow activation...`);
+
+    // Step 6: Get template workflow from n8n
+    console.log('\n[NEW] Step 6: Fetching template workflow from n8n...');
     const wfResp = await n8nAxios.get(`/workflows/${workflowId}`);
     const templateWorkflow = wfResp.data;
     console.log(`✓ Fetched template workflow: ${templateWorkflow.name}`);
 
-    // Step 3: Create credentials in n8n for each required credentialType
-    console.log('\nStep 3: Creating credentials in n8n...');
-    const credMap = {}; // credType => createdCredentialId
-    const userLabel = `user-${userId}`;
-    const createdCredentialIds = [];
-    
-    for (const ct of credentialTypes || []) {
-      try {
-        const displayName = `${userLabel}-${ct}-${Date.now()}`;
-        const result = await createN8nCredential(ct, tokens, displayName);
-        
-        if (result && result.createdId) {
-          credMap[ct] = result.createdId;
-          createdCredentialIds.push(result.createdId);
-        } else {
-          console.warn(`Credential creation for ${ct} returned unexpected response`, result);
-        }
-      } catch (err) {
-        console.error(`Error creating credential ${ct}:`, err.response?.data || err.message);
-        // Continue: we may still create the workflow if some credentials succeed
-      }
-    }
+    // Step 7: Get credential mapping from session
+    const finalSession = await ActivationSession.findById(sessionId);
+    const finalCredMap = finalSession.sessionData?.credentialMap || {};
+    console.log('Credential map:', finalCredMap);
 
-    console.log(`✓ Created ${Object.keys(credMap).length} credentials in n8n`);
+    // Step 8: Inject credentials into a clone of the workflow
+    console.log('\n[NEW] Step 8: Cloning workflow and injecting credentials...');
+    const newWorkflowPayload = injectCredentialsIntoWorkflow(templateWorkflow, finalCredMap, userLabel);
 
-    // Step 4: Inject credentials into a clone of the workflow
-    console.log('\nStep 4: Cloning workflow and injecting credentials...');
-    const newWorkflowPayload = injectCredentialsIntoWorkflow(templateWorkflow, credMap, userLabel);
-
-    // Step 5: Create cloned workflow in n8n
-    console.log('\nStep 5: Creating cloned workflow in n8n...');
+    // Step 9: Create cloned workflow in n8n
+    console.log('\n[NEW] Step 9: Creating cloned workflow in n8n...');
     const createWfResp = await n8nAxios.post('/workflows', newWorkflowPayload);
     const createdWf = createWfResp.data;
     const clonedWorkflowId = createdWf?.id || 
@@ -410,14 +474,14 @@ router.get('/oauth2/callback', async (req, res) => {
 
     if (!clonedWorkflowId) {
       console.error('Failed to create cloned workflow. Response:', createWfResp.data);
-      const redirectUrl = `${process.env.FRONTEND_URL}/dashboard?error=workflow_creation_failed`;
+      const redirectUrl = `${process.env.FRONTEND_URL}/oauth/callback?error=workflow_creation_failed&sessionId=${sessionId}`;
       return res.redirect(302, redirectUrl);
     }
 
     console.log(`✓ Created cloned workflow with ID: ${clonedWorkflowId}`);
 
-    // Step 6: Activate the cloned workflow
-    console.log('\nStep 6: Activating cloned workflow...');
+    // Step 10: Activate the cloned workflow
+    console.log('\n[NEW] Step 10: Activating cloned workflow...');
     
     // Use dedicated activation endpoint (POST /workflows/:id/activate)
     // Note: 'active' is read-only in PUT, must use activation endpoint
@@ -431,35 +495,22 @@ router.get('/oauth2/callback', async (req, res) => {
       console.log(`✓ Activated workflow ${clonedWorkflowId}`);
     }
 
-    // Step 7: Persist OAuth tokens in database
-    console.log('\nStep 7: Persisting OAuth tokens in database...');
-    await OAuthTokens.upsert({
-      userId: userId,
-      workflowId: clonedWorkflowId,
-      provider: 'google',
-      access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token,
-      expires_in: tokens.expires_in,
-      token_type: tokens.token_type || 'Bearer',
-      scope: tokens.scope
-    });
-    console.log('✓ OAuth tokens stored');
-
-    // Step 8: Persist workflow mapping in database
-    console.log('\nStep 8: Persisting workflow mapping in database...');
+    // Step 11: Persist workflow mapping in database
+    console.log('\n[NEW] Step 11: Persisting workflow mapping in database...');
+    const credentialIds = Object.values(finalCredMap).filter(Boolean);
     await UserWorkflowInstance.upsert({
       userId: userId,
-      sourceWorkflowId: workflowId,  // ✅ Use correct field name (maps to source_workflow_id)
-      instanceWorkflowId: clonedWorkflowId,  // ✅ Use correct field name
+      sourceWorkflowId: workflowId,  // Template workflow ID
+      instanceWorkflowId: clonedWorkflowId,  // User's cloned instance
       activated_at: new Date(),
-      services_used: Object.keys(credMap),
-      credential_id: createdCredentialIds.join(','),
-      n8n_credential_ids: credMap // Store the full mapping
+      services_used: Object.keys(finalCredMap),
+      credential_id: credentialIds.join(','),
+      n8n_credential_ids: finalCredMap // Store the full mapping
     });
     console.log('✓ Workflow mapping stored');
 
-    // Step 9: Update workflow status in dashboard
-    console.log('\nStep 9: Updating workflow status in dashboard...');
+    // Step 12: Update workflow status in dashboard
+    console.log('\n[NEW] Step 12: Updating workflow status in dashboard...');
     try {
       const statusUpdated = await DashboardData.updateWorkflowStatus(userId, workflowId, 'active');
       if (statusUpdated) {
@@ -472,27 +523,35 @@ router.get('/oauth2/callback', async (req, res) => {
       // Don't fail the whole activation if status update fails
     }
 
-    console.log('\n========== Activation Complete ==========');
+    // Step 13: Cleanup activation session
+    console.log('\n[NEW] Step 13: Cleaning up activation session...');
+    await ActivationSession.updateStatus(sessionId, 'completed');
+    // Session will be auto-deleted by cleanup job after 1 hour
+    console.log('✓ Session marked as completed');
+
+    console.log('\n========== [NEW] Activation Complete ==========');
     console.log('Summary:');
     console.log(`  User: ${userId}`);
+    console.log(`  Session: ${sessionId}`);
     console.log(`  Template Workflow: ${workflowId}`);
     console.log(`  Cloned Workflow: ${clonedWorkflowId}`);
-    console.log(`  Credentials Created: ${Object.keys(credMap).length}`);
-    console.log(`  Credential Map:`, credMap);
+    console.log(`  Credentials Created: ${Object.keys(finalCredMap).length}`);
+    console.log(`  Credential Map:`, finalCredMap);
     console.log('===========================================\n');
 
-    // Step 9: Redirect back to frontend with success
-    const redirectUrl = `${process.env.FRONTEND_URL}/dashboard?workflowActivated=true&clonedWorkflowId=${clonedWorkflowId}&workflowName=${encodeURIComponent(templateWorkflow.name)}`;
+    // Step 14: Redirect back to frontend with success
+    const redirectUrl = `${process.env.FRONTEND_URL}/oauth/callback?success=complete&sessionId=${sessionId}&workflowId=${clonedWorkflowId}&workflowName=${encodeURIComponent(templateWorkflow.name)}`;
     return res.redirect(302, redirectUrl);
     
   } catch (err) {
-    console.error('\n========== Activation Failed ==========');
+    console.error('\n========== [NEW] Activation Failed ==========');
     console.error('Error:', err.response?.data || err.message);
     console.error('Stack:', err.stack);
     console.error('=======================================\n');
     
     const errorMsg = encodeURIComponent(err.message || 'activation_failed');
-    const redirectUrl = `${process.env.FRONTEND_URL}/dashboard?error=activation_failed&details=${errorMsg}`;
+    const sessionParam = parsed?.sessionId ? `&sessionId=${parsed.sessionId}` : '';
+    const redirectUrl = `${process.env.FRONTEND_URL}/oauth/callback?error=activation_failed&details=${errorMsg}${sessionParam}`;
     return res.redirect(302, redirectUrl);
   }
 });
