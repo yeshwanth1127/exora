@@ -171,11 +171,11 @@ router.post('/activate-workflow', async (req, res) => {
       });
 
       const unifiedAuthUrl = buildGoogleAuthUrl({
-        clientId: process.env.GOOGLE_CLIENT_ID,
-        redirectUri: process.env.GOOGLE_REDIRECT_URI,
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      redirectUri: process.env.GOOGLE_REDIRECT_URI,
         scopes: Array.from(allScopes), // All scopes combined
-        state
-      });
+      state
+    });
 
       console.log(`[NEW] Created unified OAuth URL for ${allCredentialTypes.length} Google providers`);
       console.log(`[NEW] Combined scopes: ${Array.from(allScopes).join(', ')}`);
@@ -197,7 +197,7 @@ router.post('/activate-workflow', async (req, res) => {
     }
 
     res.json({ 
-      success: true,
+      success: true, 
       requiresActivation: true,
       sessionId: session.id,
       providers: providers,
@@ -353,9 +353,36 @@ function injectCredentialsIntoWorkflow(templateWorkflow, credMap, userLabel) {
   };
 }
 
+// In-memory cache to track processed callbacks and prevent duplicates
+const processedCallbacks = new Map();
+
+// Cleanup old entries every 5 minutes
+setInterval(() => {
+  const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
+  for (const [key, timestamp] of processedCallbacks.entries()) {
+    if (timestamp < fiveMinutesAgo) {
+      processedCallbacks.delete(key);
+    }
+  }
+}, 5 * 60 * 1000);
+
 // callback route - receives code & state; creates credentials, clones & activates workflow
 // NEW: Multi-provider session-based callback handler
 router.get('/oauth2/callback', async (req, res) => {
+  const callbackId = `${req.query.code || 'error'}-${req.query.state || 'nostate'}`;
+  
+  // Check if we've already processed this exact callback recently (within 30 seconds)
+  if (processedCallbacks.has(callbackId)) {
+    const timeSinceProcessed = Date.now() - processedCallbacks.get(callbackId);
+    if (timeSinceProcessed < 30000) {
+      console.log(`⚠️ Duplicate callback detected (${timeSinceProcessed}ms ago), ignoring...`);
+      return res.send('<html><body><h2>Callback already processed. You can close this window.</h2></body></html>');
+    }
+  }
+  
+  // Mark this callback as processed
+  processedCallbacks.set(callbackId, Date.now());
+  
   console.log('\n========== [NEW] OAuth2 Callback Received ==========');
   
   try {
@@ -364,15 +391,42 @@ router.get('/oauth2/callback', async (req, res) => {
     // Handle OAuth errors (user denied consent, etc.)
     if (error) {
       console.error('OAuth error from Google:', error);
-      // Use replace instead of redirect to prevent back button issues
-      const redirectUrl = `${process.env.FRONTEND_URL}/oauth/callback?error=oauth_denied&details=${encodeURIComponent(error)}&_t=${Date.now()}`;
-      return res.redirect(302, redirectUrl);
+      // STOP the redirect loop - just show an error page
+      return res.send(`
+        <html>
+          <head><title>Authorization Cancelled</title></head>
+          <body style="font-family: Arial; text-align: center; padding: 50px;">
+            <h2>❌ Authorization Cancelled</h2>
+            <p>You cancelled the Google OAuth authorization.</p>
+            <p><a href="${process.env.FRONTEND_URL}/dashboard" style="color: #667eea; text-decoration: none; font-weight: bold;">← Return to Dashboard</a></p>
+            <script>
+              // Auto-redirect after 3 seconds
+              setTimeout(() => {
+                window.location.href = '${process.env.FRONTEND_URL}/dashboard';
+              }, 3000);
+            </script>
+          </body>
+        </html>
+      `);
     }
     
     if (!code || !state) {
       console.error('Missing code or state parameter');
-      const redirectUrl = `${process.env.FRONTEND_URL}/oauth/callback?error=missing_params&_t=${Date.now()}`;
-      return res.redirect(302, redirectUrl);
+      return res.send(`
+        <html>
+          <head><title>Invalid Callback</title></head>
+          <body style="font-family: Arial; text-align: center; padding: 50px;">
+            <h2>❌ Invalid OAuth Callback</h2>
+            <p>Missing required parameters.</p>
+            <p><a href="${process.env.FRONTEND_URL}/dashboard" style="color: #667eea; text-decoration: none; font-weight: bold;">← Return to Dashboard</a></p>
+            <script>
+              setTimeout(() => {
+                window.location.href = '${process.env.FRONTEND_URL}/dashboard';
+              }, 3000);
+            </script>
+          </body>
+        </html>
+      `);
     }
 
     // Parse state (now includes sessionId)
@@ -381,8 +435,24 @@ router.get('/oauth2/callback', async (req, res) => {
       parsed = JSON.parse(state);
     } catch (parseErr) {
       console.error('Failed to parse state:', parseErr);
-      const redirectUrl = `${process.env.FRONTEND_URL}/oauth/callback?error=invalid_state`;
-      return res.redirect(302, redirectUrl);
+      return res.send(`
+        <html>
+          <head><title>Invalid State</title></head>
+          <body style="font-family: Arial; text-align: center; padding: 50px;">
+            <div style="max-width: 500px; margin: 0 auto;">
+              <div style="font-size: 64px; margin-bottom: 20px;">⚠️</div>
+              <h2>Invalid OAuth State</h2>
+              <p>The OAuth state parameter could not be parsed.</p>
+              <p><a href="${process.env.FRONTEND_URL}/dashboard" style="color: #667eea; text-decoration: none; font-weight: bold;">← Return to Dashboard</a></p>
+              <script>
+                setTimeout(() => {
+                  window.location.href = '${process.env.FRONTEND_URL}/dashboard';
+                }, 3000);
+              </script>
+            </body>
+          </html>
+        </html>
+      `);
     }
     
     const { sessionId, userId, workflowId, credentialType, credentialTypes, provider } = parsed;
@@ -392,8 +462,23 @@ router.get('/oauth2/callback', async (req, res) => {
     
     if (!sessionId || !userId || !workflowId) {
       console.error('Missing sessionId, userId or workflowId in state');
-      const redirectUrl = `${process.env.FRONTEND_URL}/oauth/callback?error=invalid_state_data`;
-      return res.redirect(302, redirectUrl);
+      return res.send(`
+        <html>
+          <head><title>Invalid Callback Data</title></head>
+          <body style="font-family: Arial; text-align: center; padding: 50px;">
+            <div style="max-width: 500px; margin: 0 auto;">
+              <div style="font-size: 64px; margin-bottom: 20px;">⚠️</div>
+              <h2>Invalid Callback Data</h2>
+              <p>Required session information is missing.</p>
+              <p><a href="${process.env.FRONTEND_URL}/dashboard" style="color: #667eea; text-decoration: none; font-weight: bold;">← Return to Dashboard</a></p>
+              <script>
+                setTimeout(() => {
+                  window.location.href = '${process.env.FRONTEND_URL}/dashboard';
+                }, 3000);
+              </script>
+            </body>
+          </html>
+        `);
     }
 
     console.log(`[NEW] Processing OAuth callback for session ${sessionId}`);
@@ -404,8 +489,23 @@ router.get('/oauth2/callback', async (req, res) => {
     const session = await ActivationSession.findById(sessionId);
     if (!session) {
       console.error(`Session ${sessionId} not found or expired`);
-      const redirectUrl = `${process.env.FRONTEND_URL}/oauth/callback?error=session_expired`;
-      return res.redirect(302, redirectUrl);
+      return res.send(`
+        <html>
+          <head><title>Session Expired</title></head>
+          <body style="font-family: Arial; text-align: center; padding: 50px;">
+            <div style="max-width: 500px; margin: 0 auto;">
+              <div style="font-size: 64px; margin-bottom: 20px;">⏰</div>
+              <h2>Session Expired</h2>
+              <p>Your activation session has expired. Please start the activation process again.</p>
+              <p><a href="${process.env.FRONTEND_URL}/dashboard" style="color: #667eea; text-decoration: none; font-weight: bold;">← Return to Dashboard</a></p>
+              <script>
+                setTimeout(() => {
+                  window.location.href = '${process.env.FRONTEND_URL}/dashboard';
+                }, 3000);
+              </script>
+            </body>
+          </html>
+        `);
     }
 
     // Step 1: Exchange authorization code for tokens
@@ -413,8 +513,23 @@ router.get('/oauth2/callback', async (req, res) => {
 
     if (!tokens || !tokens.access_token) {
       console.error('No access token returned from Google', tokens);
-      const redirectUrl = `${process.env.FRONTEND_URL}/oauth/callback?error=token_exchange_failed&sessionId=${sessionId}`;
-      return res.redirect(302, redirectUrl);
+      return res.send(`
+        <html>
+          <head><title>Token Exchange Failed</title></head>
+          <body style="font-family: Arial; text-align: center; padding: 50px;">
+            <div style="max-width: 500px; margin: 0 auto;">
+              <div style="font-size: 64px; margin-bottom: 20px;">🔒</div>
+              <h2>Token Exchange Failed</h2>
+              <p>Failed to obtain access token from Google. Please try again.</p>
+              <p><a href="${process.env.FRONTEND_URL}/dashboard" style="color: #667eea; text-decoration: none; font-weight: bold;">← Return to Dashboard</a></p>
+              <script>
+                setTimeout(() => {
+                  window.location.href = '${process.env.FRONTEND_URL}/dashboard';
+                }, 3000);
+              </script>
+            </body>
+          </html>
+        `);
     }
 
     // Step 2: Store OAuth tokens in database
@@ -459,8 +574,23 @@ router.get('/oauth2/callback', async (req, res) => {
 
     if (Object.keys(credMap).length === 0) {
       console.error('Failed to create any credentials');
-      const redirectUrl = `${process.env.FRONTEND_URL}/oauth/callback?error=credential_creation_failed&sessionId=${sessionId}`;
-      return res.redirect(302, redirectUrl);
+      return res.send(`
+        <html>
+          <head><title>Credential Creation Failed</title></head>
+          <body style="font-family: Arial; text-align: center; padding: 50px;">
+            <div style="max-width: 500px; margin: 0 auto;">
+              <div style="font-size: 64px; margin-bottom: 20px;">🔑</div>
+              <h2>Credential Creation Failed</h2>
+              <p>Failed to create credentials in n8n. Please check your n8n API configuration.</p>
+              <p><a href="${process.env.FRONTEND_URL}/dashboard" style="color: #667eea; text-decoration: none; font-weight: bold;">← Return to Dashboard</a></p>
+              <script>
+                setTimeout(() => {
+                  window.location.href = '${process.env.FRONTEND_URL}/dashboard';
+                }, 4000);
+              </script>
+            </body>
+          </html>
+        `);
     }
 
     console.log(`\n[NEW] ✓ Created ${Object.keys(credMap).length} credentials successfully`);
@@ -474,8 +604,24 @@ router.get('/oauth2/callback', async (req, res) => {
     if (remaining.length > 0) {
       console.log(`\n[NEW] Remaining providers: ${remaining.map(p => p.credentialType).join(', ')}`);
       console.log(`Redirecting to frontend for next provider...`);
-      const redirectUrl = `${process.env.FRONTEND_URL}/oauth/callback?success=partial&sessionId=${sessionId}&remaining=${remaining.length}`;
-      return res.redirect(302, redirectUrl);
+      return res.send(`
+        <html>
+          <head><title>Provider Connected</title></head>
+          <body style="font-family: Arial; text-align: center; padding: 50px;">
+            <div style="max-width: 500px; margin: 0 auto;">
+              <div style="font-size: 64px; margin-bottom: 20px;">⚡</div>
+              <h2>Provider Connected!</h2>
+              <p>${remaining.length} more provider${remaining.length !== 1 ? 's' : ''} to connect...</p>
+              <p style="color: #6c757d;">Returning to activation wizard...</p>
+            </div>
+            <script>
+              setTimeout(() => {
+                window.location.href = '${process.env.FRONTEND_URL}/dashboard?resumeActivation=true';
+              }, 1500);
+            </script>
+          </body>
+        </html>
+      `);
     }
 
     console.log(`\n[NEW] ✓ All providers completed! Proceeding with workflow activation...`);
@@ -505,8 +651,23 @@ router.get('/oauth2/callback', async (req, res) => {
 
     if (!clonedWorkflowId) {
       console.error('Failed to create cloned workflow. Response:', createWfResp.data);
-      const redirectUrl = `${process.env.FRONTEND_URL}/oauth/callback?error=workflow_creation_failed&sessionId=${sessionId}`;
-      return res.redirect(302, redirectUrl);
+      return res.send(`
+        <html>
+          <head><title>Workflow Creation Failed</title></head>
+          <body style="font-family: Arial; text-align: center; padding: 50px;">
+            <div style="max-width: 500px; margin: 0 auto;">
+              <div style="font-size: 64px; margin-bottom: 20px;">⚙️</div>
+              <h2>Workflow Creation Failed</h2>
+              <p>Failed to clone the workflow in n8n. Please check n8n API logs.</p>
+              <p><a href="${process.env.FRONTEND_URL}/dashboard" style="color: #667eea; text-decoration: none; font-weight: bold;">← Return to Dashboard</a></p>
+              <script>
+                setTimeout(() => {
+                  window.location.href = '${process.env.FRONTEND_URL}/dashboard';
+                }, 4000);
+              </script>
+            </body>
+          </html>
+        `);
     }
 
     console.log(`✓ Created cloned workflow with ID: ${clonedWorkflowId}`);
@@ -570,9 +731,25 @@ router.get('/oauth2/callback', async (req, res) => {
     console.log(`  Credential Map:`, finalCredMap);
     console.log('===========================================\n');
 
-    // Step 14: Redirect back to frontend with success
-    const redirectUrl = `${process.env.FRONTEND_URL}/oauth/callback?success=complete&sessionId=${sessionId}&workflowId=${clonedWorkflowId}&workflowName=${encodeURIComponent(templateWorkflow.name)}`;
-    return res.redirect(302, redirectUrl);
+    // Step 14: Show success page and redirect (prevent loop)
+    return res.send(`
+      <html>
+        <head><title>Activation Complete</title></head>
+        <body style="font-family: Arial; text-align: center; padding: 50px;">
+          <div style="max-width: 500px; margin: 0 auto;">
+            <div style="font-size: 64px; margin-bottom: 20px;">✅</div>
+            <h2>Workflow Activated!</h2>
+            <p><strong>${templateWorkflow.name}</strong> is now active and running.</p>
+            <p style="color: #6c757d;">Redirecting to dashboard...</p>
+          </div>
+          <script>
+            setTimeout(() => {
+              window.location.href = '${process.env.FRONTEND_URL}/dashboard?workflowActivated=true&workflowId=${clonedWorkflowId}&workflowName=${encodeURIComponent(templateWorkflow.name)}';
+            }, 2000);
+          </script>
+        </body>
+      </html>
+    `);
     
   } catch (err) {
     console.error('\n========== [NEW] Activation Failed ==========');
@@ -580,10 +757,25 @@ router.get('/oauth2/callback', async (req, res) => {
     console.error('Stack:', err.stack);
     console.error('=======================================\n');
     
-    const errorMsg = encodeURIComponent(err.message || 'activation_failed');
-    const sessionParam = parsed?.sessionId ? `&sessionId=${parsed.sessionId}` : '';
-    const redirectUrl = `${process.env.FRONTEND_URL}/oauth/callback?error=activation_failed&details=${errorMsg}${sessionParam}`;
-    return res.redirect(302, redirectUrl);
+    const errorMsg = err.message || 'activation_failed';
+    return res.send(`
+      <html>
+        <head><title>Activation Failed</title></head>
+        <body style="font-family: Arial; text-align: center; padding: 50px;">
+          <div style="max-width: 500px; margin: 0 auto;">
+            <div style="font-size: 64px; margin-bottom: 20px;">❌</div>
+            <h2>Activation Failed</h2>
+            <p style="color: #dc3545; font-weight: 600;">${errorMsg}</p>
+            <p style="color: #6c757d;">Please try again or contact support if the issue persists.</p>
+            <p><a href="${process.env.FRONTEND_URL}/dashboard" style="color: #667eea; text-decoration: none; font-weight: bold;">← Return to Dashboard</a></p>
+            <script>
+              setTimeout(() => {
+                window.location.href = '${process.env.FRONTEND_URL}/dashboard';
+              }, 5000);
+            </script>
+          </body>
+        </html>
+      `);
   }
 });
 

@@ -170,7 +170,7 @@ const BusinessDashboard = () => {
     try {
       // If deactivating, handle workflow deactivation
       if (currentStatus === 'active') {
-        const confirmed = window.confirm('Are you sure you want to deactivate this workflow? The workflow will stop running in n8n.');
+        const confirmed = window.confirm('Are you sure you want to deactivate this workflow? The workflow will stop running completely.');
         if (!confirmed) {
           return;
         }
@@ -197,7 +197,7 @@ const BusinessDashboard = () => {
           }));
           
           // Show success message
-          alert('✓ Workflow deactivated successfully! The workflow has been stopped in n8n.');
+          alert('✓ Workflow deactivated successfully! The workflow has been stopped.');
         } else {
           const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
           alert(`Failed to deactivate workflow: ${errorData.error || 'Please try again'}`);
