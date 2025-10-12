@@ -152,12 +152,19 @@ function ActivationWizard({ isOpen, onClose, workflowName }) {
                   <button 
                     className="unified-connect-button"
                     onClick={() => {
+                      console.log('[DEBUG] Button clicked!');
+                      console.log('[DEBUG] Providers:', providers);
+                      
                       // Get the first OAuth2 provider with authorizationUrl (they all have the same URL now)
                       const oauthProvider = providers.find(p => p.type === 'oauth2' && p.authorizationUrl);
+                      console.log('[DEBUG] OAuth provider found:', oauthProvider);
+                      
                       if (oauthProvider && oauthProvider.authorizationUrl) {
+                        console.log('[DEBUG] Redirecting to:', oauthProvider.authorizationUrl);
                         window.location.href = oauthProvider.authorizationUrl;
                       } else {
-                        console.error('No OAuth URL found');
+                        console.error('[DEBUG] No OAuth URL found! Providers:', providers);
+                        alert('OAuth URL not found. Please check console for details.');
                       }
                     }}
                     disabled={!providers.some(p => p.type === 'oauth2' && p.authorizationUrl)}

@@ -280,15 +280,21 @@ const BusinessDashboard = () => {
       // NEW: Multi-provider activation flow
       if (data.success && data.requiresActivation) {
         console.log('[NEW] Starting multi-provider activation...');
+        console.log('[NEW] Provider data:', data.providersByType);
         
         // Find the workflow to get its name
         const workflow = dashboardData.workflows.find(w => w.id === workflowId);
+        
+        // Use OAuth2 providers which have authorizationUrl attached
+        const providersWithAuth = data.providersByType?.oauth2 || data.providers;
+        
+        console.log('[NEW] Providers with auth:', providersWithAuth);
         
         // Store activation session in context
         startActivation({
           sessionId: data.sessionId,
           workflowId: workflowId,
-          providers: data.providers,
+          providers: providersWithAuth, // Use providers with authorizationUrl
           providersCompleted: [],
           workflowName: workflow?.name || 'Workflow'
         });
