@@ -22,10 +22,15 @@ function OAuthCallback() {
 
   const [status, setStatus] = useState('processing'); // processing, partial, complete, error
   const [message, setMessage] = useState('Processing OAuth callback...');
+  const [hasProcessed, setHasProcessed] = useState(false);
 
   useEffect(() => {
-    processCallback();
-  }, []);
+    // Prevent multiple processing
+    if (!hasProcessed) {
+      setHasProcessed(true);
+      processCallback();
+    }
+  }, [hasProcessed]);
 
   const processCallback = async () => {
     try {
@@ -38,7 +43,7 @@ function OAuthCallback() {
         setActivationError(`OAuth error: ${error}`);
         
         setTimeout(() => {
-          navigate('/dashboard');
+          navigate('/dashboard', { replace: true });
         }, 3000);
         return;
       }
@@ -57,7 +62,7 @@ function OAuthCallback() {
         
         // Update session and redirect back to wizard after 1.5 seconds
         setTimeout(() => {
-          navigate('/dashboard?resumeActivation=true');
+          navigate('/dashboard?resumeActivation=true', { replace: true });
         }, 1500);
       } else if (success === 'complete') {
         // All providers completed!
@@ -67,7 +72,7 @@ function OAuthCallback() {
         // Mark activation as complete
         setTimeout(() => {
           completeActivation();
-          navigate(`/dashboard?workflowActivated=true&workflowId=${workflowId}&workflowName=${encodeURIComponent(workflowName || 'Workflow')}`);
+          navigate(`/dashboard?workflowActivated=true&workflowId=${workflowId}&workflowName=${encodeURIComponent(workflowName || 'Workflow')}`, { replace: true });
         }, 2000);
       } else {
         // Unknown state - check if we have a session in context
@@ -76,14 +81,14 @@ function OAuthCallback() {
           setMessage('Updating activation status...');
           
           setTimeout(() => {
-            navigate('/dashboard?resumeActivation=true');
+            navigate('/dashboard?resumeActivation=true', { replace: true });
           }, 1500);
         } else {
           setStatus('error');
           setMessage('Invalid callback state. Please try again.');
           
           setTimeout(() => {
-            navigate('/dashboard');
+            navigate('/dashboard', { replace: true });
           }, 3000);
         }
       }
@@ -94,7 +99,7 @@ function OAuthCallback() {
       setActivationError(err.message);
       
       setTimeout(() => {
-        navigate('/dashboard');
+        navigate('/dashboard', { replace: true });
       }, 3000);
     }
   };

@@ -142,6 +142,38 @@ class N8NIntegration {
     }
   }
 
+  // Activate workflow
+  async activateWorkflow(workflowId) {
+    try {
+      const response = await axios.post(`${this.baseURL}/api/v1/workflows/${workflowId}/activate`, 
+        {},
+        { headers: this.headers }
+      );
+      
+      console.log(`Workflow ${workflowId} activated successfully`);
+      return { success: true, workflow: response.data };
+    } catch (error) {
+      console.error(`Failed to activate workflow ${workflowId}:`, error.message);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Deactivate workflow
+  async deactivateWorkflow(workflowId) {
+    try {
+      const response = await axios.post(`${this.baseURL}/api/v1/workflows/${workflowId}/deactivate`, 
+        {},
+        { headers: this.headers }
+      );
+      
+      console.log(`Workflow ${workflowId} deactivated successfully`);
+      return { success: true, workflow: response.data };
+    } catch (error) {
+      console.error(`Failed to deactivate workflow ${workflowId}:`, error.message);
+      return { success: false, error: error.message };
+    }
+  }
+
   // Delete workflow
   async deleteWorkflow(workflowId) {
     try {

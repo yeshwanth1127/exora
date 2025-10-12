@@ -154,6 +154,44 @@ router.patch('/:workflowId/status', authenticateToken, async (req, res) => {
       });
     }
 
+    // NEW: If deactivating, also deactivate the n8n workflow instance
+    if (status === 'inactive') {
+      const UserWorkflowInstance = require('../models/UserWorkflowInstance');
+      const instance = await UserWorkflowInstance.findByUserSource({
+        userId,
+        sourceWorkflowId: workflowId
+      });
+
+      if (instance && instance.instance_workflow_id) {
+        try {
+          console.log(`Deactivating n8n workflow instance: ${instance.instance_workflow_id}`);
+          
+          // Deactivate in n8n using dedicated deactivate endpoint
+          const result = await n8n.deactivateWorkflow(instance.instance_workflow_id);
+
+          if (result.success) {
+            console.log(`✓ n8n workflow ${instance.instance_workflow_id} deactivated`);
+            
+            // Update instance status in database
+            await UserWorkflowInstance.upsert({
+              userId,
+              sourceWorkflowId: workflowId,
+              instanceWorkflowId: instance.instance_workflow_id,
+              status: 'inactive'
+            });
+          } else {
+            console.warn(`⚠️ Failed to deactivate n8n workflow: ${result.error}`);
+          }
+        } catch (n8nError) {
+          console.error('Error deactivating n8n workflow:', n8nError);
+          // Continue with dashboard update even if n8n deactivation fails
+        }
+      } else {
+        console.log(`⚠️ No workflow instance found for template ${workflowId}, only updating dashboard status`);
+      }
+    }
+
+    // Update dashboard status
     workflow.status = status;
     workflow.updatedAt = new Date().toISOString();
 

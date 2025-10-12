@@ -168,8 +168,13 @@ const BusinessDashboard = () => {
   // Workflow management functions - Handle Activation Flow
   const toggleWorkflowStatus = async (workflowId, currentStatus) => {
     try {
-      // If deactivating, handle simple status toggle
+      // If deactivating, handle workflow deactivation
       if (currentStatus === 'active') {
+        const confirmed = window.confirm('Are you sure you want to deactivate this workflow? The workflow will stop running in n8n.');
+        if (!confirmed) {
+          return;
+        }
+
         const response = await fetch(`${API_BASE_URL}/workflows/${workflowId}/status`, {
           method: 'PATCH',
           headers: {
@@ -180,6 +185,9 @@ const BusinessDashboard = () => {
         });
 
         if (response.ok) {
+          const data = await response.json();
+          console.log('✓ Workflow deactivated:', data);
+          
           // Update local state
           setDashboardData(prev => ({
             ...prev,
@@ -187,6 +195,12 @@ const BusinessDashboard = () => {
               w.id === workflowId ? { ...w, status: 'inactive' } : w
             )
           }));
+          
+          // Show success message
+          alert('✓ Workflow deactivated successfully! The workflow has been stopped in n8n.');
+        } else {
+          const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+          alert(`Failed to deactivate workflow: ${errorData.error || 'Please try again'}`);
         }
         return;
       }

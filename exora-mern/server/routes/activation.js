@@ -364,13 +364,14 @@ router.get('/oauth2/callback', async (req, res) => {
     // Handle OAuth errors (user denied consent, etc.)
     if (error) {
       console.error('OAuth error from Google:', error);
-      const redirectUrl = `${process.env.FRONTEND_URL}/oauth/callback?error=oauth_denied&details=${encodeURIComponent(error)}`;
+      // Use replace instead of redirect to prevent back button issues
+      const redirectUrl = `${process.env.FRONTEND_URL}/oauth/callback?error=oauth_denied&details=${encodeURIComponent(error)}&_t=${Date.now()}`;
       return res.redirect(302, redirectUrl);
     }
     
     if (!code || !state) {
       console.error('Missing code or state parameter');
-      const redirectUrl = `${process.env.FRONTEND_URL}/oauth/callback?error=missing_params`;
+      const redirectUrl = `${process.env.FRONTEND_URL}/oauth/callback?error=missing_params&_t=${Date.now()}`;
       return res.redirect(302, redirectUrl);
     }
 
