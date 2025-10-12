@@ -1,0 +1,66 @@
+/* client/src/components/DynamicFormRenderer.css */
+
+.dynamic-form-renderer {
+  padding: 8px 0;
+}
+
+.no-parameters {
+  text-align: center;
+  padding: 40px 20px;
+  background: linear-gradient(135deg, #f0f4ff 0%, #f8f0ff 100%);
+  border-radius: 12px;
+  border: 2px dashed #c7d2fe;
+}
+
+.no-params-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.no-parameters p {
+  margin: 8px 0;
+  color: #495057;
+  font-size: 15px;
+}
+
+.no-params-hint {
+  color: #6c757d !important;
+  font-size: 13px !important;
+}
+
+.form-section {
+  margin-bottom: 28px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #212529;
+  margin: 0 0 16px 0;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.form-fields {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-footer-info {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e9ecef;
+  text-align: center;
+}
+
+.form-footer-info small {
+  font-size: 12px;
+  color: #6c757d;
+}
+
+.form-footer-info .required-indicator {
+  color: #dc3545;
+  font-weight: 700;
+  margin-right: 4px;
+}
+

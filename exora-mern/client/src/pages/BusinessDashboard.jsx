@@ -9,6 +9,7 @@ import DotGrid from '../components/DotGrid';
 import DashboardAlex from '../components/DashboardAlex';
 import WorkflowStatsModal from '../components/WorkflowStatsModal';
 import ActivationWizard from '../components/ActivationWizard';
+import WorkflowExecutionModal from '../components/WorkflowExecutionModal';
 import { API_BASE_URL, SOCKET_URL } from '../config/api';
 import './BusinessDashboard.css';
 
@@ -20,6 +21,8 @@ const BusinessDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [showActivationWizard, setShowActivationWizard] = useState(false);
   const [activatingWorkflow, setActivatingWorkflow] = useState(null);
+  const [showExecutionModal, setShowExecutionModal] = useState(false);
+  const [executingWorkflow, setExecutingWorkflow] = useState(null);
   const [dashboardData, setDashboardData] = useState({
     businessInfo: {},
     workflows: [],
@@ -332,6 +335,13 @@ const BusinessDashboard = () => {
     }
   };
 
+  // NEW: Handle running automation
+  const handleRunAutomation = (workflow) => {
+    console.log('[NEW] Opening execution modal for workflow:', workflow.id);
+    setExecutingWorkflow(workflow);
+    setShowExecutionModal(true);
+  };
+
   const removeWorkflow = async (workflowId) => {
     try {
       const response = await fetch(`${API_BASE_URL}/workflows/${workflowId}`, {
@@ -616,12 +626,20 @@ const BusinessDashboard = () => {
                         </button>
                       )}
                       {workflow.status === 'active' && (
-                        <button 
-                          className="workflow-toggle deactivate"
-                          onClick={() => toggleWorkflowStatus(workflow.id, workflow.status)}
-                        >
-                          Deactivate
-                        </button>
+                        <>
+                          <button 
+                            className="workflow-run-btn"
+                            onClick={() => handleRunAutomation(workflow)}
+                          >
+                            ⚡ Run Automation
+                          </button>
+                          <button 
+                            className="workflow-toggle deactivate"
+                            onClick={() => toggleWorkflowStatus(workflow.id, workflow.status)}
+                          >
+                            Deactivate
+                          </button>
+                        </>
                       )}
                       <button className="workflow-stats-btn" onClick={() => showWorkflowStats(workflow.id)}>
                         📊 Get Stats
@@ -783,6 +801,16 @@ const BusinessDashboard = () => {
           isOpen={showActivationWizard}
           onClose={() => setShowActivationWizard(false)}
           workflowName={activatingWorkflow?.name}
+        />
+
+        {/* NEW: Workflow Execution Modal */}
+        <WorkflowExecutionModal
+          isOpen={showExecutionModal}
+          onClose={() => {
+            setShowExecutionModal(false);
+            setExecutingWorkflow(null);
+          }}
+          workflow={executingWorkflow}
         />
       </div>
     </div>
