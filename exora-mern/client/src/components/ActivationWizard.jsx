@@ -134,18 +134,36 @@ function ActivationWizard({ isOpen, onClose, workflowName }) {
                     key={provider.credentialType}
                     provider={provider}
                     status={getProviderStatus(provider)}
-                    isCurrentStep={
-                      nextProvider?.credentialType === provider.credentialType
-                    }
+                    isCurrentStep={false}
+                    showButton={false}
                   />
                 ))}
               </div>
 
+              {/* Single unified Connect button for all Google providers */}
               {remaining.length > 0 && (
                 <div className="step-footer">
-                  <p className="remaining-text">
-                    {remaining.length} provider{remaining.length !== 1 ? 's' : ''} remaining
-                  </p>
+                  <div className="connection-info">
+                    <p className="info-text">
+                      ✨ <strong>One-Click Connection:</strong> Grant access to all {providers.length} service{providers.length !== 1 ? 's' : ''} with a single OAuth flow
+                    </p>
+                  </div>
+                  
+                  <button 
+                    className="unified-connect-button"
+                    onClick={() => {
+                      // Get the first OAuth2 provider with authorizationUrl (they all have the same URL now)
+                      const oauthProvider = providers.find(p => p.type === 'oauth2' && p.authorizationUrl);
+                      if (oauthProvider && oauthProvider.authorizationUrl) {
+                        window.location.href = oauthProvider.authorizationUrl;
+                      } else {
+                        console.error('No OAuth URL found');
+                      }
+                    }}
+                    disabled={!providers.some(p => p.type === 'oauth2' && p.authorizationUrl)}
+                  >
+                    🔐 Connect All Google Services
+                  </button>
                 </div>
               )}
             </div>

@@ -3,7 +3,7 @@ import './DashboardAlex.css';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
-const DashboardAlex = ({ isOpen, onToggle, onDashboardUpdate, isSidebar = false }) => {
+const DashboardAlex = ({ isOpen, onToggle, onDashboardUpdate, isSidebar = false, currentDashboardData = null }) => {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [isThinking, setIsThinking] = useState(false);
@@ -16,6 +16,13 @@ const DashboardAlex = ({ isOpen, onToggle, onDashboardUpdate, isSidebar = false 
     isConfigured: false
   });
   const messagesEndRef = useRef(null);
+
+  // Sync local state with parent's dashboardData
+  useEffect(() => {
+    if (currentDashboardData) {
+      setDashboardData(currentDashboardData);
+    }
+  }, [currentDashboardData]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

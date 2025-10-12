@@ -468,6 +468,7 @@ const BusinessDashboard = () => {
           isOpen={showAlex}
           onToggle={() => setShowAlex(!showAlex)}
           onDashboardUpdate={handleDashboardUpdate}
+          currentDashboardData={dashboardData}
         />
       </div>
     );
@@ -746,6 +747,7 @@ const BusinessDashboard = () => {
           isOpen={showAlex}
           onToggle={() => setShowAlex(!showAlex)}
           onDashboardUpdate={handleDashboardUpdate}
+          currentDashboardData={dashboardData}
           isSidebar={false}
         />
 

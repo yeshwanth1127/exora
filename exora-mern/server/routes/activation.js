@@ -148,37 +148,53 @@ router.post('/activate-workflow', async (req, res) => {
     // Group providers by type
     const grouped = ProviderOrchestrator.groupProvidersByType(providers);
     
-    // Generate OAuth URLs for OAuth2 providers
-    const oauthProviders = grouped.oauth2.map(provider => {
-      // For now, only Google OAuth is supported
-      if (provider.provider === 'google') {
-        const state = JSON.stringify({
-          sessionId: session.id,
-          userId,
-          workflowId,
-          credentialType: provider.credentialType,
-          provider: provider.provider
-        });
+    // NEW: Combine ALL Google OAuth providers into ONE unified OAuth flow
+    const googleProviders = grouped.oauth2.filter(p => p.provider === 'google');
+    
+    if (googleProviders.length > 0) {
+      // Combine all scopes from all Google providers
+      const allScopes = new Set();
+      const allCredentialTypes = [];
+      
+      googleProviders.forEach(provider => {
+        allCredentialTypes.push(provider.credentialType);
+        provider.scopes.forEach(scope => allScopes.add(scope));
+      });
 
-        const authUrl = buildGoogleAuthUrl({
-          clientId: process.env.GOOGLE_CLIENT_ID,
-          redirectUri: process.env.GOOGLE_REDIRECT_URI,
-          scopes: provider.scopes,
-          state
-        });
+      // Create ONE OAuth URL with ALL combined scopes
+      const state = JSON.stringify({
+        sessionId: session.id,
+        userId,
+        workflowId,
+        credentialTypes: allCredentialTypes, // Array of all credential types
+        provider: 'google'
+      });
 
+      const unifiedAuthUrl = buildGoogleAuthUrl({
+        clientId: process.env.GOOGLE_CLIENT_ID,
+        redirectUri: process.env.GOOGLE_REDIRECT_URI,
+        scopes: Array.from(allScopes), // All scopes combined
+        state
+      });
+
+      console.log(`[NEW] Created unified OAuth URL for ${allCredentialTypes.length} Google providers`);
+      console.log(`[NEW] Combined scopes: ${Array.from(allScopes).join(', ')}`);
+
+      // Attach the SAME authorizationUrl to ALL Google providers
+      grouped.oauth2 = grouped.oauth2.map(provider => {
+        if (provider.provider === 'google') {
+          return {
+            ...provider,
+            authorizationUrl: unifiedAuthUrl
+          };
+        }
         return {
           ...provider,
-          authorizationUrl: authUrl
+          authorizationUrl: null,
+          error: 'Provider not yet supported'
         };
-      }
-      
-      return {
-        ...provider,
-        authorizationUrl: null,
-        error: 'Provider not yet supported'
-      };
-    });
+      });
+    }
 
     res.json({ 
       success: true,
@@ -186,11 +202,12 @@ router.post('/activate-workflow', async (req, res) => {
       sessionId: session.id,
       providers: providers,
       providersByType: {
-        oauth2: oauthProviders,
+        oauth2: grouped.oauth2,
         apikey: grouped.apikey,
         manual: grouped.manual
       },
       totalProviders: providers.length,
+      unifiedOAuth: googleProviders.length > 0, // Flag indicating unified OAuth
       message: 'Multi-provider activation session created'
     });
   } catch (err) {
@@ -367,7 +384,10 @@ router.get('/oauth2/callback', async (req, res) => {
       return res.redirect(302, redirectUrl);
     }
     
-    const { sessionId, userId, workflowId, credentialType, provider } = parsed;
+    const { sessionId, userId, workflowId, credentialType, credentialTypes, provider } = parsed;
+    
+    // Support both single credentialType (legacy) and credentialTypes array (new unified flow)
+    const typesToCreate = credentialTypes || (credentialType ? [credentialType] : []);
     
     if (!sessionId || !userId || !workflowId) {
       console.error('Missing sessionId, userId or workflowId in state');
@@ -376,7 +396,8 @@ router.get('/oauth2/callback', async (req, res) => {
     }
 
     console.log(`[NEW] Processing OAuth callback for session ${sessionId}`);
-    console.log(`Provider: ${provider}, Credential Type: ${credentialType}`);
+    console.log(`Provider: ${provider}`);
+    console.log(`Credential Types to create: ${typesToCreate.join(', ')}`);
 
     // Load activation session
     const session = await ActivationSession.findById(sessionId);
@@ -408,36 +429,45 @@ router.get('/oauth2/callback', async (req, res) => {
     });
     console.log('✓ OAuth tokens stored');
 
-    // Step 3: Create credential in n8n for this provider
-    console.log(`\n[NEW] Step 3: Creating n8n credential for ${credentialType}...`);
+    // Step 3: Create ALL n8n credentials from the SAME OAuth tokens
+    console.log(`\n[NEW] Step 3: Creating ${typesToCreate.length} n8n credentials from unified OAuth...`);
     const userLabel = `user-${userId}`;
-    const displayName = `${userLabel}-${credentialType}-${Date.now()}`;
+    const credMap = {};
     
-    let credentialId = null;
-    try {
-      const result = await createN8nCredential(credentialType, tokens, displayName);
-      credentialId = result?.createdId;
-      console.log(`✓ Created credential ${displayName} with ID: ${credentialId}`);
-    } catch (err) {
-      console.error(`Error creating credential ${credentialType}:`, err.response?.data || err.message);
+    for (const credType of typesToCreate) {
+      try {
+        const displayName = `${userLabel}-${credType}-${Date.now()}`;
+        const result = await createN8nCredential(credType, tokens, displayName);
+        const credentialId = result?.createdId;
+        
+        if (credentialId) {
+          credMap[credType] = credentialId;
+          console.log(`✓ Created credential ${displayName} with ID: ${credentialId}`);
+          
+          // Mark this provider as completed in session
+          await ActivationSession.markProviderCompleted(sessionId, credType, {
+            credentialId,
+            provider: provider || 'google'
+          });
+        }
+      } catch (err) {
+        console.error(`Error creating credential ${credType}:`, err.response?.data || err.message);
+        // Continue with other credentials even if one fails
+      }
+    }
+
+    if (Object.keys(credMap).length === 0) {
+      console.error('Failed to create any credentials');
       const redirectUrl = `${process.env.FRONTEND_URL}/oauth/callback?error=credential_creation_failed&sessionId=${sessionId}`;
       return res.redirect(302, redirectUrl);
     }
 
-    // Step 4: Mark this provider as completed in session
-    console.log(`\n[NEW] Step 4: Marking provider ${credentialType} as completed...`);
-    const updatedSession = await ActivationSession.markProviderCompleted(sessionId, credentialType, {
-      credentialId,
-      provider
-    });
+    console.log(`\n[NEW] ✓ Created ${Object.keys(credMap).length} credentials successfully`);
     
     // Store credential mapping in session data
-    const sessionData = updatedSession.sessionData || {};
-    const credMap = sessionData.credentialMap || {};
-    credMap[credentialType] = credentialId;
     await ActivationSession.updateSessionData(sessionId, { credentialMap: credMap });
 
-    // Step 5: Check if all providers are completed
+    // Step 4: Check if all providers are completed
     const remaining = await ActivationSession.getRemainingProviders(sessionId);
     
     if (remaining.length > 0) {

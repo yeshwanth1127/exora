@@ -17,7 +17,8 @@ function ProviderConnectionCard({
   provider, 
   status = 'pending', 
   onConnect,
-  isCurrentStep = false 
+  isCurrentStep = false,
+  showButton = true
 }) {
   const [expanded, setExpanded] = useState(false);
 
@@ -128,7 +129,7 @@ function ProviderConnectionCard({
         )}
       </div>
 
-      {status === 'pending' && isCurrentStep && (
+      {status === 'pending' && isCurrentStep && showButton && (
         <div className="card-footer">
           <button 
             className="connect-button"
