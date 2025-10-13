@@ -52,6 +52,23 @@ class WorkflowExecutor {
 
       const workflow = workflowResult.workflow;
 
+      // DEBUG: Log workflow details
+      console.log(`[DEBUG] Cloned workflow ID: ${instance.instance_workflow_id}`);
+      console.log(`[DEBUG] Workflow active: ${workflow.active}`);
+      console.log(`[DEBUG] Workflow name: ${workflow.name}`);
+      
+      // Find webhook nodes
+      const webhookNodes = workflow.nodes?.filter(n => n.type?.includes('webhook')) || [];
+      console.log(`[DEBUG] Webhook nodes found: ${webhookNodes.length}`);
+      webhookNodes.forEach(node => {
+        console.log(`[DEBUG] Webhook node:`, {
+          name: node.name,
+          path: node.parameters?.path,
+          webhookId: node.webhookId,
+          nodeId: node.id
+        });
+      });
+
       // Analyze workflow to detect parameters (pass workflow ID for webhook URL construction)
       const analysis = WorkflowAnalyzer.analyzeWorkflow(workflow);
 
@@ -66,6 +83,14 @@ class WorkflowExecutor {
       if (analysis.triggers.some(t => t.type === 'webhook')) {
         const webhook = analysis.triggers.find(t => t.type === 'webhook');
         console.log(`Webhook detected: ${webhook.url} (${webhook.webhookMode} mode)`);
+        console.log(`Workflow active status: ${workflow.active}`);
+        console.log(`Webhook node ID: ${webhook.nodeId}`);
+      }
+      
+      // IMPORTANT: Verify workflow is active
+      if (!workflow.active) {
+        console.warn(`⚠️ WARNING: Workflow ${instance.instance_workflow_id} is NOT ACTIVE!`);
+        console.warn(`⚠️ Webhooks may not work for inactive workflows. Please activate the workflow first.`);
       }
 
       return {
@@ -145,7 +170,16 @@ class WorkflowExecutor {
 
       if (strategy.method === 'webhook' && strategy.trigger?.url) {
         console.log(`Executing via webhook: ${strategy.trigger.url}`);
-        result = await this._executeViaWebhook(strategy.trigger.url, executionPayload);
+        try {
+          result = await this._executeViaWebhook(strategy.trigger.url, executionPayload);
+        } catch (webhookError) {
+          console.warn(`⚠️ Webhook execution failed, falling back to n8n API...`);
+          console.warn(`Webhook error: ${webhookError.message}`);
+          
+          // Fallback to n8n API execution
+          console.log(`Executing via n8n API (fallback): ${instance.instance_workflow_id}`);
+          result = await this._executeViaAPI(instance.instance_workflow_id, executionPayload);
+        }
       } else {
         console.log(`Executing via n8n API: ${instance.instance_workflow_id}`);
         result = await this._executeViaAPI(instance.instance_workflow_id, executionPayload);
@@ -179,9 +213,30 @@ class WorkflowExecutor {
    */
   async _executeViaWebhook(webhookUrl, data) {
     try {
+      console.log(`[WEBHOOK] Calling: ${webhookUrl}`);
+      console.log(`[WEBHOOK] Method: POST`);
+      console.log(`[WEBHOOK] Payload:`, JSON.stringify(data, null, 2));
+      
       const response = await axios.post(webhookUrl, data, {
-        timeout: 60000 // 60 second timeout
+        timeout: 60000, // 60 second timeout
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        validateStatus: function (status) {
+          return status >= 200 && status < 500; // Don't throw on 4xx
+        }
       });
+
+      console.log(`[WEBHOOK] Response status: ${response.status}`);
+      console.log(`[WEBHOOK] Response data:`, response.data);
+
+      if (response.status === 404) {
+        throw new Error(`Webhook not found (404). The workflow may not be active or the webhook path may be incorrect. URL: ${webhookUrl}`);
+      }
+
+      if (response.status >= 400) {
+        throw new Error(`Webhook returned error ${response.status}: ${JSON.stringify(response.data)}`);
+      }
 
       return {
         executionId: response.data?.executionId || 'webhook-' + Date.now(),
@@ -190,7 +245,11 @@ class WorkflowExecutor {
         logs: []
       };
     } catch (error) {
-      console.error('Webhook execution error:', error.message);
+      console.error('[WEBHOOK] Execution error:', error.message);
+      if (error.response) {
+        console.error('[WEBHOOK] Response status:', error.response.status);
+        console.error('[WEBHOOK] Response data:', error.response.data);
+      }
       throw new Error('Webhook execution failed: ' + error.message);
     }
   }
