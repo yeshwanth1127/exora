@@ -322,13 +322,14 @@ class N8NIntegration {
         if (node.type?.toLowerCase().includes('webhook')) {
           const path = node.parameters?.path || node.id;
           const method = node.parameters?.httpMethod || 'POST';
+          
+          // ALWAYS use production webhook URL for execution
+          // User workflows are always activated, so they have production webhooks
+          const webhookUrl = `${this.baseURL}/webhook/${path}`;
+          
+          // Check metadata
+          const hasWebhookId = node.webhookId || node.parameters?.webhookId;
           const isActive = workflow.active;
-
-          // Production webhook (when workflow is active)
-          // Test webhook (when workflow is inactive)
-          const webhookUrl = isActive 
-            ? `${this.baseURL}/webhook/${path}`
-            : `${this.baseURL}/webhook-test/${path}`;
 
           webhooks.push({
             nodeId: node.id,
@@ -336,8 +337,9 @@ class N8NIntegration {
             path: path,
             method: method,
             url: webhookUrl,
-            mode: isActive ? 'production' : 'test',
-            active: isActive
+            mode: 'production',
+            active: isActive,
+            webhookId: hasWebhookId
           });
         }
       });

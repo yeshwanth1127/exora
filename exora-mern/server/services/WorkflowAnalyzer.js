@@ -127,8 +127,9 @@ class WorkflowAnalyzer {
     if (lower.includes('message') || lower.includes('content') || lower.includes('body') ||
         lower.includes('description') || lower.includes('text')) return 'text';
     
-    // File detection
-    if (lower.includes('file') || lower.includes('attachment') || lower.includes('upload')) return 'file';
+    // File detection (but NOT for fileName which is a string)
+    if ((lower.includes('file') || lower.includes('attachment')) && !lower.includes('filename') && !lower.includes('name')) return 'file';
+    if (lower.includes('upload')) return 'file';
     
     // Boolean detection
     if (lower.includes('is') || lower.includes('has') || lower.includes('enabled')) return 'boolean';
@@ -303,17 +304,14 @@ class WorkflowAnalyzer {
       // Webhook triggers
       if (node.type?.toLowerCase().includes('webhook')) {
         const path = node.parameters?.path || node.id;
-        const webhookMode = node.parameters?.webhookId ? 'production' : 'test';
         
-        // Construct webhook URL based on mode and workflow
-        // Production webhooks use the path directly
-        // Test webhooks include workflow ID
-        let webhookUrl;
-        if (webhookMode === 'production' || workflowJson.active) {
-          webhookUrl = `${process.env.N8N_BASE_URL}/webhook/${path}`;
-        } else {
-          webhookUrl = `${process.env.N8N_BASE_URL}/webhook-test/${path}`;
-        }
+        // ALWAYS use production webhook for activated workflows
+        // Production webhooks are the only ones that work for external execution
+        const webhookUrl = `${process.env.N8N_BASE_URL}/webhook/${path}`;
+        
+        // Check if webhook has production ID (activated)
+        const hasWebhookId = node.webhookId || node.parameters?.webhookId;
+        const webhookMode = hasWebhookId || workflowJson.active ? 'production' : 'production'; // Always production for execution
         
         triggers.push({
           type: 'webhook',
