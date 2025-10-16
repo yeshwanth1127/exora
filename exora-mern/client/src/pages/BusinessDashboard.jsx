@@ -126,9 +126,10 @@ const BusinessDashboard = () => {
         const result = await response.json();
         const workflows = result.workflows || result;
         
-        // Find the CRM workflow
+        // Find the CRM workflow by ID or name
+        const CRM_WORKFLOW_ID = 'X2PlE5wehzaBCdSe';
         const crmWorkflowTemplate = workflows.find(w => 
-          w.name?.toLowerCase().includes('crm')
+          w.id === CRM_WORKFLOW_ID || w.name?.toLowerCase().includes('crm')
         );
         
         if (!crmWorkflowTemplate) {
