@@ -461,7 +461,149 @@ router.get('/oauth2/callback', async (req, res) => {
       `);
     }
     
-    const { sessionId, userId, workflowId, credentialType, credentialTypes, provider } = parsed;
+    const { sessionId, userId, workflowId, credentialType, credentialTypes, provider, isCRM } = parsed;
+    
+    // ====================================================================================
+    // CRM SPECIAL FLOW: Skip credential collection, just clone and redirect
+    // ====================================================================================
+    if (isCRM) {
+      console.log('\n========== [CRM] SIMPLIFIED ACTIVATION FLOW ==========');
+      console.log('[CRM] Skipping credential collection - user will configure manually later');
+      
+      try {
+        // Load activation session
+        const session = await ActivationSession.findById(sessionId);
+        if (!session) {
+          return res.send(`
+            <html>
+              <head><title>Session Expired</title></head>
+              <body style="font-family: Arial; text-align: center; padding: 50px;">
+                <div style="max-width: 500px; margin: 0 auto;">
+                  <div style="font-size: 64px; margin-bottom: 20px;">⏰</div>
+                  <h2>Session Expired</h2>
+                  <p>Please try activating CRM again from dashboard.</p>
+                  <p><a href="${process.env.FRONTEND_URL}/dashboard" style="color: #667eea; text-decoration: none; font-weight: bold;">← Return to Dashboard</a></p>
+                </div>
+              </body>
+            </html>
+          `);
+        }
+
+        // Fetch template workflow from n8n
+        console.log('[CRM] Fetching template workflow from n8n...');
+        const templateResp = await n8nAxios.get(`/workflows/${workflowId}`);
+        const templateWorkflow = templateResp.data?.data || templateResp.data;
+
+        // Clone workflow WITHOUT credentials (user will add them manually later)
+        console.log('[CRM] Cloning workflow WITHOUT credentials...');
+        const userLabel = req.user?.email?.split('@')[0] || `user${userId}`;
+        const newWorkflowPayload = {
+          ...templateWorkflow,
+          name: `${templateWorkflow.name} - ${userLabel}`,
+          active: false,  // Keep inactive until user configures credentials
+          id: undefined
+        };
+
+        const createWfResp = await n8nAxios.post('/workflows', newWorkflowPayload);
+        const createdWf = createWfResp.data;
+        const clonedWorkflowId = createdWf?.id || createdWf?.data?.id || createdWf?.workflow?.id;
+
+        if (!clonedWorkflowId) {
+          console.error('[CRM] Failed to create cloned workflow');
+          return res.send(`
+            <html>
+              <head><title>CRM Setup Failed</title></head>
+              <body style="font-family: Arial; text-align: center; padding: 50px;">
+                <div style="max-width: 500px; margin: 0 auto;">
+                  <div style="font-size: 64px; margin-bottom: 20px;">❌</div>
+                  <h2>CRM Setup Failed</h2>
+                  <p>Could not clone workflow. Please try again.</p>
+                  <p><a href="${process.env.FRONTEND_URL}/dashboard" style="color: #667eea; text-decoration: none; font-weight: bold;">← Return to Dashboard</a></p>
+                </div>
+              </body>
+            </html>
+          `);
+        }
+
+        console.log(`[CRM] ✓ Cloned workflow ID: ${clonedWorkflowId}`);
+
+        // Save to database
+        console.log('[CRM] Saving workflow mapping...');
+        await UserWorkflowInstance.upsert({
+          userId: userId,
+          sourceWorkflowId: workflowId,
+          instanceWorkflowId: clonedWorkflowId,
+          activated_at: new Date(),
+          services_used: [],  // Will be filled when user configures
+          credential_id: '',
+          n8n_credential_ids: {}
+        });
+
+        // Create CRM user record
+        console.log('[CRM] Creating CRM user record...');
+        await crmPool.query(
+          `INSERT INTO crm_users (exora_user_id, n8n_workflow_id, status)
+           VALUES ($1, $2, 'pending_setup')
+           ON CONFLICT (exora_user_id) DO UPDATE SET n8n_workflow_id = $2, status = 'pending_setup'`,
+          [userId, clonedWorkflowId]
+        );
+
+        // Update dashboard status
+        await DashboardData.updateWorkflowStatus(userId, workflowId, 'active');
+
+        // Generate JWT for CRM
+        const crmToken = jwt.sign(
+          { id: userId, email: req.user?.email || 'user@example.com' },
+          process.env.JWT_SECRET,
+          { expiresIn: '7d' }
+        );
+
+        const CRM_FRONTEND_URL = process.env.CRM_FRONTEND_URL || 'http://localhost:3001';
+
+        console.log('[CRM] ✅ CRM activation complete! Redirecting to CRM...');
+        console.log('====================================================\n');
+
+        // Redirect to CRM - user will configure credentials there
+        return res.send(`
+          <html>
+            <head><title>CRM Activated</title></head>
+            <body style="font-family: Arial; text-align: center; padding: 50px;">
+              <div style="max-width: 500px; margin: 0 auto;">
+                <div style="font-size: 64px; margin-bottom: 20px;">✅</div>
+                <h2>CRM Activated Successfully!</h2>
+                <p>Your workflow has been cloned.</p>
+                <p style="color: #6c757d;">You can configure credentials in the CRM settings later.</p>
+                <p style="color: #6c757d;">Redirecting to CRM...</p>
+              </div>
+              <script>
+                setTimeout(() => {
+                  window.location.href = '${CRM_FRONTEND_URL}?token=${crmToken}&setup=true';
+                }, 2000);
+              </script>
+            </body>
+          </html>
+        `);
+
+      } catch (crmErr) {
+        console.error('[CRM] Activation error:', crmErr);
+        return res.send(`
+          <html>
+            <head><title>CRM Setup Failed</title></head>
+            <body style="font-family: Arial; text-align: center; padding: 50px;">
+              <div style="max-width: 500px; margin: 0 auto;">
+                <div style="font-size: 64px; margin-bottom: 20px;">❌</div>
+                <h2>CRM Setup Failed</h2>
+                <p>${crmErr.message}</p>
+                <p><a href="${process.env.FRONTEND_URL}/dashboard" style="color: #667eea; text-decoration: none; font-weight: bold;">← Return to Dashboard</a></p>
+              </div>
+            </body>
+          </html>
+        `);
+      }
+    }
+    // ====================================================================================
+    // END CRM SPECIAL FLOW
+    // ====================================================================================
     
     // Support both single credentialType (legacy) and credentialTypes array (new unified flow)
     const typesToCreate = credentialTypes || (credentialType ? [credentialType] : []);
@@ -737,46 +879,8 @@ router.get('/oauth2/callback', async (req, res) => {
     console.log(`  Credential Map:`, finalCredMap);
     console.log('===========================================\n');
 
-    // Step 14: Check if this is CRM activation
-    if (parsed.isCRM) {
-      console.log('[CRM] This is a CRM activation - special handling');
-      
-      // Create CRM user record
-      await crmPool.query(
-        `INSERT INTO crm_users (exora_user_id, n8n_workflow_id, status)
-         VALUES ($1, $2, 'pending_setup')
-         ON CONFLICT (exora_user_id) DO UPDATE SET n8n_workflow_id = $2`,
-        [userId, clonedWorkflowId]
-      );
-      
-      // Generate JWT for CRM
-      const crmToken = jwt.sign(
-        { id: userId, email: req.user?.email || 'user@example.com' },
-        process.env.JWT_SECRET,
-        { expiresIn: '7d' }
-      );
-      
-      const CRM_FRONTEND_URL = process.env.CRM_FRONTEND_URL || 'http://localhost:3001';
-      
-      // Redirect to CRM setup wizard
-      return res.send(`
-        <html>
-          <head><title>CRM Activated</title></head>
-          <body style="font-family: Arial; text-align: center; padding: 50px;">
-            <div style="max-width: 500px; margin: 0 auto;">
-              <div style="font-size: 64px; margin-bottom: 20px;">✅</div>
-              <h2>CRM Activated Successfully!</h2>
-              <p>Redirecting to CRM setup wizard...</p>
-            </div>
-            <script>
-              setTimeout(() => {
-                window.location.href = '${CRM_FRONTEND_URL}?token=${crmToken}&setup=true';
-              }, 2000);
-            </script>
-          </body>
-        </html>
-      `);
-    }
+    // Step 14: CRM handling is done earlier in the flow (see line ~469)
+    // This section is now only for regular workflows
 
     // Step 14 (for regular workflows): Show success page and redirect (prevent loop)
     return res.send(`
