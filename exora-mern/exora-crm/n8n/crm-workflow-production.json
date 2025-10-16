@@ -1,0 +1,384 @@
+{
+  "name": "Exora CRM - Universal Business Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "crm-contact-created",
+        "options": {}
+      },
+      "id": "webhook-contact-created",
+      "name": "Webhook Contact Created",
+      "type": "n8n-nodes-base.webhook",
+      "position": [400, 300],
+      "webhookId": "crm-contact-created",
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO contacts (id, crm_user_id, name, phone, whatsapp_number, email, source, status, created_at) VALUES (gen_random_uuid(), '{{ $json.crm_user_id }}', '{{ $json.name }}', '{{ $json.phone }}', '{{ $json.whatsapp }}', '{{ $json.email }}', 'whatsapp', 'active', NOW()) ON CONFLICT (phone) DO UPDATE SET name = EXCLUDED.name, whatsapp_number = EXCLUDED.whatsapp_number RETURNING *"
+      },
+      "id": "save-contact",
+      "name": "Save Contact to DB",
+      "type": "n8n-nodes-base.postgres",
+      "position": [600, 300],
+      "typeVersion": 2.5,
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_POSTGRES_CREDENTIAL_ID",
+          "name": "PostgreSQL - CRM"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "text": "Olá {{ $json.name }}! 👋\n\nSeja bem-vindo(a)! Estou aqui para ajudar.\n\nPosso ajudar com:\n✅ Agendamentos\n✅ Informações sobre serviços\n✅ Dúvidas\n\nComo posso ajudar hoje?"
+      },
+      "id": "send-welcome",
+      "name": "Send Welcome Message",
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "position": [800, 300],
+      "typeVersion": 1,
+      "credentials": {
+        "evolutionApi": {
+          "id": "YOUR_EVOLUTION_API_CREDENTIAL_ID",
+          "name": "Evolution API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "crm-whatsapp-incoming",
+        "options": {}
+      },
+      "id": "webhook-whatsapp",
+      "name": "Webhook WhatsApp Incoming",
+      "type": "n8n-nodes-base.webhook",
+      "position": [400, 600],
+      "webhookId": "crm-whatsapp-incoming",
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "number",
+              "name": "number",
+              "value": "={{ $json.body.data.key.remoteJid }}",
+              "type": "string"
+            },
+            {
+              "id": "text",
+              "name": "text",
+              "value": "={{ $json.body.data.message.conversation }}",
+              "type": "string"
+            },
+            {
+              "id": "name",
+              "name": "name",
+              "value": "={{ $json.body.data.pushName }}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "extract-fields",
+      "name": "Extract Message Fields",
+      "type": "n8n-nodes-base.set",
+      "position": [600, 600],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "id": "ai-model",
+      "name": "AI Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [1000, 800],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "options": {
+          "systemMessage": "HOJE É: {{ $now }}\n\nPAPEL:\nVocê é um assistente inteligente de atendimento. Sua missão:\n- Atender clientes de forma ágil e profissional\n- Responder dúvidas sobre produtos e serviços\n- Agendar, remarcar e cancelar compromissos\n- Escalar para humano quando necessário\n\nFERRAMENTAS DISPONÍVEIS:\n- MCP_CALENDAR: Gerenciar agenda (criar, atualizar, cancelar eventos)\n- CallToHuman: Escalar para atendimento humano\n\nREGRAS:\n- Tom profissional e respeitoso\n- Sem emojis excessivos\n- Sempre confirmar ações antes de executar\n- Escalar para humano em casos de urgência ou insatisfação\n\nFLUXO DE ATENDIMENTO:\n1. Cumprimente o cliente\n2. Entenda a necessidade\n3. Execute a ação solicitada\n4. Confirme e agradeça"
+        }
+      },
+      "id": "ai-agent",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [800, 600],
+      "typeVersion": 1.8
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Extract Message Fields').item.json.number }}",
+        "contextWindowLength": 20
+      },
+      "id": "memory",
+      "name": "Chat Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "position": [1000, 900],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "sseEndpoint": "{{ $env.MCP_CALENDAR_URL }}/sse",
+        "options": {}
+      },
+      "id": "mcp-calendar",
+      "name": "MCP Calendar",
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "position": [1000, 700],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.output }}"
+      },
+      "id": "send-response",
+      "name": "Send WhatsApp Response",
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "position": [1200, 600],
+      "typeVersion": 1,
+      "credentials": {
+        "evolutionApi": {
+          "id": "YOUR_EVOLUTION_API_CREDENTIAL_ID",
+          "name": "Evolution API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "crm-event-created",
+        "options": {}
+      },
+      "id": "webhook-event",
+      "name": "Webhook Event Created",
+      "type": "n8n-nodes-base.webhook",
+      "position": [400, 1200],
+      "webhookId": "crm-event-created",
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO events (id, crm_user_id, contact_id, title, description, start_time, end_time, status, created_at) VALUES (gen_random_uuid(), '{{ $json.crm_user_id }}', '{{ $json.contact_id }}', '{{ $json.title }}', '{{ $json.description }}', '{{ $json.start_time }}', '{{ $json.end_time }}', 'scheduled', NOW()) RETURNING *"
+      },
+      "id": "save-event",
+      "name": "Save Event to DB",
+      "type": "n8n-nodes-base.postgres",
+      "position": [600, 1200],
+      "typeVersion": 2.5,
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_POSTGRES_CREDENTIAL_ID",
+          "name": "PostgreSQL - CRM"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sseEndpoint": "{{ $env.MCP_CALENDAR_URL }}/sse",
+        "operation": "CREATE_CALENDAR",
+        "start": "={{ $json.start_time }}",
+        "end": "={{ $json.end_time }}",
+        "summary": "={{ $json.title }}",
+        "description": "={{ $json.description }}"
+      },
+      "id": "create-google-event",
+      "name": "Create Google Calendar Event",
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "position": [800, 1200],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "text": "✅ Agendamento confirmado!\n\n📅 {{ $json.title }}\n🕐 {{ $json.start_time }}\n\nVocê receberá um lembrete 24h antes.\n\nPrecisa de algo mais?"
+      },
+      "id": "send-confirmation",
+      "name": "Send Event Confirmation",
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "position": [1000, 1200],
+      "typeVersion": 1,
+      "credentials": {
+        "evolutionApi": {
+          "id": "YOUR_EVOLUTION_API_CREDENTIAL_ID",
+          "name": "Evolution API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO automation_history (id, crm_user_id, automation_type, action_taken, result, executed_at) VALUES (gen_random_uuid(), '{{ $json.crm_user_id }}', 'event_confirmation', 'WhatsApp confirmation sent', 'success', NOW())"
+      },
+      "id": "log-automation",
+      "name": "Log Automation History",
+      "type": "n8n-nodes-base.postgres",
+      "position": [1200, 1200],
+      "typeVersion": 2.5,
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_POSTGRES_CREDENTIAL_ID",
+          "name": "PostgreSQL - CRM"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * *"
+            }
+          ]
+        }
+      },
+      "id": "daily-reminder",
+      "name": "Daily Reminder Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [400, 1600],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT e.*, c.whatsapp_number, c.name FROM events e JOIN contacts c ON e.contact_id = c.id WHERE e.start_time::date = CURRENT_DATE + 1 AND e.status = 'scheduled' AND e.reminder_sent = false"
+      },
+      "id": "get-tomorrow-events",
+      "name": "Get Tomorrow Events",
+      "type": "n8n-nodes-base.postgres",
+      "position": [600, 1600],
+      "typeVersion": 2.5,
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_POSTGRES_CREDENTIAL_ID",
+          "name": "PostgreSQL - CRM"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "text": "🔔 Lembrete!\n\nVocê tem um compromisso amanhã:\n\n📅 {{ $json.title }}\n🕐 {{ $json.start_time }}\n\nPara confirmar, responda: Confirmar\nPara reagendar: Reagendar"
+      },
+      "id": "send-reminder",
+      "name": "Send 24h Reminder",
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "position": [800, 1600],
+      "typeVersion": 1,
+      "credentials": {
+        "evolutionApi": {
+          "id": "YOUR_EVOLUTION_API_CREDENTIAL_ID",
+          "name": "Evolution API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE events SET reminder_sent = true, reminder_sent_at = NOW() WHERE id = '{{ $json.id }}'"
+      },
+      "id": "mark-reminder-sent",
+      "name": "Mark Reminder Sent",
+      "type": "n8n-nodes-base.postgres",
+      "position": [1000, 1600],
+      "typeVersion": 2.5,
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_POSTGRES_CREDENTIAL_ID",
+          "name": "PostgreSQL - CRM"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "CallToHuman",
+        "description": "Escalate to human when customer is upset, urgent, or requests human contact",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_HUMAN_ESCALATION_WORKFLOW_ID"
+        },
+        "workflowInputs": {
+          "value": {
+            "customer_name": "={{ $fromAI('customer_name', '', 'string') }}",
+            "phone": "={{ $fromAI('phone', '', 'string') }}",
+            "reason": "={{ $fromAI('reason', '', 'string') }}"
+          }
+        }
+      },
+      "id": "escalate-human",
+      "name": "Escalate to Human",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "position": [1000, 750],
+      "typeVersion": 2.1
+    }
+  ],
+  "connections": {
+    "Webhook Contact Created": {
+      "main": [[{"node": "Save Contact to DB", "type": "main", "index": 0}]]
+    },
+    "Save Contact to DB": {
+      "main": [[{"node": "Send Welcome Message", "type": "main", "index": 0}]]
+    },
+    "Webhook WhatsApp Incoming": {
+      "main": [[{"node": "Extract Message Fields", "type": "main", "index": 0}]]
+    },
+    "Extract Message Fields": {
+      "main": [[{"node": "AI Agent", "type": "main", "index": 0}]]
+    },
+    "AI Agent": {
+      "main": [[{"node": "Send WhatsApp Response", "type": "main", "index": 0}]]
+    },
+    "AI Model": {
+      "ai_languageModel": [[{"node": "AI Agent", "type": "ai_languageModel", "index": 0}]]
+    },
+    "Chat Memory": {
+      "ai_memory": [[{"node": "AI Agent", "type": "ai_memory", "index": 0}]]
+    },
+    "MCP Calendar": {
+      "ai_tool": [[{"node": "AI Agent", "type": "ai_tool", "index": 0}]]
+    },
+    "Escalate to Human": {
+      "ai_tool": [[{"node": "AI Agent", "type": "ai_tool", "index": 0}]]
+    },
+    "Webhook Event Created": {
+      "main": [[{"node": "Save Event to DB", "type": "main", "index": 0}]]
+    },
+    "Save Event to DB": {
+      "main": [[{"node": "Create Google Calendar Event", "type": "main", "index": 0}]]
+    },
+    "Create Google Calendar Event": {
+      "main": [[{"node": "Send Event Confirmation", "type": "main", "index": 0}]]
+    },
+    "Send Event Confirmation": {
+      "main": [[{"node": "Log Automation History", "type": "main", "index": 0}]]
+    },
+    "Daily Reminder Trigger": {
+      "main": [[{"node": "Get Tomorrow Events", "type": "main", "index": 0}]]
+    },
+    "Get Tomorrow Events": {
+      "main": [[{"node": "Send 24h Reminder", "type": "main", "index": 0}]]
+    },
+    "Send 24h Reminder": {
+      "main": [[{"node": "Mark Reminder Sent", "type": "main", "index": 0}]]
+    }
+  }
+}
+
+

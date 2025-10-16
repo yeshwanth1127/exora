@@ -309,16 +309,20 @@ class WorkflowAnalyzer {
         // Production webhooks are the only ones that work for external execution
         const webhookUrl = `${process.env.N8N_BASE_URL}/webhook/${path}`;
         
-        // Check if webhook has production ID (activated)
-        const hasWebhookId = node.webhookId || node.parameters?.webhookId;
-        const webhookMode = hasWebhookId || workflowJson.active ? 'production' : 'production'; // Always production for execution
+        // Get HTTP method from node parameters
+        // n8n webhook nodes can specify httpMethod, or default to ALL methods
+        const httpMethod = node.parameters?.httpMethod;
+        
+        // If no method specified, n8n accepts all methods - we'll try GET first (most common for manual triggers)
+        const method = httpMethod || 'GET';
         
         triggers.push({
           type: 'webhook',
-          method: node.parameters?.httpMethod || 'POST',
+          method: method,
+          acceptsAllMethods: !httpMethod, // Flag if webhook accepts any method
           path: path,
           url: webhookUrl,
-          webhookMode: webhookMode,
+          webhookMode: 'production',
           node: node.name || 'Webhook',
           nodeId: node.id
         });

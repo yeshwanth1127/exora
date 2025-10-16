@@ -35,6 +35,7 @@ app.use('/api/discovery', require('./routes/discovery'));
 app.use('/api/workflows', require('./routes/workflows'));
 app.use('/api/execution', require('./routes/execution'));  // NEW: Workflow execution routes
 app.use('/api/waitlist', waitlistRoutes);
+// CRM handled through standard workflow activation (activation.js)
 // app.use('/', oauthRoutes);
 app.use('/', privacyRoutes);
 app.use('/', activationRoutes);  // ✅ Mounted at root for OAuth callback compatibility

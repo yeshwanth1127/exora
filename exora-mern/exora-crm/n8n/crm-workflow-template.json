@@ -1,0 +1,114 @@
+{
+  "name": "Exora CRM - Universal Template",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp-incoming-{{crm_user_id}}",
+        "options": {}
+      },
+      "name": "WhatsApp Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [100, 200],
+      "typeVersion": 2,
+      "notes": "Receives incoming WhatsApp messages from Evolution API"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM contacts WHERE crm_user_id = '{{crm_user_id}}' AND whatsapp_number = '{{ $json.body.data.key.remoteJid }}' LIMIT 1"
+      },
+      "name": "Find Contact",
+      "type": "n8n-nodes-base.postgres",
+      "position": [300, 200],
+      "notes": "Check if contact exists in CRM"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "table": "contacts",
+        "columns": "id, crm_user_id, name, whatsapp_number, source",
+        "values": "uuid_generate_v4(), '{{crm_user_id}}', '{{ $json.body.data.pushName }}', '{{ $json.body.data.key.remoteJid }}', 'whatsapp'"
+      },
+      "name": "Create Contact if Not Found",
+      "type": "n8n-nodes-base.postgres",
+      "position": [500, 300],
+      "notes": "Auto-create contact from WhatsApp message"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "table": "activities",
+        "columns": "id, crm_user_id, contact_id, activity_type, direction, channel, body, external_message_id",
+        "values": "uuid_generate_v4(), '{{crm_user_id}}', '{{ $json.contact_id }}', 'message', 'inbound', 'whatsapp', '{{ $json.body.data.message.conversation }}', '{{ $json.body.data.key.id }}'"
+      },
+      "name": "Store Message",
+      "type": "n8n-nodes-base.postgres",
+      "position": [700, 200],
+      "notes": "Store incoming message in CRM"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT body, direction, created_at FROM activities WHERE contact_id = '{{ $json.contact_id }}' ORDER BY created_at DESC LIMIT 10"
+      },
+      "name": "Get Conversation History",
+      "type": "n8n-nodes-base.postgres",
+      "position": [900, 200],
+      "notes": "Get last 10 messages for context"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message }}",
+        "options": {
+          "systemMessage": "You are a helpful assistant. Respond professionally based on the conversation history."
+        }
+      },
+      "name": "AI Assistant",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [1100, 200],
+      "notes": "AI generates response using Ollama"
+    },
+    {
+      "parameters": {},
+      "name": "Ollama Model",
+      "type": "@n8n/n8n-nodes-langchain.lmOllama",
+      "position": [1100, 400]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "table": "activities",
+        "columns": "id, crm_user_id, contact_id, activity_type, direction, channel, body",
+        "values": "uuid_generate_v4(), '{{crm_user_id}}', '{{ $json.contact_id }}', 'message', 'outbound', 'whatsapp', '{{ $json.output }}'"
+      },
+      "name": "Store AI Reply",
+      "type": "n8n-nodes-base.postgres",
+      "position": [1300, 200],
+      "notes": "Store AI response in CRM"
+    },
+    {
+      "parameters": {},
+      "name": "Send WhatsApp",
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "position": [1500, 200],
+      "notes": "Send reply via Evolution API"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "table": "automation_history",
+        "columns": "id, crm_user_id, automation_type, trigger_source, contact_id, action_taken, result",
+        "values": "uuid_generate_v4(), '{{crm_user_id}}', 'ai_response', 'whatsapp_incoming', '{{ $json.contact_id }}', 'AI generated and sent response', 'success'"
+      },
+      "name": "Log Automation",
+      "type": "n8n-nodes-base.postgres",
+      "position": [1700, 200],
+      "notes": "Track automation execution"
+    }
+  ],
+  "connections": {},
+  "notes": "This is the base template. Will be cloned per user with their credentials."
+}
+

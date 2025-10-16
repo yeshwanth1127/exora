@@ -64,6 +64,7 @@ class WorkflowExecutor {
         console.log(`[DEBUG] Webhook node:`, {
           name: node.name,
           path: node.parameters?.path,
+          httpMethod: node.parameters?.httpMethod || 'NOT SPECIFIED (defaults to GET)',
           webhookId: node.webhookId,
           nodeId: node.id
         });
@@ -169,9 +170,14 @@ class WorkflowExecutor {
       const strategy = analysis.executionStrategy;
 
       if (strategy.method === 'webhook' && strategy.trigger?.url) {
-        console.log(`Executing via webhook: ${strategy.trigger.url}`);
+        const webhookMethod = strategy.trigger.method || 'GET';
+        console.log(`Executing via webhook: ${strategy.trigger.url} (${webhookMethod})`);
         try {
-          result = await this._executeViaWebhook(strategy.trigger.url, executionPayload);
+          result = await this._executeViaWebhook(
+            strategy.trigger.url, 
+            executionPayload, 
+            webhookMethod
+          );
         } catch (webhookError) {
           console.warn(`⚠️ Webhook execution failed, falling back to n8n API...`);
           console.warn(`Webhook error: ${webhookError.message}`);
@@ -211,21 +217,41 @@ class WorkflowExecutor {
    * Execute workflow via webhook
    * @private
    */
-  async _executeViaWebhook(webhookUrl, data) {
+  async _executeViaWebhook(webhookUrl, data, method = 'GET') {
     try {
       console.log(`[WEBHOOK] Calling: ${webhookUrl}`);
-      console.log(`[WEBHOOK] Method: POST`);
+      console.log(`[WEBHOOK] Method: ${method}`);
       console.log(`[WEBHOOK] Payload:`, JSON.stringify(data, null, 2));
       
-      const response = await axios.post(webhookUrl, data, {
-        timeout: 60000, // 60 second timeout
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        validateStatus: function (status) {
-          return status >= 200 && status < 500; // Don't throw on 4xx
-        }
-      });
+      let response;
+      
+      if (method.toUpperCase() === 'GET') {
+        // GET request - send data as query params
+        response = await axios.get(webhookUrl, {
+          params: data,
+          timeout: 60000,
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          validateStatus: function (status) {
+            return status >= 200 && status < 500;
+          }
+        });
+      } else {
+        // POST/PUT/etc - send data in body
+        response = await axios({
+          method: method,
+          url: webhookUrl,
+          data: data,
+          timeout: 60000,
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          validateStatus: function (status) {
+            return status >= 200 && status < 500;
+          }
+        });
+      }
 
       console.log(`[WEBHOOK] Response status: ${response.status}`);
       console.log(`[WEBHOOK] Response data:`, response.data);
@@ -260,15 +286,33 @@ class WorkflowExecutor {
    */
   async _executeViaAPI(workflowId, data) {
     try {
+      console.log(`[API] Executing workflow: ${workflowId}`);
+      console.log(`[API] Endpoint: ${this.n8nBaseUrl}/api/v1/workflows/${workflowId}/execute`);
+      console.log(`[API] Payload:`, JSON.stringify(data, null, 2));
+      
       // Execute workflow via n8n API
       const response = await axios.post(
         `${this.n8nBaseUrl}/api/v1/workflows/${workflowId}/execute`,
         data,
         { 
           headers: this.headers,
-          timeout: 60000
+          timeout: 60000,
+          validateStatus: function (status) {
+            return status >= 200 && status < 500;
+          }
         }
       );
+      
+      console.log(`[API] Response status: ${response.status}`);
+      console.log(`[API] Response data:`, response.data);
+
+      if (response.status === 404) {
+        throw new Error(`Workflow not found in n8n (404). Workflow ID: ${workflowId}`);
+      }
+
+      if (response.status >= 400) {
+        throw new Error(`n8n API returned error ${response.status}: ${JSON.stringify(response.data)}`);
+      }
 
       const executionData = response.data;
 

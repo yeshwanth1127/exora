@@ -2,6 +2,9 @@
 const express = require('express');
 const axios = require('axios');
 const qs = require('qs');
+const jwt = require('jsonwebtoken');
+const { pool } = require('../config/db');
+const { getCRMPool } = require('../config/crmDb');
 const credentialMap = require('../services/credentialMap'); // Legacy fallback
 const ProviderOrchestrator = require('../services/ProviderOrchestrator');
 const ActivationSession = require('../models/ActivationSession');
@@ -10,6 +13,9 @@ const OAuthTokens = require('../models/OAuthTokens');
 const DashboardData = require('../models/DashboardData');
 
 const router = express.Router();
+
+// Get CRM database connection
+const crmPool = getCRMPool();
 
 // Debug: Log environment variables when this file loads
 console.log('🔧 [activation.js] Loading with environment:');
@@ -731,7 +737,48 @@ router.get('/oauth2/callback', async (req, res) => {
     console.log(`  Credential Map:`, finalCredMap);
     console.log('===========================================\n');
 
-    // Step 14: Show success page and redirect (prevent loop)
+    // Step 14: Check if this is CRM activation
+    if (parsed.isCRM) {
+      console.log('[CRM] This is a CRM activation - special handling');
+      
+      // Create CRM user record
+      await crmPool.query(
+        `INSERT INTO crm_users (exora_user_id, n8n_workflow_id, status)
+         VALUES ($1, $2, 'pending_setup')
+         ON CONFLICT (exora_user_id) DO UPDATE SET n8n_workflow_id = $2`,
+        [userId, clonedWorkflowId]
+      );
+      
+      // Generate JWT for CRM
+      const crmToken = jwt.sign(
+        { id: userId, email: req.user?.email || 'user@example.com' },
+        process.env.JWT_SECRET,
+        { expiresIn: '7d' }
+      );
+      
+      const CRM_FRONTEND_URL = process.env.CRM_FRONTEND_URL || 'http://localhost:3001';
+      
+      // Redirect to CRM setup wizard
+      return res.send(`
+        <html>
+          <head><title>CRM Activated</title></head>
+          <body style="font-family: Arial; text-align: center; padding: 50px;">
+            <div style="max-width: 500px; margin: 0 auto;">
+              <div style="font-size: 64px; margin-bottom: 20px;">✅</div>
+              <h2>CRM Activated Successfully!</h2>
+              <p>Redirecting to CRM setup wizard...</p>
+            </div>
+            <script>
+              setTimeout(() => {
+                window.location.href = '${CRM_FRONTEND_URL}?token=${crmToken}&setup=true';
+              }, 2000);
+            </script>
+          </body>
+        </html>
+      `);
+    }
+
+    // Step 14 (for regular workflows): Show success page and redirect (prevent loop)
     return res.send(`
       <html>
         <head><title>Activation Complete</title></head>

@@ -43,6 +43,7 @@ const BusinessDashboard = () => {
     timeSaved: '0 hours',
     successRate: '0%'
   });
+  const [crmActivated, setCrmActivated] = useState(false);
 
   // API base URL is imported from config
 
@@ -81,6 +82,81 @@ const BusinessDashboard = () => {
       }
     } catch (error) {
       console.error('Stats fetch error:', error);
+    }
+  };
+
+  // Check if CRM workflow exists and is activated
+  const checkCRMActivation = () => {
+    // CRM is activated if there's a workflow with "CRM" in the name that's active
+    const crmWorkflow = dashboardData.workflows?.find(w => 
+      w.name?.toLowerCase().includes('crm') && w.status === 'active'
+    );
+    setCrmActivated(!!crmWorkflow);
+    return crmWorkflow;
+  };
+
+  // Handle CRM card click - Same logic as Alex chat
+  const handleCRMClick = async () => {
+    const crmWorkflow = checkCRMActivation();
+    
+    if (crmActivated && crmWorkflow) {
+      // CRM is already activated - open CRM frontend
+      // Production: https://crm.exora.solutions
+      // Development: http://localhost:3001
+      const CRM_FRONTEND_URL = import.meta.env.VITE_CRM_URL || 
+                                (window.location.hostname === 'localhost' 
+                                  ? 'http://localhost:3001' 
+                                  : 'https://crm.exora.solutions');
+      const token = localStorage.getItem('token');
+      window.open(`${CRM_FRONTEND_URL}?token=${token}`, '_blank');
+    } else {
+      // Get CRM workflow from n8n and add to dashboard
+      try {
+        // First, fetch available workflows from n8n to find CRM
+        const n8nWorkflows = await fetch(`${API_BASE_URL.replace('/api', '')}/n8n-workflows`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        
+        const workflows = await n8nWorkflows.json();
+        
+        // Find the CRM workflow (contains "CRM" in name)
+        const crmWorkflowTemplate = workflows.find(w => 
+          w.name?.toLowerCase().includes('crm') || 
+          w.name?.toLowerCase().includes('exora crm')
+        );
+        
+        if (!crmWorkflowTemplate) {
+          alert('CRM workflow not found in n8n. Please import the CRM workflow template first.');
+          return;
+        }
+        
+        // Add to dashboard using same endpoint as Alex chat
+        const response = await fetch(`${API_BASE_URL}/dashboard/workflows`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ 
+            workflows: [crmWorkflowTemplate],
+            isCRM: true  // Flag to identify this as CRM
+          })
+        });
+        
+        if (response.ok) {
+          // Refresh dashboard to show new workflow
+          window.location.reload();
+        } else {
+          const error = await response.json();
+          alert(error.message || 'Failed to add CRM workflow');
+        }
+        
+      } catch (error) {
+        console.error('Error adding CRM:', error);
+        alert('Failed to add CRM. Please try again.');
+      }
     }
   };
 
@@ -363,6 +439,13 @@ const BusinessDashboard = () => {
       console.error('Error removing workflow:', error);
     }
   };
+
+  // Check CRM status when workflows change
+  useEffect(() => {
+    if (dashboardData.workflows) {
+      checkCRMActivation();
+    }
+  }, [dashboardData.workflows]);
 
   // Fetch initial data
   useEffect(() => {
@@ -659,6 +742,35 @@ const BusinessDashboard = () => {
             </div>
             
             <div className="products-grid">
+              {/* CRM Card */}
+              <div 
+                className={`product-card crm-card ${crmActivated ? 'activated' : ''}`}
+                onClick={handleCRMClick}
+                style={{ cursor: 'pointer' }}
+              >
+                <div className="product-header">
+                  <div className="product-icon">📊</div>
+                  <div className={`product-status ${crmActivated ? 'active' : 'available'}`}>
+                    {crmActivated ? 'Active' : 'Available'}
+                  </div>
+                </div>
+                <h3 className="product-name">AI-First CRM</h3>
+                <p className="product-description">
+                  Complete customer relationship management with AI-powered conversations,
+                  WhatsApp automation, and smart scheduling
+                </p>
+                <div className="product-features">
+                  <span className="feature-tag">WhatsApp</span>
+                  <span className="feature-tag">AI Assistant</span>
+                  <span className="feature-tag">Calendar</span>
+                  <span className="feature-tag">Telegram</span>
+                  <span className="feature-tag">Auto Reminders</span>
+                </div>
+                <button className="product-action">
+                  {crmActivated ? 'Open CRM →' : 'Add Workflow'}
+                </button>
+              </div>
+
               {products.map((product) => (
                 <div key={product.id} className="product-card">
                   <div className="product-header">
