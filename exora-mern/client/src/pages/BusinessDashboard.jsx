@@ -646,41 +646,71 @@ const BusinessDashboard = () => {
       />
 
       <div className="dashboard-content">
-        {/* Header */}
-        <div className="dashboard-header">
-          <div className="dashboard-welcome">
-            <h1 className="dashboard-title">
-              Welcome back, {user?.firstName}!
-            </h1>
-            <p className="dashboard-subtitle">
-              Here's what's happening with your AI automation solutions
-            </p>
-          </div>
-          <div className="dashboard-user-info">
-            <div className="user-avatar">
+        {/* Left Navigation Panel */}
+        <div className="dashboard-left-panel">
+          {/* User Profile */}
+          <div className="left-panel-user">
+            <div className="left-panel-avatar">
               {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
             </div>
-            <div className="user-details">
-              <span className="user-name">{user?.firstName} {user?.lastName}</span>
-              <span className="user-email">{user?.email}</span>
+            <div className="left-panel-name">{user?.firstName} {user?.lastName}</div>
+            <div className="left-panel-email">{user?.email}</div>
+          </div>
+
+          {/* Quick Stats */}
+          <div>
+            <div className="nav-section-title">Overview</div>
+            <div className="left-panel-stats">
+              {stats.map((stat, index) => (
+                <div key={index} className="left-stat-card">
+                  <div className="left-stat-label">{stat.label}</div>
+                  <div className="left-stat-value">{stat.value}</div>
+                  {stat.change && <div className="left-stat-change">{stat.change}</div>}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Navigation Buttons */}
+          <div>
+            <div className="nav-section-title">Sections</div>
+            <div className="nav-buttons">
+              <button className="nav-button active" onClick={() => document.querySelector('.workflows-section')?.scrollIntoView({ behavior: 'smooth' })}>
+                <span className="nav-button-icon">⚡</span>
+                <span>Active Workflows</span>
+              </button>
+              <button className="nav-button" onClick={() => document.querySelector('.products-section')?.scrollIntoView({ behavior: 'smooth' })}>
+                <span className="nav-button-icon">🚀</span>
+                <span>AI Solutions</span>
+              </button>
+              <button className="nav-button" onClick={() => document.querySelector('.agents-section')?.scrollIntoView({ behavior: 'smooth' })}>
+                <span className="nav-button-icon">🤖</span>
+                <span>AI Agents</span>
+              </button>
+              <button className="nav-button" onClick={handleCRMClick}>
+                <span className="nav-button-icon">📊</span>
+                <span>CRM {crmActivated && '✓'}</span>
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Stats Overview */}
-        <div className="dashboard-stats">
-          {stats.map((stat, index) => (
-            <div key={index} className="stat-card">
-              <div className="stat-value">{stat.value}</div>
-              <div className="stat-label">{stat.label}</div>
-              <div className="stat-change">{stat.change}</div>
+        {/* Right Main Content Panel */}
+        <div className="dashboard-right-panel">
+          {/* Header */}
+          <div className="dashboard-header">
+            <div className="dashboard-welcome">
+              <h1 className="dashboard-title">
+                Welcome back, {user?.firstName}!
+              </h1>
+              <p className="dashboard-subtitle">
+                Here's what's happening with your AI automation solutions
+              </p>
             </div>
-          ))}
-        </div>
+          </div>
 
-        {/* Main Content */}
-        <div className="dashboard-main">
-          {/* Workflows Section - Moved to Top */}
+          {/* Main Content Sections */}
+          {/* Workflows Section */}
           {dashboardData.workflows && dashboardData.workflows.length > 0 && (
             <div className="dashboard-section workflows-section">
               <div className="section-header">
@@ -746,7 +776,7 @@ const BusinessDashboard = () => {
           )}
 
           {/* Products Section */}
-          <div className="dashboard-section">
+          <div className="dashboard-section products-section">
             <div className="section-header">
               <h2 className="section-title">AI Automation Solutions</h2>
               <p className="section-subtitle">Deploy intelligent agents across your business</p>
@@ -804,7 +834,7 @@ const BusinessDashboard = () => {
           </div>
 
           {/* AI Agents Section */}
-          <div className="dashboard-section">
+          <div className="dashboard-section agents-section">
             <div className="section-header">
               <h2 className="section-title">Your AI Agents</h2>
               <p className="section-subtitle">Active agents deployed across your business</p>
@@ -849,93 +879,41 @@ const BusinessDashboard = () => {
               )}
             </div>
           </div>
-
-          {/* Sidebar */}
-          <div className="dashboard-sidebar">
-            {/* Recent Activity */}
-            <div className="sidebar-section">
-              <h3 className="sidebar-title">Recent Activity</h3>
-              <div className="activity-list">
-                {recentActivity.length > 0 ? recentActivity.map((activity) => (
-                  <div key={activity.id} className="activity-item">
-                    <div className="activity-icon">
-                      {activity.type === 'agent_created' && '🤖'}
-                      {activity.type === 'task_completed' && '✅'}
-                      {activity.type === 'error' && '❌'}
-                      {activity.type === 'status_change' && '🔄'}
-                      {activity.type === 'interaction' && '💬'}
-                    </div>
-                    <div className="activity-content">
-                      <p className="activity-message">{activity.message}</p>
-                      <span className="activity-time">{activity.time}</span>
-                    </div>
-                  </div>
-                )) : (
-                  <div className="no-activities">
-                    <p>No recent activity</p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Quick Actions */}
-            <div className="sidebar-section">
-              <h3 className="sidebar-title">Quick Actions</h3>
-              <div className="quick-actions">
-                <button className="quick-action-btn">
-                  <span className="action-icon">➕</span>
-                  Deploy New Agent
-                </button>
-                <button className="quick-action-btn">
-                  <span className="action-icon">📊</span>
-                  View Analytics
-                </button>
-                <button className="quick-action-btn">
-                  <span className="action-icon">⚙️</span>
-                  Settings
-                </button>
-                <button className="quick-action-btn">
-                  <span className="action-icon">📞</span>
-                  Contact Support
-                </button>
-              </div>
-            </div>
-          </div>
         </div>
-
-        {/* Alex floating chat button for configured dashboard */}
-        <DashboardAlex 
-          isOpen={showAlex}
-          onToggle={() => setShowAlex(!showAlex)}
-          onDashboardUpdate={handleDashboardUpdate}
-          currentDashboardData={dashboardData}
-          isSidebar={false}
-        />
-
-        {/* Workflow Statistics Modal */}
-        <WorkflowStatsModal 
-          isOpen={statsModalOpen}
-          onClose={() => setStatsModalOpen(false)}
-          stats={selectedWorkflowStats || {}}
-        />
-
-        {/* NEW: Activation Wizard Modal */}
-        <ActivationWizard
-          isOpen={showActivationWizard}
-          onClose={() => setShowActivationWizard(false)}
-          workflowName={activatingWorkflow?.name}
-        />
-
-        {/* NEW: Workflow Execution Modal */}
-        <WorkflowExecutionModal
-          isOpen={showExecutionModal}
-          onClose={() => {
-            setShowExecutionModal(false);
-            setExecutingWorkflow(null);
-          }}
-          workflow={executingWorkflow}
-        />
       </div>
+
+      {/* Alex floating chat button for configured dashboard */}
+      <DashboardAlex 
+        isOpen={showAlex}
+        onToggle={() => setShowAlex(!showAlex)}
+        onDashboardUpdate={handleDashboardUpdate}
+        currentDashboardData={dashboardData}
+        isSidebar={false}
+      />
+
+      {/* Workflow Statistics Modal */}
+      <WorkflowStatsModal 
+        isOpen={statsModalOpen}
+        onClose={() => setStatsModalOpen(false)}
+        stats={selectedWorkflowStats || {}}
+      />
+
+      {/* NEW: Activation Wizard Modal */}
+      <ActivationWizard
+        isOpen={showActivationWizard}
+        onClose={() => setShowActivationWizard(false)}
+        workflowName={activatingWorkflow?.name}
+      />
+
+      {/* NEW: Workflow Execution Modal */}
+      <WorkflowExecutionModal
+        isOpen={showExecutionModal}
+        onClose={() => {
+          setShowExecutionModal(false);
+          setExecutingWorkflow(null);
+        }}
+        workflow={executingWorkflow}
+      />
     </div>
   );
 };
