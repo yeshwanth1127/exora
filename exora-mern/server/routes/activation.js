@@ -110,7 +110,7 @@ router.post('/workflow-required-creds', async (req, res) => {
 // NEW: Creates activation session for multi-provider flow
 router.post('/activate-workflow', async (req, res) => {
   try {
-    const { userId, workflowId } = req.body;
+    const { userId, workflowId, isCRM } = req.body;
     
     if (!userId || !workflowId) {
       return res.status(400).json({ 
@@ -119,7 +119,7 @@ router.post('/activate-workflow', async (req, res) => {
       });
     }
 
-    console.log(`[NEW] Initiating activation for user ${userId}, workflow ${workflowId}`);
+    console.log(`[NEW] Initiating activation for user ${userId}, workflow ${workflowId}${isCRM ? ' [CRM]' : ''}`);
 
     // Get workflow from n8n
     const wfResp = await n8nAxios.get(`/workflows/${workflowId}`);
@@ -145,7 +145,8 @@ router.post('/activate-workflow', async (req, res) => {
       providersRequired: providers,
       sessionData: {
         workflowName: workflow.name,
-        initiatedAt: new Date().toISOString()
+        initiatedAt: new Date().toISOString(),
+        isCRM: isCRM || false  // Store CRM flag in session
       }
     });
 

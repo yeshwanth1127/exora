@@ -440,7 +440,9 @@ const addWorkflowsToDashboard = async (req, res) => {
       createdAt: workflow.createdAt,
       addedAt: new Date().toISOString(),
       // ✅ Check if user has activated their own clone of this template
-      status: activatedTemplateIds.has(workflow.id) ? 'active' : 'inactive'
+      status: activatedTemplateIds.has(workflow.id) ? 'active' : 'inactive',
+      // ✅ Preserve CRM flag
+      isCRM: workflow.isCRM || false
     }));
 
     // Check for duplicates

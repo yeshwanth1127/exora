@@ -110,46 +110,52 @@ const BusinessDashboard = () => {
       const token = localStorage.getItem('token');
       window.open(`${CRM_FRONTEND_URL}?token=${token}`, '_blank');
     } else {
-      // Get CRM workflow from n8n and add to dashboard
+      // Add CRM workflow to dashboard - same logic as Alex chat
       try {
-        // First, fetch available workflows from n8n to find CRM
-        const n8nWorkflows = await fetch(`${API_BASE_URL.replace('/api', '')}/n8n-workflows`, {
+        // Fetch all workflows to find CRM template
+        const response = await fetch(`${API_BASE_URL}/workflows`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
         });
         
-        const workflows = await n8nWorkflows.json();
+        if (!response.ok) {
+          throw new Error('Failed to fetch workflows');
+        }
+
+        const result = await response.json();
+        const workflows = result.workflows || result;
         
-        // Find the CRM workflow (contains "CRM" in name)
+        // Find the CRM workflow
         const crmWorkflowTemplate = workflows.find(w => 
-          w.name?.toLowerCase().includes('crm') || 
-          w.name?.toLowerCase().includes('exora crm')
+          w.name?.toLowerCase().includes('crm')
         );
         
         if (!crmWorkflowTemplate) {
-          alert('CRM workflow not found in n8n. Please import the CRM workflow template first.');
+          alert('CRM workflow not found. Please import the CRM workflow template to n8n first.');
           return;
         }
         
-        // Add to dashboard using same endpoint as Alex chat
-        const response = await fetch(`${API_BASE_URL}/dashboard/workflows`, {
+        // Add workflow to dashboard - exact same as Alex chat
+        const addResponse = await fetch(`${API_BASE_URL}/dashboard/workflows`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({ 
-            workflows: [crmWorkflowTemplate],
-            isCRM: true  // Flag to identify this as CRM
+            workflows: [{ ...crmWorkflowTemplate, isCRM: true }]  // Mark as CRM
           })
         });
         
-        if (response.ok) {
-          // Refresh dashboard to show new workflow
+        if (addResponse.ok) {
+          const addResult = await addResponse.json();
+          console.log('CRM workflow added:', addResult);
+          
+          // Reload to show updated dashboard
           window.location.reload();
         } else {
-          const error = await response.json();
+          const error = await addResponse.json();
           alert(error.message || 'Failed to add CRM workflow');
         }
         
@@ -350,6 +356,10 @@ const BusinessDashboard = () => {
       // Call activate-workflow to build the OAuth URL and redirect
       console.log('Initiating OAuth flow...');
       
+      // Find the workflow to check if it's CRM
+      const workflow = dashboardData.workflows.find(w => w.id === workflowId);
+      const isCRM = workflow?.isCRM || false;
+      
       const response = await fetch(`${backendBaseUrl}/activate-workflow`, {
         method: 'POST',
         headers: {
@@ -358,7 +368,8 @@ const BusinessDashboard = () => {
         },
         body: JSON.stringify({ 
           userId: user.id, 
-          workflowId: workflowId 
+          workflowId: workflowId,
+          isCRM: isCRM  // Pass CRM flag
         })
       });
 
