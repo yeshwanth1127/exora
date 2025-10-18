@@ -345,21 +345,18 @@ function injectCredentialsIntoWorkflow(templateWorkflow, credMap, userLabel) {
   delete wf.id;
   delete wf.versionId;
   delete wf.meta;
-  // Note: NOT deleting 'active' - we'll try to set it during creation
-  // delete wf.active;  // In n8n 1.60+ this is read-only, but let's try anyway
+  delete wf.active;
   delete wf.tags;
   
-  // Return workflow payload with active: true
+  // Return ONLY the fields n8n accepts for workflow creation
   // See: https://docs.n8n.io/api/v1/#tag/Workflow/operation/createWorkflow
-  // Note: In n8n 1.60+, 'active' might be read-only, but we'll try setting it
-  // and fall back to activation endpoint if it doesn't work
+  // Note: In n8n 1.60+, 'active' and 'tags' are read-only
   return {
     name: `${userLabel} — ${wf.name || 'Cloned Workflow'}`,
     nodes: cleanedNodes,
     connections: wf.connections || {},
     settings: wf.settings || {},
-    staticData: wf.staticData || null,
-    active: true  // Try to activate during creation
+    staticData: wf.staticData || null
   };
 }
 
@@ -824,67 +821,19 @@ router.get('/oauth2/callback', async (req, res) => {
 
     console.log(`✓ Created cloned workflow with ID: ${clonedWorkflowId}`);
 
-    // Step 10: Verify/Activate the cloned workflow
-    console.log('\n[NEW] Step 10: Verifying workflow activation status...');
+    // Step 10: Activate the cloned workflow
+    console.log('\n[NEW] Step 10: Activating cloned workflow...');
     
-    // First, check if workflow was created as active
-    let workflowStatus;
+    // Use dedicated activation endpoint (POST /workflows/:id/activate)
+    // Note: 'active' is read-only in PUT, must use activation endpoint
     try {
-      const statusResp = await n8nAxios.get(`/workflows/${clonedWorkflowId}`);
-      workflowStatus = statusResp.data;
-      console.log(`Workflow status check: active=${workflowStatus.active}`);
-      
-      if (workflowStatus.active === true) {
-        console.log(`✓ Workflow ${clonedWorkflowId} is already active (activated during creation)`);
-      } else {
-        console.log(`Workflow is inactive, attempting activation...`);
-        let activated = false;
-        
-        // Method 1: Try dedicated activation endpoint (n8n 1.60+ required method)
-        try {
-          await n8nAxios.post(`/workflows/${clonedWorkflowId}/activate`, {});
-          console.log(`✓ Activated workflow ${clonedWorkflowId} using /activate endpoint`);
-          activated = true;
-        } catch (activationErr) {
-          const errMsg = activationErr.response?.data?.message || activationErr.message;
-          const errStatus = activationErr.response?.status;
-          console.log(`POST /activate failed (${errStatus}): ${errMsg}`);
-          console.log('Trying alternative activation method...');
-          
-          // Method 2: Update workflow with active: true (older n8n versions)
-          try {
-            await n8nAxios.put(`/workflows/${clonedWorkflowId}`, {
-              ...workflowStatus,
-              active: true
-            });
-            console.log(`✓ Activated workflow ${clonedWorkflowId} using PUT method`);
-            activated = true;
-          } catch (putErr) {
-            const putErrMsg = putErr.response?.data?.message || putErr.message;
-            const putErrStatus = putErr.response?.status;
-            console.error(`PUT activation also failed (${putErrStatus}): ${putErrMsg}`);
-            
-            // Check if workflow is actually active despite errors
-            const recheckResp = await n8nAxios.get(`/workflows/${clonedWorkflowId}`);
-            if (recheckResp.data.active === true) {
-              console.log('✓ Workflow is active despite activation errors - proceeding');
-              activated = true;
-            } else {
-              throw new Error(`All activation methods failed. POST error: ${errMsg}, PUT error: ${putErrMsg}. Your n8n version might require manual activation.`);
-            }
-          }
-        }
-        
-        if (!activated) {
-          throw new Error('Failed to activate workflow - no method succeeded');
-        }
-      }
-    } catch (err) {
-      if (err.message && err.message.includes('activation methods failed')) {
-        throw err; // Re-throw our detailed error
-      }
-      console.error('Error during workflow activation:', err.message);
-      throw new Error(`Workflow activation check failed: ${err.message}`);
+      await n8nAxios.post(`/workflows/${clonedWorkflowId}/activate`);
+      console.log(`✓ Activated workflow ${clonedWorkflowId}`);
+    } catch (activationErr) {
+      // Fallback: try PATCH if POST activate doesn't exist
+      console.log('POST activate failed, trying PATCH...');
+      await n8nAxios.patch(`/workflows/${clonedWorkflowId}/activate`);
+      console.log(`✓ Activated workflow ${clonedWorkflowId}`);
     }
 
     // Step 11: Persist workflow mapping in database
