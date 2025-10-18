@@ -828,12 +828,27 @@ router.get('/oauth2/callback', async (req, res) => {
     // Note: 'active' is read-only in PUT, must use activation endpoint
     try {
       await n8nAxios.post(`/workflows/${clonedWorkflowId}/activate`);
-      console.log(`✓ Activated workflow ${clonedWorkflowId}`);
+      console.log(`✓ Activated workflow ${clonedWorkflowId} using POST /activate`);
     } catch (activationErr) {
-      // Fallback: try PATCH if POST activate doesn't exist
-      console.log('POST activate failed, trying PATCH...');
-      await n8nAxios.patch(`/workflows/${clonedWorkflowId}/activate`);
-      console.log(`✓ Activated workflow ${clonedWorkflowId}`);
+      // Fallback: Update workflow with active: true using PUT (for older n8n versions or when /activate fails)
+      console.log('POST /activate failed, trying PUT method with active: true...');
+      console.log('Error from POST:', activationErr.response?.data?.message || activationErr.message);
+      
+      try {
+        // Fetch the current workflow
+        const currentWfResp = await n8nAxios.get(`/workflows/${clonedWorkflowId}`);
+        const currentWorkflow = currentWfResp.data;
+        
+        // Update with active: true
+        await n8nAxios.put(`/workflows/${clonedWorkflowId}`, {
+          ...currentWorkflow,
+          active: true
+        });
+        console.log(`✓ Activated workflow ${clonedWorkflowId} using PUT method`);
+      } catch (putErr) {
+        console.error('PUT method also failed:', putErr.response?.data?.message || putErr.message);
+        throw new Error(`Failed to activate workflow. POST error: ${activationErr.message}, PUT error: ${putErr.message}`);
+      }
     }
 
     // Step 11: Persist workflow mapping in database
