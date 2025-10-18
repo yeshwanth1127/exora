@@ -431,6 +431,14 @@ const BusinessDashboard = () => {
   };
 
   const removeWorkflow = async (workflowId) => {
+    // Confirm deletion
+    const workflow = dashboardData.workflows.find(w => w.id === workflowId);
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${workflow?.name || 'this workflow'}"?\n\nThis will remove it from your dashboard. The workflow template will still be available to add again later.`
+    );
+    
+    if (!confirmed) return;
+
     try {
       const response = await fetch(`${API_BASE_URL}/workflows/${workflowId}`, {
         method: 'DELETE',
@@ -446,9 +454,15 @@ const BusinessDashboard = () => {
           ...prev,
           workflows: prev.workflows.filter(w => w.id !== workflowId)
         }));
+        
+        alert(`✅ Workflow removed from your dashboard successfully!`);
+      } else {
+        const error = await response.json();
+        alert(`Failed to remove workflow: ${error.message || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error removing workflow:', error);
+      alert('Failed to remove workflow. Please try again.');
     }
   };
 
@@ -742,33 +756,45 @@ const BusinessDashboard = () => {
                       </div>
                     </div>
                     <div className="workflow-actions">
-                      {workflow.status !== 'active' && (
-                        <button 
-                          className="workflow-toggle activate"
-                          onClick={() => toggleWorkflowStatus(workflow.id, workflow.status)}
-                        >
-                          Activate
-                        </button>
-                      )}
-                      {workflow.status === 'active' && (
+                      {workflow.status !== 'active' ? (
                         <>
+                          {/* Inactive workflow: Show Activate and Delete */}
                           <button 
-                            className="workflow-run-btn"
-                            onClick={() => handleRunAutomation(workflow)}
+                            className="workflow-toggle activate"
+                            onClick={() => toggleWorkflowStatus(workflow.id, workflow.status)}
                           >
-                            ⚡ Run Automation
+                            Activate
                           </button>
+                          <button 
+                            className="workflow-delete-btn"
+                            onClick={() => removeWorkflow(workflow.id)}
+                          >
+                            🗑️ Delete
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          {/* Active workflow: Show Deactivate, Show Stats, and Execute */}
                           <button 
                             className="workflow-toggle deactivate"
                             onClick={() => toggleWorkflowStatus(workflow.id, workflow.status)}
                           >
                             Deactivate
                           </button>
+                          <button 
+                            className="workflow-stats-btn" 
+                            onClick={() => showWorkflowStats(workflow.id)}
+                          >
+                            📊 Show Stats
+                          </button>
+                          <button 
+                            className="workflow-run-btn"
+                            onClick={() => handleRunAutomation(workflow)}
+                          >
+                            ⚡ Execute
+                          </button>
                         </>
                       )}
-                      <button className="workflow-stats-btn" onClick={() => showWorkflowStats(workflow.id)}>
-                        📊 Get Stats
-                      </button>
                     </div>
                   </div>
                 ))}
