@@ -145,13 +145,33 @@ class N8NIntegration {
   // Activate workflow
   async activateWorkflow(workflowId) {
     try {
-      const response = await axios.post(`${this.baseURL}/api/v1/workflows/${workflowId}/activate`, 
-        {},
-        { headers: this.headers }
-      );
-      
-      console.log(`Workflow ${workflowId} activated successfully`);
-      return { success: true, workflow: response.data };
+      // Method 1: Try dedicated activation endpoint (newer n8n versions)
+      try {
+        const response = await axios.post(`${this.baseURL}/api/v1/workflows/${workflowId}/activate`, 
+          {},
+          { headers: this.headers }
+        );
+        console.log(`Workflow ${workflowId} activated successfully using activation endpoint`);
+        return { success: true, workflow: response.data };
+      } catch (activateErr) {
+        // Method 2: Update workflow with active: true (works with all n8n versions)
+        console.log(`Activation endpoint failed, using PUT method for workflow ${workflowId}`);
+        
+        // Fetch current workflow
+        const getResponse = await axios.get(`${this.baseURL}/api/v1/workflows/${workflowId}`, {
+          headers: this.headers
+        });
+        const workflow = getResponse.data;
+        
+        // Update with active: true
+        const updateResponse = await axios.put(`${this.baseURL}/api/v1/workflows/${workflowId}`, 
+          { ...workflow, active: true },
+          { headers: this.headers }
+        );
+        
+        console.log(`Workflow ${workflowId} activated successfully using PUT method`);
+        return { success: true, workflow: updateResponse.data };
+      }
     } catch (error) {
       console.error(`Failed to activate workflow ${workflowId}:`, error.message);
       return { success: false, error: error.message };
@@ -161,13 +181,33 @@ class N8NIntegration {
   // Deactivate workflow
   async deactivateWorkflow(workflowId) {
     try {
-      const response = await axios.post(`${this.baseURL}/api/v1/workflows/${workflowId}/deactivate`, 
-        {},
-        { headers: this.headers }
-      );
-      
-      console.log(`Workflow ${workflowId} deactivated successfully`);
-      return { success: true, workflow: response.data };
+      // Method 1: Try dedicated deactivation endpoint (newer n8n versions)
+      try {
+        const response = await axios.post(`${this.baseURL}/api/v1/workflows/${workflowId}/deactivate`, 
+          {},
+          { headers: this.headers }
+        );
+        console.log(`Workflow ${workflowId} deactivated successfully using deactivation endpoint`);
+        return { success: true, workflow: response.data };
+      } catch (deactivateErr) {
+        // Method 2: Update workflow with active: false (works with all n8n versions)
+        console.log(`Deactivation endpoint failed, using PUT method for workflow ${workflowId}`);
+        
+        // Fetch current workflow
+        const getResponse = await axios.get(`${this.baseURL}/api/v1/workflows/${workflowId}`, {
+          headers: this.headers
+        });
+        const workflow = getResponse.data;
+        
+        // Update with active: false
+        const updateResponse = await axios.put(`${this.baseURL}/api/v1/workflows/${workflowId}`, 
+          { ...workflow, active: false },
+          { headers: this.headers }
+        );
+        
+        console.log(`Workflow ${workflowId} deactivated successfully using PUT method`);
+        return { success: true, workflow: updateResponse.data };
+      }
     } catch (error) {
       console.error(`Failed to deactivate workflow ${workflowId}:`, error.message);
       return { success: false, error: error.message };
