@@ -110,7 +110,7 @@ const BusinessDashboard = () => {
       const token = localStorage.getItem('token');
       window.open(`${CRM_FRONTEND_URL}?token=${token}`, '_blank');
     } else {
-      // Add CRM workflow to dashboard - same logic as Alex chat
+      // Add CRM workflow to dashboard - EXACT same logic as Alex chat
       try {
         // Fetch all workflows to find CRM template
         const response = await fetch(`${API_BASE_URL}/workflows`, {
@@ -137,7 +137,7 @@ const BusinessDashboard = () => {
           return;
         }
         
-        // Add workflow to dashboard - exact same as Alex chat
+        // Add workflow to dashboard - EXACT same as Alex chat (handleWorkflowSelected)
         const addResponse = await fetch(`${API_BASE_URL}/dashboard/workflows`, {
           method: 'POST',
           headers: {
@@ -153,8 +153,22 @@ const BusinessDashboard = () => {
           const addResult = await addResponse.json();
           console.log('CRM workflow added:', addResult);
           
-          // Reload to show updated dashboard
-          window.location.reload();
+          // ✅ Update local state instead of reloading - same as Alex chat
+          if (addResult.data.addedWorkflows && addResult.data.addedWorkflows.length > 0) {
+            const newDashboardData = {
+              ...dashboardData,
+              workflows: [...dashboardData.workflows, ...addResult.data.addedWorkflows],
+              isConfigured: true
+            };
+            
+            setDashboardData(newDashboardData);
+            
+            // Show success notification
+            alert(`✅ ${addResult.message}\n\nThe CRM workflow has been added to your "Your Workflows" section. Scroll down to see it!`);
+          } else {
+            // Workflow already exists
+            alert(`ℹ️ ${addResult.message}`);
+          }
         } else {
           const error = await addResponse.json();
           alert(error.message || 'Failed to add CRM workflow');
