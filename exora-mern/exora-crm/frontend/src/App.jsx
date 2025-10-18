@@ -16,6 +16,9 @@ import './App.css';
 
 const queryClient = new QueryClient();
 
+// API Base URL for debugging
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://crm.exora.solutions/api';
+
 function App() {
   const [authenticated, setAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -57,8 +60,34 @@ function App() {
       } catch (error) {
         console.error('[CRM] Token validation FAILED:', error);
         console.error('[CRM] Error details:', error.response?.data || error.message);
-        alert(`CRM Authentication Failed: ${error.response?.data?.error || error.message}\n\nYou will be redirected to login.`);
-        redirectToExora();
+        console.error('[CRM] Error code:', error.code);
+        console.error('[CRM] Is network error?', !error.response);
+        
+        let errorMessage = 'CRM Authentication Failed\n\n';
+        
+        if (!error.response) {
+          errorMessage += 'Cannot connect to CRM backend API.\n';
+          errorMessage += 'Please check:\n';
+          errorMessage += '1. Is CRM backend running?\n';
+          errorMessage += '2. Is crm-api.exora.solutions accessible?\n';
+          errorMessage += '3. Check CORS configuration\n\n';
+          errorMessage += `API URL: ${API_BASE_URL || import.meta.env.VITE_API_URL}`;
+        } else if (error.response.status === 401) {
+          errorMessage += 'Invalid authentication token.\n';
+          errorMessage += error.response.data?.error || 'Token validation failed';
+        } else {
+          errorMessage += error.response?.data?.error || error.message;
+        }
+        
+        alert(errorMessage);
+        
+        // Only redirect if not a network error
+        if (error.response) {
+          redirectToExora();
+        } else {
+          setLoading(false);
+          // Don't redirect on network errors - show error in UI instead
+        }
       }
     } else {
       console.log('[CRM] No token in URL, checking localStorage...');

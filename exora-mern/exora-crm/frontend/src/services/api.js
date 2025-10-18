@@ -34,20 +34,10 @@ api.interceptors.response.use(
 
 // ==================== AUTH ====================
 export const validateToken = async (token) => {
-  console.log('[CRM API] Validating token with backend...');
-  console.log('[CRM API] API_BASE_URL:', API_BASE_URL);
-  console.log('[CRM API] Token (first 20 chars):', token?.substring(0, 20));
-  
-  try {
-    const response = await axios.get(`${API_BASE_URL}/auth/validate`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    console.log('[CRM API] Validation response:', response.data);
-    return response.data.user;
-  } catch (error) {
-    console.error('[CRM API] Validation request failed:', error.response?.status, error.response?.data);
-    throw error;
-  }
+  const response = await axios.get(`${API_BASE_URL}/auth/validate`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data.user;
 };
 
 // ==================== INDUSTRY ====================
