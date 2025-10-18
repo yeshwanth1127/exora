@@ -27,44 +27,65 @@ function App() {
   }, []);
 
   const initializeAuth = async () => {
+    console.log('[CRM] Initializing authentication...');
+    
     // Check for token in URL (from Exora redirect)
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
     const setupFlag = urlParams.get('setup');
 
+    console.log('[CRM] Token in URL:', token ? 'YES' : 'NO');
+    console.log('[CRM] Setup flag:', setupFlag);
+
     if (token) {
       try {
+        console.log('[CRM] Validating token from URL...');
         const userData = await validateToken(token);
+        console.log('[CRM] Token validation successful:', userData);
+        
         localStorage.setItem('crm_token', token);
         setUser(userData);
         setAuthenticated(true);
 
         if (setupFlag === 'true' || userData.status === 'pending_setup') {
+          console.log('[CRM] User needs setup, showing wizard');
           setNeedsSetup(true);
         }
 
         // Clean URL
         window.history.replaceState({}, document.title, window.location.pathname);
       } catch (error) {
-        console.error('Token validation failed:', error);
+        console.error('[CRM] Token validation FAILED:', error);
+        console.error('[CRM] Error details:', error.response?.data || error.message);
+        alert(`CRM Authentication Failed: ${error.response?.data?.error || error.message}\n\nYou will be redirected to login.`);
         redirectToExora();
       }
     } else {
+      console.log('[CRM] No token in URL, checking localStorage...');
+      
       // Check for stored token
       const storedToken = localStorage.getItem('crm_token');
       if (storedToken) {
+        console.log('[CRM] Found stored token, validating...');
         try {
           const userData = await validateToken(storedToken);
+          console.log('[CRM] Stored token validation successful:', userData);
+          
           setUser(userData);
           setAuthenticated(true);
 
           if (userData.status === 'pending_setup') {
+            console.log('[CRM] User needs setup, showing wizard');
             setNeedsSetup(true);
           }
         } catch (error) {
+          console.error('[CRM] Stored token validation failed:', error);
+          console.log('[CRM] Clearing invalid token and redirecting...');
+          localStorage.removeItem('crm_token');
           redirectToExora();
         }
       } else {
+        console.log('[CRM] No token found, redirecting to Exora auth...');
         redirectToExora();
       }
     }
@@ -73,10 +94,15 @@ function App() {
   };
 
   const redirectToExora = () => {
-    // Redirect to main Exora auth page
+    // Redirect to main Exora dashboard (user is already logged in on Exora)
     // Use environment variable for flexibility (production vs development)
-    const exoraUrl = import.meta.env.VITE_EXORA_URL || 'https://exora.solutions';
-    window.location.href = `${exoraUrl}/auth`;
+    const exoraUrl = import.meta.env.VITE_EXORA_URL || 
+                     (window.location.hostname === 'localhost' 
+                       ? 'http://localhost:3000' 
+                       : 'https://exora.solutions');
+    
+    console.log('[CRM] Redirecting back to Exora dashboard:', `${exoraUrl}/dashboard`);
+    window.location.href = `${exoraUrl}/dashboard`;
   };
 
   const handleSetupComplete = () => {
