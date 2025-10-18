@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-// Production: https://crm-api.exora.solutions/api
+// Production: https://crm.exora.solutions/api (nginx proxies to localhost:8000)
 // Development: http://localhost:8000/api
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://crm-api.exora.solutions/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://crm.exora.solutions/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
