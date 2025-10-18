@@ -332,6 +332,10 @@ function injectCredentialsIntoWorkflow(templateWorkflow, credMap, userLabel) {
           };
           injectCount++;
           console.log(`  Injected ${credType} credential into node ${node.name || node.type}`);
+        } else {
+          // Debug: Show what credentials were expected but not found
+          console.log(`  ⚠️ Node "${node.name || node.type}" needs credential "${credType}" but it's not in credMap`);
+          console.log(`  Available in credMap:`, Object.keys(credMap));
         }
       });
     }
@@ -824,32 +828,9 @@ router.get('/oauth2/callback', async (req, res) => {
     // Step 10: Activate the cloned workflow
     console.log('\n[NEW] Step 10: Activating cloned workflow...');
     
-    // Use dedicated activation endpoint (POST /workflows/:id/activate)
-    // Note: 'active' is read-only in PUT, must use activation endpoint
-    try {
-      await n8nAxios.post(`/workflows/${clonedWorkflowId}/activate`);
-      console.log(`✓ Activated workflow ${clonedWorkflowId} using POST /activate`);
-    } catch (activationErr) {
-      // Fallback: Update workflow with active: true using PUT (for older n8n versions or when /activate fails)
-      console.log('POST /activate failed, trying PUT method with active: true...');
-      console.log('Error from POST:', activationErr.response?.data?.message || activationErr.message);
-      
-      try {
-        // Fetch the current workflow
-        const currentWfResp = await n8nAxios.get(`/workflows/${clonedWorkflowId}`);
-        const currentWorkflow = currentWfResp.data;
-        
-        // Update with active: true
-        await n8nAxios.put(`/workflows/${clonedWorkflowId}`, {
-          ...currentWorkflow,
-          active: true
-        });
-        console.log(`✓ Activated workflow ${clonedWorkflowId} using PUT method`);
-      } catch (putErr) {
-        console.error('PUT method also failed:', putErr.response?.data?.message || putErr.message);
-        throw new Error(`Failed to activate workflow. POST error: ${activationErr.message}, PUT error: ${putErr.message}`);
-      }
-    }
+    // Use the EXACT same logic as the Gmail workflow that succeeded
+    await n8nAxios.post(`/workflows/${clonedWorkflowId}/activate`);
+    console.log(`✓ Activated workflow ${clonedWorkflowId}`);
 
     // Step 11: Persist workflow mapping in database
     console.log('\n[NEW] Step 11: Persisting workflow mapping in database...');

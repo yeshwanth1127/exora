@@ -95,6 +95,21 @@ const BusinessDashboard = () => {
     return crmWorkflow;
   };
 
+  // Handle Open CRM button click
+  const handleOpenCRM = () => {
+    // Get JWT token from localStorage
+    const token = localStorage.getItem('token');
+    
+    // Determine CRM URL based on environment
+    const CRM_URL = import.meta.env.VITE_CRM_URL || 
+                    (window.location.hostname === 'localhost' 
+                      ? 'http://localhost:3001' 
+                      : 'https://crm.exora.solutions');
+    
+    // Open CRM in new tab with token for authentication
+    window.open(`${CRM_URL}?token=${token}`, '_blank');
+  };
+
   // Handle CRM card click - Same logic as Alex chat
   const handleCRMClick = async () => {
     const crmWorkflow = checkCRMActivation();
@@ -774,7 +789,7 @@ const BusinessDashboard = () => {
                         </>
                       ) : (
                         <>
-                          {/* Active workflow: Show Deactivate, Show Stats, and Execute */}
+                          {/* Active workflow: Show Deactivate, Show Stats, and Execute/Open CRM */}
                           <button 
                             className="workflow-toggle deactivate"
                             onClick={() => toggleWorkflowStatus(workflow.id, workflow.status)}
@@ -787,12 +802,21 @@ const BusinessDashboard = () => {
                           >
                             📊 Show Stats
                           </button>
-                          <button 
-                            className="workflow-run-btn"
-                            onClick={() => handleRunAutomation(workflow)}
-                          >
-                            ⚡ Execute
-                          </button>
+                          {workflow.isCRM || workflow.name?.toLowerCase().includes('crm') ? (
+                            <button 
+                              className="workflow-crm-btn"
+                              onClick={() => handleOpenCRM()}
+                            >
+                              🏢 Open CRM
+                            </button>
+                          ) : (
+                            <button 
+                              className="workflow-run-btn"
+                              onClick={() => handleRunAutomation(workflow)}
+                            >
+                              ⚡ Execute
+                            </button>
+                          )}
                         </>
                       )}
                     </div>
