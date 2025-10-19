@@ -14,7 +14,7 @@ const INDUSTRY_TEMPLATES = {
     opportunity_label_plural: "Appointments",
     recommended_automations: ['whatsapp', 'ai_agent', 'calendar', 'sms'],
     default_configs: {
-      whatsapp: { auto_reply: true, ai_model: 'gpt-4' },
+      whatsapp: { auto_reply: true },
       ai_agent: { 
         system_prompt: 'You are a medical clinic assistant. Be professional, empathetic, and HIPAA-compliant.',
         temperature: 0.3,
@@ -63,7 +63,7 @@ const INDUSTRY_TEMPLATES = {
     opportunity_label_plural: "Reservations",
     recommended_automations: ['whatsapp', 'sms', 'calendar', 'chatbot'],
     default_configs: {
-      whatsapp: { auto_reply: true, ai_model: 'gpt-3.5' },
+      whatsapp: { auto_reply: true },
       sms: {},
       calendar: { default_duration: 120 },
       chatbot: { 
@@ -111,7 +111,7 @@ const INDUSTRY_TEMPLATES = {
     opportunity_label_plural: "Bookings",
     recommended_automations: ['whatsapp', 'sms', 'calendar', 'email'],
     default_configs: {
-      whatsapp: { auto_reply: true, ai_model: 'gpt-3.5' },
+      whatsapp: { auto_reply: true },
       sms: {},
       calendar: { default_duration: 60 },
       email: { signature: 'Thank you for choosing our salon!' }
@@ -161,7 +161,7 @@ const INDUSTRY_TEMPLATES = {
         max_tokens: 600
       },
       calendar: { default_duration: 45 },
-      whatsapp: { auto_reply: false, ai_model: 'gpt-4' }
+      whatsapp: { auto_reply: false }
     },
     pipeline_stages: [
       { key: "lead", label: "Lead", color: "#3B82F6", order: 1 },
@@ -250,7 +250,7 @@ const INDUSTRY_TEMPLATES = {
     opportunity_label_plural: "Opportunities",
     recommended_automations: ['whatsapp', 'email', 'calendar'],
     default_configs: {
-      whatsapp: { auto_reply: true, ai_model: 'gpt-3.5' },
+      whatsapp: { auto_reply: true },
       email: {},
       calendar: { default_duration: 30 }
     },
