@@ -535,14 +535,13 @@ router.get('/oauth2/callback', async (req, res) => {
         });
         
         // Only include properties that n8n accepts for creating a new workflow
+        // Note: 'active' and 'tags' are read-only in n8n API
         const newWorkflowPayload = {
           name: `CRM Automation - ${userLabel}`,
           nodes: clonedNodes,
           connections: templateWorkflow.connections || {},
-          active: false,  // Will be activated after setup
           settings: templateWorkflow.settings || {},
-          staticData: templateWorkflow.staticData || null,
-          tags: templateWorkflow.tags || []
+          staticData: templateWorkflow.staticData || null
         };
 
         const createWfResp = await n8nAxios.post('/workflows', newWorkflowPayload);
