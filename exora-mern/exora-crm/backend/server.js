@@ -26,6 +26,7 @@ app.use('/api/staff', require('./routes/staff'));
 app.use('/api/automation-history', require('./routes/automationHistory'));
 app.use('/api/webhooks', require('./routes/webhooks'));
 app.use('/api/automations', require('./routes/automations'));
+app.use('/api/settings', require('./routes/settings'));
 
 // Health check
 app.get('/health', (req, res) => {

@@ -101,9 +101,10 @@
 
 .main-content {
   margin-left: 260px;
-  flex: 1;
+  width: calc(100% - 260px);
   padding: 24px;
   background: #f9fafb;
   min-height: 100vh;
+  overflow-x: auto;
 }
 

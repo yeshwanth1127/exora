@@ -1,5 +1,7 @@
 .dashboard {
-  max-width: 1400px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .stats-grid {
