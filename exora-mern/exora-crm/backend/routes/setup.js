@@ -29,11 +29,11 @@ router.post('/complete', validateExoraToken, async (req, res) => {
           admin_email = $3,
           admin_whatsapp = $4,
           whatsapp_instance_name = $5,
-          whatsapp_connected = CASE WHEN $5 IS NOT NULL THEN true ELSE false END,
-          telegram_chat_id = $6,
-          telegram_connected = CASE WHEN $6 IS NOT NULL THEN true ELSE false END,
+          whatsapp_connected = $6,
+          telegram_chat_id = $7,
+          telegram_connected = $8,
           status = 'active'
-      WHERE exora_user_id = $7
+      WHERE exora_user_id = $9
       RETURNING *
     `;
     
@@ -41,9 +41,11 @@ router.post('/complete', validateExoraToken, async (req, res) => {
       business_name,
       industry,
       admin_email,
-      admin_whatsapp,
-      whatsapp_instance_name,
-      telegram_chat_id,
+      admin_whatsapp || null,
+      whatsapp_instance_name || null,
+      whatsapp_instance_name ? true : false,
+      telegram_chat_id || null,
+      telegram_chat_id ? true : false,
       exoraUserId
     ]);
     
