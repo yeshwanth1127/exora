@@ -12,6 +12,17 @@ const INDUSTRY_TEMPLATES = {
     staff_label_plural: "Medical Staff",
     opportunity_label: "Appointment",
     opportunity_label_plural: "Appointments",
+    recommended_automations: ['whatsapp', 'ai_agent', 'calendar', 'sms'],
+    default_configs: {
+      whatsapp: { auto_reply: true, ai_model: 'gpt-4' },
+      ai_agent: { 
+        system_prompt: 'You are a medical clinic assistant. Be professional, empathetic, and HIPAA-compliant.',
+        temperature: 0.3,
+        max_tokens: 500
+      },
+      calendar: { default_duration: 30 },
+      sms: {}
+    },
     pipeline_stages: [
       { key: "scheduled", label: "Scheduled", color: "#3B82F6", order: 1 },
       { key: "confirmed", label: "Confirmed", color: "#10B981", order: 2 },
@@ -50,6 +61,16 @@ const INDUSTRY_TEMPLATES = {
     staff_label_plural: "Servers",
     opportunity_label: "Reservation",
     opportunity_label_plural: "Reservations",
+    recommended_automations: ['whatsapp', 'sms', 'calendar', 'chatbot'],
+    default_configs: {
+      whatsapp: { auto_reply: true, ai_model: 'gpt-3.5' },
+      sms: {},
+      calendar: { default_duration: 120 },
+      chatbot: { 
+        greeting_message: 'Welcome! Ready to make a reservation?',
+        widget_color: '#F59E0B'
+      }
+    },
     pipeline_stages: [
       { key: "reserved", label: "Reserved", color: "#3B82F6", order: 1 },
       { key: "confirmed", label: "Confirmed", color: "#10B981", order: 2 },
@@ -88,6 +109,13 @@ const INDUSTRY_TEMPLATES = {
     staff_label_plural: "Stylists",
     opportunity_label: "Booking",
     opportunity_label_plural: "Bookings",
+    recommended_automations: ['whatsapp', 'sms', 'calendar', 'email'],
+    default_configs: {
+      whatsapp: { auto_reply: true, ai_model: 'gpt-3.5' },
+      sms: {},
+      calendar: { default_duration: 60 },
+      email: { signature: 'Thank you for choosing our salon!' }
+    },
     pipeline_stages: [
       { key: "booked", label: "Booked", color: "#3B82F6", order: 1 },
       { key: "confirmed", label: "Confirmed", color: "#10B981", order: 2 },
@@ -124,6 +152,17 @@ const INDUSTRY_TEMPLATES = {
     staff_label_plural: "Sales Team",
     opportunity_label: "Deal",
     opportunity_label_plural: "Deals",
+    recommended_automations: ['email', 'ai_agent', 'calendar', 'whatsapp'],
+    default_configs: {
+      email: { signature: 'Best regards,\nYour Sales Team' },
+      ai_agent: {
+        system_prompt: 'You are a professional sales assistant. Be persuasive yet respectful.',
+        temperature: 0.6,
+        max_tokens: 600
+      },
+      calendar: { default_duration: 45 },
+      whatsapp: { auto_reply: false, ai_model: 'gpt-4' }
+    },
     pipeline_stages: [
       { key: "lead", label: "Lead", color: "#3B82F6", order: 1 },
       { key: "qualified", label: "Qualified", color: "#8B5CF6", order: 2 },
@@ -162,6 +201,16 @@ const INDUSTRY_TEMPLATES = {
     staff_label_plural: "Consultants",
     opportunity_label: "Project",
     opportunity_label_plural: "Projects",
+    recommended_automations: ['email', 'calendar', 'ai_agent'],
+    default_configs: {
+      email: { signature: 'Professional regards,\nYour Consulting Team' },
+      calendar: { default_duration: 60 },
+      ai_agent: {
+        system_prompt: 'You are a professional consultant assistant. Provide expert advice.',
+        temperature: 0.5,
+        max_tokens: 700
+      }
+    },
     pipeline_stages: [
       { key: "inquiry", label: "Inquiry", color: "#3B82F6", order: 1 },
       { key: "proposal", label: "Proposal", color: "#8B5CF6", order: 2 },
@@ -199,6 +248,12 @@ const INDUSTRY_TEMPLATES = {
     staff_label_plural: "Team Members",
     opportunity_label: "Opportunity",
     opportunity_label_plural: "Opportunities",
+    recommended_automations: ['whatsapp', 'email', 'calendar'],
+    default_configs: {
+      whatsapp: { auto_reply: true, ai_model: 'gpt-3.5' },
+      email: {},
+      calendar: { default_duration: 30 }
+    },
     pipeline_stages: [
       { key: "new", label: "New", color: "#3B82F6", order: 1 },
       { key: "inprogress", label: "In Progress", color: "#8B5CF6", order: 2 },

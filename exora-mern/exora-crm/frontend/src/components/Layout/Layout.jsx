@@ -31,7 +31,8 @@ const Layout = ({ children, user }) => {
     { path: '/pipeline', icon: '🎯', label: 'Pipeline' },
     { path: '/calendar', icon: '📅', label: 'Calendar' },
     { path: '/inbox', icon: '💬', label: 'Inbox' },
-    { path: '/automation-history', icon: '🤖', label: 'Automation History' },
+    { path: '/automations', icon: '⚡', label: 'Automations' },
+    { path: '/automation-history', icon: '🤖', label: 'History' },
     { path: '/settings', icon: '⚙️', label: 'Settings' },
   ];
 

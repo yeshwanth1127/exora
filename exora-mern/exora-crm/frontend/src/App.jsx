@@ -9,6 +9,7 @@ import ContactDetail from './pages/Contacts/ContactDetail';
 import Pipeline from './pages/Pipeline/Pipeline';
 import Calendar from './pages/Calendar/Calendar';
 import Inbox from './pages/Inbox/Inbox';
+import Automations from './pages/Automations/Automations';
 import AutomationHistory from './pages/AutomationHistory/AutomationHistory';
 import Settings from './pages/Settings/Settings';
 import Layout from './components/Layout/Layout';
@@ -167,6 +168,7 @@ function App() {
             <Route path="/pipeline" element={<Pipeline />} />
             <Route path="/calendar" element={<Calendar />} />
             <Route path="/inbox" element={<Inbox />} />
+            <Route path="/automations" element={<Automations />} />
             <Route path="/automation-history" element={<AutomationHistory />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,0 +1,361 @@
+{
+  "name": "Exora CRM - Universal Automation Hub",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "crm-automation",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "webhook-entry",
+      "name": "Webhook Entry",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "crm-automation-webhook"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT module_key, config_data, enabled FROM automation_configs WHERE crm_user_id = $1 AND enabled = true",
+        "options": {
+          "queryParameters": "={{ $json.crm_user_id }}"
+        }
+      },
+      "id": "get-user-configs",
+      "name": "Get User Configs",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "dataPropertyName": "module"
+      },
+      "id": "route-by-module",
+      "name": "Route by Module",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "mode": "rules",
+        "rules": {
+          "rules": [
+            {
+              "operation": "equal",
+              "value1": "={{ $json.module }}",
+              "value2": "whatsapp"
+            },
+            {
+              "operation": "equal",
+              "value1": "={{ $json.module }}",
+              "value2": "ai_agent"
+            },
+            {
+              "operation": "equal",
+              "value1": "={{ $json.module }}",
+              "value2": "rag_agent"
+            },
+            {
+              "operation": "equal",
+              "value1": "={{ $json.module }}",
+              "value2": "email"
+            },
+            {
+              "operation": "equal",
+              "value1": "={{ $json.module }}",
+              "value2": "sms"
+            },
+            {
+              "operation": "equal",
+              "value1": "={{ $json.module }}",
+              "value2": "calendar"
+            },
+            {
+              "operation": "equal",
+              "value1": "={{ $json.module }}",
+              "value2": "chatbot"
+            }
+          ]
+        }
+      },
+      "id": "module-router",
+      "name": "Module Router",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": "public",
+        "table": "automation_execution_logs",
+        "columns": "crm_user_id,module_key,trigger_source,input_data,output_data,status,execution_time_ms,executed_at",
+        "options": {}
+      },
+      "id": "log-execution",
+      "name": "Log Execution",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [1650, 300],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// WhatsApp Module Handler\nconst inputData = $input.first().json;\nconst configs = inputData.enabled_modules || {};\nconst whatsappConfig = configs.whatsapp || {};\n\n// Check if WhatsApp is enabled\nif (!whatsappConfig || Object.keys(whatsappConfig).length === 0) {\n  return { json: { error: 'WhatsApp module not enabled', status: 'disabled' } };\n}\n\n// Process WhatsApp message\nreturn {\n  json: {\n    ...inputData,\n    config: whatsappConfig,\n    module: 'whatsapp',\n    status: 'processing'\n  }\n};"
+      },
+      "id": "whatsapp-handler",
+      "name": "WhatsApp Handler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 100]
+    },
+    {
+      "parameters": {
+        "jsCode": "// AI Agent Module Handler\nconst inputData = $input.first().json;\nconst configs = inputData.enabled_modules || {};\nconst aiConfig = configs.ai_agent || {};\n\n// Check if AI Agent is enabled\nif (!aiConfig || Object.keys(aiConfig).length === 0) {\n  return { json: { error: 'AI Agent module not enabled', status: 'disabled' } };\n}\n\n// Process with AI configuration\nreturn {\n  json: {\n    ...inputData,\n    config: aiConfig,\n    module: 'ai_agent',\n    status: 'processing',\n    system_prompt: aiConfig.system_prompt || 'You are a helpful assistant.',\n    temperature: aiConfig.temperature || 0.7,\n    max_tokens: aiConfig.max_tokens || 500\n  }\n};"
+      },
+      "id": "ai-agent-handler",
+      "name": "AI Agent Handler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// RAG Agent Module Handler\nconst inputData = $input.first().json;\nconst configs = inputData.enabled_modules || {};\nconst ragConfig = configs.rag_agent || {};\n\n// Check if RAG is enabled\nif (!ragConfig || Object.keys(ragConfig).length === 0) {\n  return { json: { error: 'RAG Agent module not enabled', status: 'disabled' } };\n}\n\n// Process with RAG configuration\nreturn {\n  json: {\n    ...inputData,\n    config: ragConfig,\n    module: 'rag_agent',\n    status: 'processing',\n    index_name: ragConfig.index_name || 'default',\n    top_k: ragConfig.top_k || 3\n  }\n};"
+      },
+      "id": "rag-agent-handler",
+      "name": "RAG Agent Handler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Email Module Handler\nconst inputData = $input.first().json;\nconst configs = inputData.enabled_modules || {};\nconst emailConfig = configs.email || {};\n\n// Check if Email is enabled\nif (!emailConfig || Object.keys(emailConfig).length === 0) {\n  return { json: { error: 'Email module not enabled', status: 'disabled' } };\n}\n\n// Process with Email configuration\nreturn {\n  json: {\n    ...inputData,\n    config: emailConfig,\n    module: 'email',\n    status: 'processing',\n    from_email: emailConfig.from_email || '',\n    signature: emailConfig.signature || ''\n  }\n};"
+      },
+      "id": "email-handler",
+      "name": "Email Handler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "// SMS Module Handler\nconst inputData = $input.first().json;\nconst configs = inputData.enabled_modules || {};\nconst smsConfig = configs.sms || {};\n\n// Check if SMS is enabled\nif (!smsConfig || Object.keys(smsConfig).length === 0) {\n  return { json: { error: 'SMS module not enabled', status: 'disabled' } };\n}\n\n// Process with SMS configuration\nreturn {\n  json: {\n    ...inputData,\n    config: smsConfig,\n    module: 'sms',\n    status: 'processing',\n    from_number: smsConfig.from_number || ''\n  }\n};"
+      },
+      "id": "sms-handler",
+      "name": "SMS Handler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 500]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Calendar Module Handler\nconst inputData = $input.first().json;\nconst configs = inputData.enabled_modules || {};\nconst calendarConfig = configs.calendar || {};\n\n// Check if Calendar is enabled\nif (!calendarConfig || Object.keys(calendarConfig).length === 0) {\n  return { json: { error: 'Calendar module not enabled', status: 'disabled' } };\n}\n\n// Process with Calendar configuration\nreturn {\n  json: {\n    ...inputData,\n    config: calendarConfig,\n    module: 'calendar',\n    status: 'processing',\n    calendar_id: calendarConfig.calendar_id || 'primary',\n    default_duration: calendarConfig.default_duration || 30\n  }\n};"
+      },
+      "id": "calendar-handler",
+      "name": "Calendar Handler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 600]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Chatbot Module Handler\nconst inputData = $input.first().json;\nconst configs = inputData.enabled_modules || {};\nconst chatbotConfig = configs.chatbot || {};\n\n// Check if Chatbot is enabled\nif (!chatbotConfig || Object.keys(chatbotConfig).length === 0) {\n  return { json: { error: 'Chatbot module not enabled', status: 'disabled' } };\n}\n\n// Process with Chatbot configuration\nreturn {\n  json: {\n    ...inputData,\n    config: chatbotConfig,\n    module: 'chatbot',\n    status: 'processing',\n    widget_color: chatbotConfig.widget_color || '#667eea',\n    greeting_message: chatbotConfig.greeting_message || 'Hello! How can I help you?'\n  }\n};"
+      },
+      "id": "chatbot-handler",
+      "name": "Chatbot Handler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 700]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge all module outputs\nconst items = $input.all();\nconst processedItems = items.map(item => ({\n  json: {\n    ...item.json,\n    processed_at: new Date().toISOString(),\n    execution_time_ms: Date.now() - (item.json.start_time || Date.now())\n  }\n}));\n\nreturn processedItems;"
+      },
+      "id": "merge-results",
+      "name": "Merge Results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1350, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Entry": {
+      "main": [
+        [
+          {
+            "node": "Get User Configs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get User Configs": {
+      "main": [
+        [
+          {
+            "node": "Module Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Module Router": {
+      "main": [
+        [
+          {
+            "node": "WhatsApp Handler",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent Handler",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "RAG Agent Handler",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Email Handler",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "SMS Handler",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Calendar Handler",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Chatbot Handler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Handler": {
+      "main": [
+        [
+          {
+            "node": "Merge Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent Handler": {
+      "main": [
+        [
+          {
+            "node": "Merge Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RAG Agent Handler": {
+      "main": [
+        [
+          {
+            "node": "Merge Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Handler": {
+      "main": [
+        [
+          {
+            "node": "Merge Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SMS Handler": {
+      "main": [
+        [
+          {
+            "node": "Merge Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calendar Handler": {
+      "main": [
+        [
+          {
+            "node": "Merge Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chatbot Handler": {
+      "main": [
+        [
+          {
+            "node": "Merge Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Results": {
+      "main": [
+        [
+          {
+            "node": "Log Execution",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "versionId": "1",
+  "id": "master-automation-workflow",
+  "tags": []
+}
+
