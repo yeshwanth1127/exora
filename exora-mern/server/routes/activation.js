@@ -469,12 +469,13 @@ router.get('/oauth2/callback', async (req, res) => {
     
     const { sessionId, userId, workflowId, credentialType, credentialTypes, provider, isCRM } = parsed;
     
-    console.log(`\n[OAUTH CALLBACK] Parsed state: isCRM=${isCRM}, userId=${userId}, workflowId=${workflowId}`);
+    console.log(`\n[OAUTH CALLBACK] Full parsed state:`, JSON.stringify(parsed, null, 2));
+    console.log(`[OAUTH CALLBACK] isCRM type: ${typeof isCRM}, value: ${isCRM}, strict check: ${isCRM === true}`);
     
     // ====================================================================================
-    // CRM SPECIAL FLOW: Skip credential collection, just clone and redirect
+    // ⚠️ CRITICAL: CRM CHECK MUST BE FIRST - BEFORE ANY CREDENTIAL CREATION
     // ====================================================================================
-    if (isCRM) {
+    if (isCRM === true) {
       console.log('\n========== [CRM] SIMPLIFIED ACTIVATION FLOW ==========');
       console.log('[CRM] Skipping credential collection - user will configure manually later');
       
@@ -597,9 +598,15 @@ router.get('/oauth2/callback', async (req, res) => {
           { expiresIn: '7d' }
         );
 
-        const CRM_FRONTEND_URL = process.env.CRM_FRONTEND_URL || 'http://localhost:3001';
+        // Determine CRM URL based on environment
+        const isProduction = process.env.NODE_ENV === 'production';
+        const CRM_FRONTEND_URL = isProduction 
+          ? 'https://crm.exora.solutions' 
+          : (process.env.CRM_FRONTEND_URL || 'http://localhost:3001');
 
         console.log('[CRM] ✅ CRM activation complete! Redirecting to CRM...');
+        console.log(`[CRM] NODE_ENV: ${process.env.NODE_ENV}, isProduction: ${isProduction}`);
+        console.log(`[CRM] Redirect URL: ${CRM_FRONTEND_URL}`);
         console.log('====================================================\n');
 
         // Redirect to CRM - user will configure credentials there
