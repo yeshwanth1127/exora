@@ -494,19 +494,50 @@ router.get('/oauth2/callback', async (req, res) => {
           `);
         }
 
+        // Create CRM user record FIRST to get crm_user_id
+        console.log('[CRM] Creating/Getting CRM user record...');
+        const crmUserResult = await crmPool.query(
+          `INSERT INTO crm_users (exora_user_id, status)
+           VALUES ($1, 'pending_setup')
+           ON CONFLICT (exora_user_id) 
+           DO UPDATE SET status = 'pending_setup'
+           RETURNING id`,
+          [userId]
+        );
+        
+        const crmUserId = crmUserResult.rows[0].id;
+        console.log(`[CRM] CRM user ID: ${crmUserId}`);
+
         // Fetch template workflow from n8n
         console.log('[CRM] Fetching template workflow from n8n...');
         const templateResp = await n8nAxios.get(`/workflows/${workflowId}`);
         const templateWorkflow = templateResp.data?.data || templateResp.data;
 
-        // Clone workflow WITHOUT credentials (user will add them manually later)
-        console.log('[CRM] Cloning workflow WITHOUT credentials...');
+        // Clone workflow with user-specific webhook path
+        console.log('[CRM] Cloning workflow with user-specific webhook path...');
         const userLabel = req.user?.email?.split('@')[0] || `user${userId}`;
+        
+        // Update webhook node to use user-specific path
+        const clonedNodes = templateWorkflow.nodes.map(node => {
+          if (node.type === 'n8n-nodes-base.webhook') {
+            return {
+              ...node,
+              parameters: {
+                ...node.parameters,
+                path: `${crmUserId}/automation` // User-specific webhook path
+              }
+            };
+          }
+          return node;
+        });
+        
         const newWorkflowPayload = {
           ...templateWorkflow,
-          name: `${templateWorkflow.name} - ${userLabel}`,
-          active: false,  // Keep inactive until user configures credentials
-          id: undefined
+          name: `CRM Automation - ${userLabel}`,
+          nodes: clonedNodes,
+          active: false,  // Will be activated after setup
+          id: undefined,
+          versionId: undefined
         };
 
         const createWfResp = await n8nAxios.post('/workflows', newWorkflowPayload);
@@ -531,26 +562,25 @@ router.get('/oauth2/callback', async (req, res) => {
         }
 
         console.log(`[CRM] ✓ Cloned workflow ID: ${clonedWorkflowId}`);
+        console.log(`[CRM] ✓ Webhook path: ${crmUserId}/automation`);
 
-        // Save to database
-        console.log('[CRM] Saving workflow mapping...');
+        // Save to main Exora database
+        console.log('[CRM] Saving workflow mapping to Exora DB...');
         await UserWorkflowInstance.upsert({
           userId: userId,
           sourceWorkflowId: workflowId,
           instanceWorkflowId: clonedWorkflowId,
           activated_at: new Date(),
-          services_used: [],  // Will be filled when user configures
+          services_used: [],
           credential_id: '',
           n8n_credential_ids: {}
         });
 
-        // Create CRM user record
-        console.log('[CRM] Creating CRM user record...');
+        // Update CRM user record with workflow ID
+        console.log('[CRM] Updating CRM user with workflow ID...');
         await crmPool.query(
-          `INSERT INTO crm_users (exora_user_id, n8n_workflow_id, status)
-           VALUES ($1, $2, 'pending_setup')
-           ON CONFLICT (exora_user_id) DO UPDATE SET n8n_workflow_id = $2, status = 'pending_setup'`,
-          [userId, clonedWorkflowId]
+          `UPDATE crm_users SET n8n_workflow_id = $1 WHERE id = $2`,
+          [clonedWorkflowId, crmUserId]
         );
 
         // Update dashboard status

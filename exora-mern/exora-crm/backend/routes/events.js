@@ -1,7 +1,7 @@
 const express = require('express');
 const { pool } = require('../config/db');
 const { validateExoraToken, requireCRMActivation } = require('../middleware/auth');
-const { triggerN8NWebhook } = require('../services/n8nService');
+const { triggerN8NWebhook, triggerUserAutomation } = require('../services/n8nService');
 const { notifyEventCreated } = require('../services/notificationService');
 const { v4: uuidv4 } = require('uuid');
 
@@ -143,11 +143,20 @@ router.post('/', async (req, res) => {
     
     const createdEvent = result.rows[0];
     
-    // Trigger n8n webhook (async - don't wait)
+    console.log('═══════════════════════════════════════════════════════════════');
+    console.log('📅 [Events] EVENT CREATED - TRIGGERING AUTOMATION');
+    console.log('═══════════════════════════════════════════════════════════════');
+    console.log('CRM User ID:', crmUserId);
+    console.log('Event ID:', eventId);
+    console.log('Contact:', contact.name);
+    console.log('Title:', title);
+    console.log('Time:', start_time, '→', end_time);
+    console.log('═══════════════════════════════════════════════════════════════\n');
+    
+    // Trigger user's specific n8n workflow instance (async - don't wait)
     setImmediate(() => {
-      triggerN8NWebhook('event-created', {
+      triggerUserAutomation(crmUserId, 'calendar', {
         event_id: eventId,
-        crm_user_id: crmUserId,
         contact_id: contact_id,
         contact_name: contact.name,
         contact_phone: contact.phone,
@@ -155,8 +164,15 @@ router.post('/', async (req, res) => {
         start_time: start_time,
         end_time: end_time,
         title: title,
-        description: description
-      }).catch(err => console.error('n8n trigger error:', err));
+        description: description,
+        trigger_source: 'event_created'
+      }).catch(err => {
+        console.error('═══════════════════════════════════════════════════════════════');
+        console.error('❌ [Events] AUTOMATION TRIGGER FAILED');
+        console.error('═══════════════════════════════════════════════════════════════');
+        console.error('Error:', err.message);
+        console.error('═══════════════════════════════════════════════════════════════\n');
+      });
       
       // Send notifications
       notifyEventCreated(crmUserId, createdEvent, contact)

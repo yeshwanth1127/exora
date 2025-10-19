@@ -1,6 +1,7 @@
 const express = require('express');
 const { pool } = require('../config/db');
 const { v4: uuidv4 } = require('uuid');
+const { triggerUserWorkflow } = require('../services/workflowInstanceService');
 
 const router = express.Router();
 
@@ -9,9 +10,11 @@ async function enrichWithConfigs(req, res, next) {
   try {
     const crmUserId = req.body?.crm_user_id;
     if (!crmUserId) {
-      console.warn('No crm_user_id in webhook request');
+      console.warn('⚠️ [enrichWithConfigs] No crm_user_id in webhook request');
       return next();
     }
+    
+    console.log('🔧 [enrichWithConfigs] Enriching webhook for user:', crmUserId);
     
     // Fetch all enabled configs for this user
     const result = await pool.query(`
@@ -26,9 +29,12 @@ async function enrichWithConfigs(req, res, next) {
       return acc;
     }, {});
     
+    console.log('✅ [enrichWithConfigs] Enabled modules for user:', Object.keys(req.body.enabled_modules).join(', '));
+    console.log('📦 [enrichWithConfigs] Configs:', JSON.stringify(req.body.enabled_modules, null, 2));
+    
     next();
   } catch (error) {
-    console.error('Config enrichment error:', error);
+    console.error('❌ [enrichWithConfigs] Config enrichment error:', error);
     next(); // Continue even if enrichment fails
   }
 }
@@ -45,18 +51,22 @@ router.post('/trigger-automation', enrichWithConfigs, async (req, res) => {
       });
     }
     
-    // This endpoint can be called by CRM frontend to trigger automations
-    // The enrichWithConfigs middleware will add enabled_modules to the request
-    
-    // In production, you would forward this to n8n webhook
-    // For now, we'll just log it
+    // Trigger user's SPECIFIC workflow instance (not shared workflow)
     console.log(`[Webhook] Triggering automation: ${module} for user ${crm_user_id}`);
     console.log(`[Webhook] Enabled modules:`, req.body.enabled_modules);
     
-    // TODO: Forward to n8n master workflow webhook
-    // await axios.post(`${N8N_BASE_URL}/webhook/crm-automation`, req.body);
+    // Call user's isolated workflow instance
+    const result = await triggerUserWorkflow(crm_user_id, module, {
+      ...data,
+      trigger_source: data.trigger_source || 'manual',
+      enabled_modules: req.body.enabled_modules // Injected by middleware
+    });
     
-    res.json({ success: true, message: 'Automation triggered' });
+    res.json({ 
+      success: true, 
+      message: 'Automation triggered',
+      result: result
+    });
   } catch (error) {
     console.error('Trigger automation error:', error);
     res.status(500).json({ success: false, error: error.message });

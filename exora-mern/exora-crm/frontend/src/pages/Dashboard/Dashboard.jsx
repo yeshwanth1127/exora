@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getUpcomingEvents, listContacts, getAutomationStats } from '../../services/api';
+import api from '../../services/api';
 import './Dashboard.css';
 
 const Dashboard = () => {
+  const [showDebugInfo, setShowDebugInfo] = useState(false);
+
   const { data: upcomingEvents } = useQuery({
     queryKey: ['upcoming-events'],
     queryFn: () => getUpcomingEvents(7)
@@ -18,6 +21,32 @@ const Dashboard = () => {
     queryKey: ['automation-stats'],
     queryFn: () => getAutomationStats(30)
   });
+
+  // Fetch workflow info for debugging
+  const { data: workflowInfo } = useQuery({
+    queryKey: ['workflow-info'],
+    queryFn: async () => {
+      const res = await api.get('/workflow/info');
+      return res.data;
+    }
+  });
+
+  // Log workflow info to console on load
+  useEffect(() => {
+    if (workflowInfo) {
+      console.log('═══════════════════════════════════════════════════');
+      console.log('🔧 CRM WORKFLOW DEBUG INFO');
+      console.log('═══════════════════════════════════════════════════');
+      console.log('CRM User ID:', workflowInfo.crm_user_id);
+      console.log('n8n Workflow ID:', workflowInfo.workflow_id);
+      console.log('Webhook URL:', workflowInfo.webhook_url);
+      console.log('Webhook Path:', workflowInfo.webhook_path);
+      console.log('Business:', workflowInfo.business_name);
+      console.log('Industry:', workflowInfo.industry);
+      console.log('Status:', workflowInfo.status);
+      console.log('═══════════════════════════════════════════════════');
+    }
+  }, [workflowInfo]);
 
   const stats = [
     {
@@ -113,6 +142,50 @@ const Dashboard = () => {
           )}
         </div>
       </div>
+
+      {/* Debug Info Section */}
+      {workflowInfo && (
+        <div className="debug-section">
+          <div className="debug-header" onClick={() => setShowDebugInfo(!showDebugInfo)}>
+            <span>🔧 Workflow Debug Info</span>
+            <span className="debug-toggle">{showDebugInfo ? '▼' : '▶'}</span>
+          </div>
+          {showDebugInfo && (
+            <div className="debug-content">
+              <div className="debug-item">
+                <span className="debug-label">CRM User ID:</span>
+                <code className="debug-value">{workflowInfo.crm_user_id}</code>
+              </div>
+              <div className="debug-item">
+                <span className="debug-label">n8n Workflow ID:</span>
+                <code className="debug-value">{workflowInfo.workflow_id}</code>
+              </div>
+              <div className="debug-item">
+                <span className="debug-label">Webhook URL:</span>
+                <code className="debug-value">{workflowInfo.webhook_url}</code>
+              </div>
+              <div className="debug-item">
+                <span className="debug-label">Webhook Path:</span>
+                <code className="debug-value">{workflowInfo.webhook_path}</code>
+              </div>
+              <div className="debug-item">
+                <span className="debug-label">Business:</span>
+                <span className="debug-value">{workflowInfo.business_name || 'Not set'}</span>
+              </div>
+              <div className="debug-item">
+                <span className="debug-label">Industry:</span>
+                <span className="debug-value">{workflowInfo.industry || 'Not set'}</span>
+              </div>
+              <div className="debug-item">
+                <span className="debug-label">Status:</span>
+                <span className={`debug-value status-${workflowInfo.status}`}>
+                  {workflowInfo.status}
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

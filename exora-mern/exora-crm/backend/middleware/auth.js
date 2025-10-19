@@ -35,7 +35,13 @@ async function validateExoraToken(req, res, next) {
     
     // Auto-create CRM user if doesn't exist
     if (!crmUser) {
-      console.log(`[Auth] Creating CRM user for exora_user_id: ${exoraUserId}`);
+      console.log('═══════════════════════════════════════════════════════════════');
+      console.log('🆕 [Auth] CREATING NEW CRM USER');
+      console.log('═══════════════════════════════════════════════════════════════');
+      console.log('Exora User ID:', exoraUserId);
+      console.log('Email:', email);
+      console.log('═══════════════════════════════════════════════════════════════');
+      
       const createResult = await pool.query(
         `INSERT INTO crm_users (exora_user_id, status) 
          VALUES ($1, 'pending_setup') 
@@ -43,7 +49,17 @@ async function validateExoraToken(req, res, next) {
         [exoraUserId]
       );
       crmUser = createResult.rows[0];
-      console.log(`[Auth] CRM user created with id: ${crmUser.id}`);
+      
+      console.log('✅ [Auth] CRM user created successfully');
+      console.log('CRM User ID:', crmUser.id);
+      console.log('Status:', crmUser.status);
+      console.log('n8n Workflow ID:', crmUser.n8n_workflow_id || 'Not yet assigned');
+      console.log('═══════════════════════════════════════════════════════════════\n');
+    } else {
+      console.log('🔐 [Auth] Existing CRM user authenticated');
+      console.log('   CRM User ID:', crmUser.id);
+      console.log('   Workflow ID:', crmUser.n8n_workflow_id || 'Not assigned');
+      console.log('   Status:', crmUser.status);
     }
     
     // Attach to request

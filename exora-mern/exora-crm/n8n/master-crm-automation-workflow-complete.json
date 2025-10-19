@@ -1,0 +1,1305 @@
+{
+  "name": "Exora CRM - Universal Automation Hub (Template)",
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceVersion": "1.0.0"
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "={{ $env.CRM_USER_ID }}/automation",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "webhook-entry",
+      "name": "Webhook Entry",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [240, 300],
+      "webhookId": "crm-automation"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract and validate input\nconst input = $input.first().json;\n\nreturn [{\n  json: {\n    ...input,\n    start_time: Date.now(),\n    workflow_instance_id: $workflow.id,\n    execution_id: $execution.id\n  }\n}];"
+      },
+      "id": "validate-input",
+      "name": "Validate Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT module_key, config_data FROM automation_configs WHERE crm_user_id = $1::uuid AND enabled = true",
+        "options": {
+          "queryReplacement": "={{ $json.crm_user_id }}"
+        }
+      },
+      "id": "get-user-configs",
+      "name": "Get User Configs",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [640, 300],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "PostgreSQL - CRM"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Transform configs array to object for easy lookup\nconst configItems = $input.all();\nconst enabledModules = {};\n\nconfigItems.forEach(item => {\n  if (item.json.module_key && item.json.config_data) {\n    enabledModules[item.json.module_key] = item.json.config_data;\n  }\n});\n\n// Get original webhook data\nconst webhookData = $node[\"Validate Input\"].json;\n\nreturn [{\n  json: {\n    ...webhookData,\n    enabled_modules: enabledModules,\n    total_enabled: Object.keys(enabledModules).length\n  }\n}];"
+      },
+      "id": "transform-configs",
+      "name": "Transform Configs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [840, 300]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.module }}",
+                    "value2": "whatsapp"
+                  }
+                ]
+              }
+            },
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.module }}",
+                    "value2": "ai_agent"
+                  }
+                ]
+              }
+            },
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.module }}",
+                    "value2": "rag_agent"
+                  }
+                ]
+              }
+            },
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.module }}",
+                    "value2": "email"
+                  }
+                ]
+              }
+            },
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.module }}",
+                    "value2": "sms"
+                  }
+                ]
+              }
+            },
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.module }}",
+                    "value2": "calendar"
+                  }
+                ]
+              }
+            },
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ $json.module }}",
+                    "value2": "chatbot"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "module-router",
+      "name": "Module Router",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [1040, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ========================================\n// MODULE 1: WHATSAPP HANDLER\n// ========================================\n\nconst data = $input.first().json;\nconst whatsappConfig = data.enabled_modules?.whatsapp;\n\n// Check if WhatsApp is enabled\nif (!whatsappConfig || Object.keys(whatsappConfig).length === 0) {\n  return [{\n    json: {\n      ...data,\n      module: 'whatsapp',\n      status: 'disabled',\n      error: 'WhatsApp module not enabled for this user',\n      skip_execution: true\n    }\n  }];\n}\n\n// WhatsApp IS enabled - prepare for processing\nreturn [{\n  json: {\n    ...data,\n    module: 'whatsapp',\n    status: 'processing',\n    config: whatsappConfig,\n    // Extract config values for easy access\n    instance_name: whatsappConfig.instance_name || 'default',\n    auto_reply: whatsappConfig.auto_reply !== false,\n    ai_model: whatsappConfig.ai_model || 'gpt-3.5'\n  }\n}];"
+      },
+      "id": "whatsapp-handler",
+      "name": "WhatsApp Handler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1240, 100]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.skip_execution }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "whatsapp-enabled-check",
+      "name": "WhatsApp Enabled?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1440, 100]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id, name, whatsapp_number, phone FROM contacts WHERE crm_user_id = $1::uuid AND (whatsapp_number = $2 OR phone = $2) LIMIT 1",
+        "options": {
+          "queryReplacement": "={{ $json.crm_user_id }},={{ $json.from_phone }}"
+        }
+      },
+      "id": "find-contact",
+      "name": "Find Contact",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [1640, 80],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "PostgreSQL - CRM"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.id ? 1 : 0 }}",
+              "value2": 0
+            }
+          ]
+        }
+      },
+      "id": "contact-exists",
+      "name": "Contact Exists?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1840, 80]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": "public",
+        "table": "contacts",
+        "columns": "id,crm_user_id,name,whatsapp_number,source,status",
+        "options": {
+          "queryReplacement": "uuid_generate_v4(),={{ $node[\"Validate Input\"].json.crm_user_id }},={{ $node[\"Validate Input\"].json.from_name || 'Unknown' }},={{ $node[\"Validate Input\"].json.from_phone }},whatsapp,active"
+        }
+      },
+      "id": "create-contact",
+      "name": "Create Contact",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [2040, 180],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "PostgreSQL - CRM"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": "public",
+        "table": "activities",
+        "columns": "id,crm_user_id,contact_id,activity_type,direction,channel,body,external_message_id,status,completed_at",
+        "options": {
+          "queryReplacement": "uuid_generate_v4(),={{ $node[\"Validate Input\"].json.crm_user_id }},={{ $json.id }},message,inbound,whatsapp,={{ $node[\"Validate Input\"].json.message }},={{ $node[\"Validate Input\"].json.message_id }},completed,NOW()"
+        }
+      },
+      "id": "store-inbound-message",
+      "name": "Store Inbound Message",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [2240, 80],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "PostgreSQL - CRM"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT body, direction, created_at FROM activities WHERE crm_user_id = $1::uuid AND contact_id = $2::uuid ORDER BY created_at DESC LIMIT 10",
+        "options": {
+          "queryReplacement": "={{ $node[\"Validate Input\"].json.crm_user_id }},={{ $json.id }}"
+        }
+      },
+      "id": "get-conversation-history",
+      "name": "Get Conversation History",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [2440, 80],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "PostgreSQL - CRM"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build conversation context for AI\nconst history = $input.all();\nconst whatsappData = $node[\"WhatsApp Handler\"].json;\nconst currentMessage = $node[\"Validate Input\"].json.message;\n\n// Format conversation history\nconst conversationContext = history.map(item => {\n  const direction = item.json.direction === 'inbound' ? 'Customer' : 'Assistant';\n  return `${direction}: ${item.json.body}`;\n}).reverse().join('\\n');\n\n// Get AI config from AI Agent module (if enabled)\nconst aiAgentConfig = whatsappData.enabled_modules?.ai_agent || {};\nconst systemPrompt = aiAgentConfig.system_prompt || 'You are a helpful customer service assistant.';\nconst temperature = aiAgentConfig.temperature || 0.7;\nconst maxTokens = aiAgentConfig.max_tokens || 500;\n\nreturn [{\n  json: {\n    ...whatsappData,\n    contact_id: $node[\"Find Contact\"].json.id || $node[\"Create Contact\"].json.id,\n    current_message: currentMessage,\n    conversation_history: conversationContext,\n    ai_config: {\n      system_prompt: systemPrompt,\n      temperature: temperature,\n      max_tokens: maxTokens,\n      model: whatsappData.ai_model\n    }\n  }\n}];"
+      },
+      "id": "prepare-ai-context",
+      "name": "Prepare AI Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2640, 80]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.auto_reply }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "auto-reply-enabled",
+      "name": "Auto Reply Enabled?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [2840, 80]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.ai_model === 'gpt-4' || $json.ai_model === 'gpt-3.5' ? 'https://api.openai.com/v1/chat/completions' : 'http://localhost:11434/api/chat' }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "={{ $json.ai_config.model }}"
+            },
+            {
+              "name": "messages",
+              "value": "={{ JSON.stringify([{role: 'system', content: $json.ai_config.system_prompt}, {role: 'user', content: $json.conversation_history + '\\nCustomer: ' + $json.current_message}]) }}"
+            },
+            {
+              "name": "temperature",
+              "value": "={{ $json.ai_config.temperature }}"
+            },
+            {
+              "name": "max_tokens",
+              "value": "={{ $json.ai_config.max_tokens }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "call-ai",
+      "name": "Call AI",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [3040, 60],
+      "credentials": {
+        "openAiApi": {
+          "id": "OPENAI_CREDENTIAL_ID",
+          "name": "OpenAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract AI response\nconst data = $input.first().json;\nlet aiResponse = '';\n\n// OpenAI format\nif (data.choices && data.choices[0]) {\n  aiResponse = data.choices[0].message.content;\n}\n// Ollama format\nelse if (data.message && data.message.content) {\n  aiResponse = data.message.content;\n}\n\nconst previousData = $node[\"Prepare AI Context\"].json;\n\nreturn [{\n  json: {\n    ...previousData,\n    ai_response: aiResponse,\n    ai_model_used: previousData.ai_config.model\n  }\n}];"
+      },
+      "id": "extract-ai-response",
+      "name": "Extract AI Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [3240, 60]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": "public",
+        "table": "activities",
+        "columns": "id,crm_user_id,contact_id,activity_type,direction,channel,body,status,completed_at",
+        "options": {
+          "queryReplacement": "uuid_generate_v4(),={{ $json.crm_user_id }},={{ $json.contact_id }},message,outbound,whatsapp,={{ $json.ai_response }},completed,NOW()"
+        }
+      },
+      "id": "store-outbound-message",
+      "name": "Store Outbound Message",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [3440, 60],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "PostgreSQL - CRM"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.EVOLUTION_API_URL || 'http://localhost:8080' }}/message/sendText/{{ $node[\"WhatsApp Handler\"].json.instance_name }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $node[\"Validate Input\"].json.from_phone }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.ai_response }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "send-whatsapp-reply",
+      "name": "Send WhatsApp Reply",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [3640, 60],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "EVOLUTION_CREDENTIAL_ID",
+          "name": "Evolution API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// AI Agent Module Handler\nconst data = $input.first().json;\nconst aiConfig = data.enabled_modules?.ai_agent;\n\n// Check if AI Agent is enabled\nif (!aiConfig || Object.keys(aiConfig).length === 0) {\n  return [{\n    json: {\n      ...data,\n      module: 'ai_agent',\n      status: 'disabled',\n      error: 'AI Agent module not enabled',\n      skip_execution: true\n    }\n  }];\n}\n\n// Build AI request\nreturn [{\n  json: {\n    ...data,\n    module: 'ai_agent',\n    status: 'processing',\n    config: aiConfig,\n    system_prompt: aiConfig.system_prompt || 'You are a helpful assistant.',\n    temperature: aiConfig.temperature || 0.7,\n    max_tokens: aiConfig.max_tokens || 500,\n    user_message: data.message || data.prompt || ''\n  }\n}];"
+      },
+      "id": "ai-agent-handler",
+      "name": "AI Agent Handler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1240, 200]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.skip_execution }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "ai-agent-enabled-check",
+      "name": "AI Agent Enabled?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1440, 200]
+    },
+    {
+      "parameters": {
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "={{ $json.config.ai_model || 'gpt-3.5-turbo' }}"
+            },
+            {
+              "name": "messages",
+              "value": "={{ JSON.stringify([{role: 'system', content: $json.system_prompt}, {role: 'user', content: $json.user_message}]) }}"
+            },
+            {
+              "name": "temperature",
+              "value": "={{ $json.temperature }}"
+            },
+            {
+              "name": "max_tokens",
+              "value": "={{ $json.max_tokens }}"
+            }
+          ]
+        }
+      },
+      "id": "ai-agent-call",
+      "name": "AI Agent Call",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1640, 180],
+      "credentials": {
+        "openAiApi": {
+          "id": "OPENAI_CREDENTIAL_ID",
+          "name": "OpenAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// RAG Agent Module Handler\nconst data = $input.first().json;\nconst ragConfig = data.enabled_modules?.rag_agent;\n\n// Check if RAG is enabled\nif (!ragConfig || Object.keys(ragConfig).length === 0) {\n  return [{\n    json: {\n      ...data,\n      module: 'rag_agent',\n      status: 'disabled',\n      error: 'RAG Agent module not enabled',\n      skip_execution: true\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    ...data,\n    module: 'rag_agent',\n    status: 'processing',\n    config: ragConfig,\n    index_name: ragConfig.index_name || 'default',\n    top_k: ragConfig.top_k || 3,\n    query: data.message || data.query || ''\n  }\n}];"
+      },
+      "id": "rag-agent-handler",
+      "name": "RAG Agent Handler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1240, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.skip_execution }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "rag-enabled-check",
+      "name": "RAG Enabled?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1440, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Vector DB Query (Simulated - replace with actual Pinecone/Qdrant)\nconst data = $input.first().json;\n\n// TODO: Query vector database\n// const vectorResults = await queryVectorDB(data.query, data.top_k, data.index_name);\n\n// For now, return mock context\nconst context = [\n  { text: 'Document 1 content...', score: 0.95 },\n  { text: 'Document 2 content...', score: 0.87 },\n  { text: 'Document 3 content...', score: 0.76 }\n].slice(0, data.top_k);\n\nreturn [{\n  json: {\n    ...data,\n    retrieved_context: context,\n    context_text: context.map(c => c.text).join('\\n\\n')\n  }\n}];"
+      },
+      "id": "query-vector-db",
+      "name": "Query Vector DB",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1640, 280]
+    },
+    {
+      "parameters": {
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "gpt-4"
+            },
+            {
+              "name": "messages",
+              "value": "={{ JSON.stringify([{role: 'system', content: 'You are a helpful assistant. Use the following context to answer questions:\\n\\n' + $json.context_text}, {role: 'user', content: $json.query}]) }}"
+            }
+          ]
+        }
+      },
+      "id": "rag-ai-call",
+      "name": "RAG AI Call",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1840, 280],
+      "credentials": {
+        "openAiApi": {
+          "id": "OPENAI_CREDENTIAL_ID",
+          "name": "OpenAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Email Module Handler\nconst data = $input.first().json;\nconst emailConfig = data.enabled_modules?.email;\n\n// Check if Email is enabled\nif (!emailConfig || Object.keys(emailConfig).length === 0) {\n  return [{\n    json: {\n      ...data,\n      module: 'email',\n      status: 'disabled',\n      error: 'Email module not enabled',\n      skip_execution: true\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    ...data,\n    module: 'email',\n    status: 'processing',\n    config: emailConfig,\n    from_email: emailConfig.from_email || '',\n    signature: emailConfig.signature || '',\n    to_email: data.to || data.email || '',\n    subject: data.subject || 'Message from CRM',\n    body: data.body || data.message || ''\n  }\n}];"
+      },
+      "id": "email-handler",
+      "name": "Email Handler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1240, 400]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.skip_execution }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "email-enabled-check",
+      "name": "Email Enabled?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1440, 400]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.to_email }}",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.body }}\\n\\n{{ $json.signature }}",
+        "options": {}
+      },
+      "id": "send-email",
+      "name": "Send Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [1640, 380],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "GMAIL_CREDENTIAL_ID",
+          "name": "Gmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// SMS Module Handler\nconst data = $input.first().json;\nconst smsConfig = data.enabled_modules?.sms;\n\n// Check if SMS is enabled\nif (!smsConfig || Object.keys(smsConfig).length === 0) {\n  return [{\n    json: {\n      ...data,\n      module: 'sms',\n      status: 'disabled',\n      error: 'SMS module not enabled',\n      skip_execution: true\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    ...data,\n    module: 'sms',\n    status: 'processing',\n    config: smsConfig,\n    from_number: smsConfig.from_number || '',\n    to_number: data.to_phone || data.phone || '',\n    message: data.message || data.body || ''\n  }\n}];"
+      },
+      "id": "sms-handler",
+      "name": "SMS Handler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1240, 500]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.skip_execution }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "sms-enabled-check",
+      "name": "SMS Enabled?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1440, 500]
+    },
+    {
+      "parameters": {
+        "url": "https://api.twilio.com/2010-04-01/Accounts/{{ $credentials.twilioApi.accountSid }}/Messages.json",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "twilioApi",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "From",
+              "value": "={{ $json.from_number }}"
+            },
+            {
+              "name": "To",
+              "value": "={{ $json.to_number }}"
+            },
+            {
+              "name": "Body",
+              "value": "={{ $json.message }}"
+            }
+          ]
+        }
+      },
+      "id": "send-sms",
+      "name": "Send SMS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1640, 480],
+      "credentials": {
+        "twilioApi": {
+          "id": "TWILIO_CREDENTIAL_ID",
+          "name": "Twilio"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Calendar Module Handler\nconst data = $input.first().json;\nconst calendarConfig = data.enabled_modules?.calendar;\n\n// Check if Calendar is enabled\nif (!calendarConfig || Object.keys(calendarConfig).length === 0) {\n  return [{\n    json: {\n      ...data,\n      module: 'calendar',\n      status: 'disabled',\n      error: 'Calendar module not enabled',\n      skip_execution: true\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    ...data,\n    module: 'calendar',\n    status: 'processing',\n    config: calendarConfig,\n    calendar_id: calendarConfig.calendar_id || 'primary',\n    event_title: data.title || data.event_title || '',\n    event_start: data.start_time || '',\n    event_end: data.end_time || '',\n    event_description: data.description || '',\n    default_duration: calendarConfig.default_duration || 30\n  }\n}];"
+      },
+      "id": "calendar-handler",
+      "name": "Calendar Handler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1240, 600]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.skip_execution }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "calendar-enabled-check",
+      "name": "Calendar Enabled?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1440, 600]
+    },
+    {
+      "parameters": {
+        "calendar": "={{ $json.calendar_id }}",
+        "start": "={{ $json.event_start }}",
+        "end": "={{ $json.event_end }}",
+        "summary": "={{ $json.event_title }}",
+        "description": "={{ $json.event_description }}",
+        "options": {}
+      },
+      "id": "create-calendar-event",
+      "name": "Create Calendar Event",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 2,
+      "position": [1640, 580],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "GOOGLE_CALENDAR_CREDENTIAL_ID",
+          "name": "Google Calendar"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": "public",
+        "table": "events",
+        "updateKey": "id",
+        "columns": "google_event_id,google_calendar_synced",
+        "options": {
+          "queryReplacement": "={{ $json.id }},={{ $json.google_event_id }},true"
+        }
+      },
+      "id": "update-event-with-google-id",
+      "name": "Update Event with Google ID",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [1840, 580],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "PostgreSQL - CRM"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Chatbot Module Handler\nconst data = $input.first().json;\nconst chatbotConfig = data.enabled_modules?.chatbot;\n\n// Check if Chatbot is enabled\nif (!chatbotConfig || Object.keys(chatbotConfig).length === 0) {\n  return [{\n    json: {\n      ...data,\n      module: 'chatbot',\n      status: 'disabled',\n      error: 'Chatbot module not enabled',\n      skip_execution: true\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    ...data,\n    module: 'chatbot',\n    status: 'processing',\n    config: chatbotConfig,\n    widget_color: chatbotConfig.widget_color || '#667eea',\n    greeting_message: chatbotConfig.greeting_message || 'Hello! How can I help you?',\n    user_message: data.message || ''\n  }\n}];"
+      },
+      "id": "chatbot-handler",
+      "name": "Chatbot Handler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1240, 700]
+    },
+    {
+      "parameters": {
+        "mode": "mergeByPosition"
+      },
+      "id": "merge-all-results",
+      "name": "Merge All Results",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2.1,
+      "position": [3840, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare final execution log\nconst items = $input.all();\nconst webhookData = $node[\"Validate Input\"].json;\nconst executionTime = Date.now() - (webhookData.start_time || Date.now());\n\nconst results = items.map(item => {\n  const itemData = item.json;\n  \n  return {\n    json: {\n      crm_user_id: webhookData.crm_user_id,\n      module_key: webhookData.module,\n      trigger_source: webhookData.trigger_source || 'manual',\n      input_data: {\n        module: webhookData.module,\n        message: webhookData.message,\n        from: webhookData.from_phone\n      },\n      output_data: itemData,\n      status: itemData.skip_execution ? 'disabled' : (itemData.error ? 'failed' : 'success'),\n      error_message: itemData.error || null,\n      execution_time_ms: executionTime,\n      executed_at: new Date().toISOString()\n    }\n  };\n});\n\nreturn results;"
+      },
+      "id": "prepare-log-data",
+      "name": "Prepare Log Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [4040, 300]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": "public",
+        "table": "automation_execution_logs",
+        "columns": "id,crm_user_id,module_key,trigger_source,input_data,output_data,status,error_message,execution_time_ms,executed_at",
+        "options": {
+          "queryReplacement": "uuid_generate_v4(),={{ $json.crm_user_id }},={{ $json.module_key }},={{ $json.trigger_source }},={{ JSON.stringify($json.input_data) }},={{ JSON.stringify($json.output_data) }},={{ $json.status }},={{ $json.error_message }},={{ $json.execution_time_ms }},={{ $json.executed_at }}"
+        }
+      },
+      "id": "log-execution",
+      "name": "Log Execution",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [4240, 300],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "PostgreSQL - CRM"
+        }
+      },
+      "alwaysOutputData": true,
+      "continueOnFail": true
+    }
+  ],
+  "connections": {
+    "Webhook Entry": {
+      "main": [
+        [
+          {
+            "node": "Validate Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Input": {
+      "main": [
+        [
+          {
+            "node": "Get User Configs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get User Configs": {
+      "main": [
+        [
+          {
+            "node": "Transform Configs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transform Configs": {
+      "main": [
+        [
+          {
+            "node": "Module Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Module Router": {
+      "main": [
+        [
+          {
+            "node": "WhatsApp Handler",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent Handler",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "RAG Agent Handler",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Email Handler",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "SMS Handler",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Calendar Handler",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Chatbot Handler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Handler": {
+      "main": [
+        [
+          {
+            "node": "WhatsApp Enabled?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Enabled?": {
+      "main": [
+        [
+          {
+            "node": "Merge All Results",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Find Contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Contact": {
+      "main": [
+        [
+          {
+            "node": "Contact Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contact Exists?": {
+      "main": [
+        [
+          {
+            "node": "Create Contact",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Store Inbound Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Contact": {
+      "main": [
+        [
+          {
+            "node": "Store Inbound Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Inbound Message": {
+      "main": [
+        [
+          {
+            "node": "Get Conversation History",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Conversation History": {
+      "main": [
+        [
+          {
+            "node": "Prepare AI Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare AI Context": {
+      "main": [
+        [
+          {
+            "node": "Auto Reply Enabled?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auto Reply Enabled?": {
+      "main": [
+        [
+          {
+            "node": "Merge All Results",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call AI": {
+      "main": [
+        [
+          {
+            "node": "Extract AI Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract AI Response": {
+      "main": [
+        [
+          {
+            "node": "Store Outbound Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Outbound Message": {
+      "main": [
+        [
+          {
+            "node": "Send WhatsApp Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send WhatsApp Reply": {
+      "main": [
+        [
+          {
+            "node": "Merge All Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent Handler": {
+      "main": [
+        [
+          {
+            "node": "AI Agent Enabled?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent Enabled?": {
+      "main": [
+        [
+          {
+            "node": "Merge All Results",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent Call",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent Call": {
+      "main": [
+        [
+          {
+            "node": "Merge All Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RAG Agent Handler": {
+      "main": [
+        [
+          {
+            "node": "RAG Enabled?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RAG Enabled?": {
+      "main": [
+        [
+          {
+            "node": "Merge All Results",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Query Vector DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query Vector DB": {
+      "main": [
+        [
+          {
+            "node": "RAG AI Call",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RAG AI Call": {
+      "main": [
+        [
+          {
+            "node": "Merge All Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Handler": {
+      "main": [
+        [
+          {
+            "node": "Email Enabled?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Enabled?": {
+      "main": [
+        [
+          {
+            "node": "Merge All Results",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email": {
+      "main": [
+        [
+          {
+            "node": "Merge All Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SMS Handler": {
+      "main": [
+        [
+          {
+            "node": "SMS Enabled?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SMS Enabled?": {
+      "main": [
+        [
+          {
+            "node": "Merge All Results",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send SMS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send SMS": {
+      "main": [
+        [
+          {
+            "node": "Merge All Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calendar Handler": {
+      "main": [
+        [
+          {
+            "node": "Calendar Enabled?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calendar Enabled?": {
+      "main": [
+        [
+          {
+            "node": "Merge All Results",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Calendar Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Calendar Event": {
+      "main": [
+        [
+          {
+            "node": "Update Event with Google ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Event with Google ID": {
+      "main": [
+        [
+          {
+            "node": "Merge All Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chatbot Handler": {
+      "main": [
+        [
+          {
+            "node": "Merge All Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge All Results": {
+      "main": [
+        [
+          {
+            "node": "Prepare Log Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Log Data": {
+      "main": [
+        [
+          {
+            "node": "Log Execution",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-10-19T00:00:00.000Z",
+  "versionId": "1"
+}
+
