@@ -1,5 +1,6 @@
 .contact-detail {
-  max-width: 1000px;
+  width: 100%;
+  max-width: 100%;
 }
 
 .btn-back {

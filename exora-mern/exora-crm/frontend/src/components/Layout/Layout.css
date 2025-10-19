@@ -1,10 +1,13 @@
 .layout {
   display: flex;
   min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 .sidebar {
   width: 260px;
+  min-width: 260px;
   background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
   color: white;
   display: flex;
@@ -13,6 +16,8 @@
   height: 100vh;
   left: 0;
   top: 0;
+  z-index: 100;
+  overflow-y: auto;
 }
 
 .sidebar-header {
@@ -100,11 +105,63 @@
 }
 
 .main-content {
+  flex: 1;
   margin-left: 260px;
-  width: calc(100% - 260px);
   padding: 24px;
   background: #f9fafb;
   min-height: 100vh;
-  overflow-x: auto;
+  max-width: calc(100vw - 260px);
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+/* Ensure all child elements respect box-sizing */
+.main-content * {
+  box-sizing: border-box;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 80px;
+    min-width: 80px;
+  }
+
+  .sidebar-header {
+    padding: 16px 8px;
+  }
+
+  .logo {
+    font-size: 18px;
+    text-align: center;
+  }
+
+  .industry-badge {
+    display: none;
+  }
+
+  .nav-item {
+    padding: 12px 8px;
+    justify-content: center;
+  }
+
+  .nav-label {
+    display: none;
+  }
+
+  .nav-icon {
+    margin-right: 0;
+    font-size: 24px;
+  }
+
+  .user-details {
+    display: none;
+  }
+
+  .main-content {
+    margin-left: 80px;
+    max-width: calc(100vw - 80px);
+    padding: 16px;
+  }
 }
 
