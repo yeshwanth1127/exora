@@ -470,186 +470,7 @@ router.get('/oauth2/callback', async (req, res) => {
     const { sessionId, userId, workflowId, credentialType, credentialTypes, provider, isCRM } = parsed;
     
     console.log(`\n[OAUTH CALLBACK] Full parsed state:`, JSON.stringify(parsed, null, 2));
-    console.log(`[OAUTH CALLBACK] isCRM type: ${typeof isCRM}, value: ${isCRM}, strict check: ${isCRM === true}`);
-    
-    // ====================================================================================
-    // ⚠️ CRITICAL: CRM CHECK MUST BE FIRST - BEFORE ANY CREDENTIAL CREATION
-    // ====================================================================================
-    if (isCRM === true) {
-      console.log('\n========== [CRM] SIMPLIFIED ACTIVATION FLOW ==========');
-      console.log('[CRM] Skipping credential collection - user will configure manually later');
-      
-      try {
-        // Load activation session
-        const session = await ActivationSession.findById(sessionId);
-        if (!session) {
-          return res.send(`
-            <html>
-              <head><title>Session Expired</title></head>
-              <body style="font-family: Arial; text-align: center; padding: 50px;">
-                <div style="max-width: 500px; margin: 0 auto;">
-                  <div style="font-size: 64px; margin-bottom: 20px;">⏰</div>
-                  <h2>Session Expired</h2>
-                  <p>Please try activating CRM again from dashboard.</p>
-                  <p><a href="${process.env.FRONTEND_URL}/dashboard" style="color: #667eea; text-decoration: none; font-weight: bold;">← Return to Dashboard</a></p>
-                </div>
-              </body>
-            </html>
-          `);
-        }
-
-        // Create CRM user record FIRST to get crm_user_id
-        console.log('[CRM] Creating/Getting CRM user record...');
-        const crmUserResult = await crmPool.query(
-          `INSERT INTO crm_users (exora_user_id, status)
-           VALUES ($1, 'pending_setup')
-           ON CONFLICT (exora_user_id) 
-           DO UPDATE SET status = 'pending_setup'
-           RETURNING id`,
-          [userId]
-        );
-        
-        const crmUserId = crmUserResult.rows[0].id;
-        console.log(`[CRM] CRM user ID: ${crmUserId}`);
-
-        // Fetch template workflow from n8n
-        console.log('[CRM] Fetching template workflow from n8n...');
-        const templateResp = await n8nAxios.get(`/workflows/${workflowId}`);
-        const templateWorkflow = templateResp.data?.data || templateResp.data;
-
-        // Clone workflow with user-specific webhook path
-        console.log('[CRM] Cloning workflow with user-specific webhook path...');
-        const userLabel = req.user?.email?.split('@')[0] || `user${userId}`;
-        
-        // Update webhook node to use user-specific path
-        const clonedNodes = templateWorkflow.nodes.map(node => {
-          if (node.type === 'n8n-nodes-base.webhook') {
-            return {
-              ...node,
-              parameters: {
-                ...node.parameters,
-                path: `${crmUserId}/automation` // User-specific webhook path
-              }
-            };
-          }
-          return node;
-        });
-        
-        // Only include properties that n8n accepts for creating a new workflow
-        // Note: 'active' and 'tags' are read-only in n8n API
-        const newWorkflowPayload = {
-          name: `CRM Automation - ${userLabel}`,
-          nodes: clonedNodes,
-          connections: templateWorkflow.connections || {},
-          settings: templateWorkflow.settings || {},
-          staticData: templateWorkflow.staticData || null
-        };
-
-        const createWfResp = await n8nAxios.post('/workflows', newWorkflowPayload);
-        const createdWf = createWfResp.data;
-        const clonedWorkflowId = createdWf?.id || createdWf?.data?.id || createdWf?.workflow?.id;
-
-        if (!clonedWorkflowId) {
-          console.error('[CRM] Failed to create cloned workflow');
-          return res.send(`
-            <html>
-              <head><title>CRM Setup Failed</title></head>
-              <body style="font-family: Arial; text-align: center; padding: 50px;">
-                <div style="max-width: 500px; margin: 0 auto;">
-                  <div style="font-size: 64px; margin-bottom: 20px;">❌</div>
-                  <h2>CRM Setup Failed</h2>
-                  <p>Could not clone workflow. Please try again.</p>
-                  <p><a href="${process.env.FRONTEND_URL}/dashboard" style="color: #667eea; text-decoration: none; font-weight: bold;">← Return to Dashboard</a></p>
-                </div>
-              </body>
-            </html>
-          `);
-        }
-
-        console.log(`[CRM] ✓ Cloned workflow ID: ${clonedWorkflowId}`);
-        console.log(`[CRM] ✓ Webhook path: ${crmUserId}/automation`);
-
-        // Save to main Exora database
-        console.log('[CRM] Saving workflow mapping to Exora DB...');
-        await UserWorkflowInstance.upsert({
-          userId: userId,
-          sourceWorkflowId: workflowId,
-          instanceWorkflowId: clonedWorkflowId,
-          activated_at: new Date(),
-          services_used: [],
-          credential_id: '',
-          n8n_credential_ids: {}
-        });
-
-        // Update CRM user record with workflow ID
-        console.log('[CRM] Updating CRM user with workflow ID...');
-        await crmPool.query(
-          `UPDATE crm_users SET n8n_workflow_id = $1 WHERE id = $2`,
-          [clonedWorkflowId, crmUserId]
-        );
-
-        // Update dashboard status
-        await DashboardData.updateWorkflowStatus(userId, workflowId, 'active');
-
-        // Generate JWT for CRM
-        const crmToken = jwt.sign(
-          { id: userId, email: req.user?.email || 'user@example.com' },
-          process.env.JWT_SECRET,
-          { expiresIn: '7d' }
-        );
-
-        // Determine CRM URL based on environment
-        const isProduction = process.env.NODE_ENV === 'production';
-        const CRM_FRONTEND_URL = isProduction 
-          ? 'https://crm.exora.solutions' 
-          : (process.env.CRM_FRONTEND_URL || 'http://localhost:3001');
-
-        console.log('[CRM] ✅ CRM activation complete! Redirecting to CRM...');
-        console.log(`[CRM] NODE_ENV: ${process.env.NODE_ENV}, isProduction: ${isProduction}`);
-        console.log(`[CRM] Redirect URL: ${CRM_FRONTEND_URL}`);
-        console.log('====================================================\n');
-
-        // Redirect to CRM - user will configure credentials there
-        return res.send(`
-          <html>
-            <head><title>CRM Activated</title></head>
-            <body style="font-family: Arial; text-align: center; padding: 50px;">
-              <div style="max-width: 500px; margin: 0 auto;">
-                <div style="font-size: 64px; margin-bottom: 20px;">✅</div>
-                <h2>CRM Activated Successfully!</h2>
-                <p>Your workflow has been cloned.</p>
-                <p style="color: #6c757d;">You can configure credentials in the CRM settings later.</p>
-                <p style="color: #6c757d;">Redirecting to CRM...</p>
-              </div>
-              <script>
-                setTimeout(() => {
-                  window.location.href = '${CRM_FRONTEND_URL}?token=${crmToken}&setup=true';
-                }, 2000);
-              </script>
-            </body>
-          </html>
-        `);
-
-      } catch (crmErr) {
-        console.error('[CRM] Activation error:', crmErr);
-        return res.send(`
-          <html>
-            <head><title>CRM Setup Failed</title></head>
-            <body style="font-family: Arial; text-align: center; padding: 50px;">
-              <div style="max-width: 500px; margin: 0 auto;">
-                <div style="font-size: 64px; margin-bottom: 20px;">❌</div>
-                <h2>CRM Setup Failed</h2>
-                <p>${crmErr.message}</p>
-                <p><a href="${process.env.FRONTEND_URL}/dashboard" style="color: #667eea; text-decoration: none; font-weight: bold;">← Return to Dashboard</a></p>
-              </div>
-            </body>
-          </html>
-        `);
-      }
-    }
-    // ====================================================================================
-    // END CRM SPECIAL FLOW
-    // ====================================================================================
+    console.log(`[OAUTH CALLBACK] isCRM: ${isCRM}, type: ${typeof isCRM}`);
     
     // Support both single credentialType (legacy) and credentialTypes array (new unified flow)
     const typesToCreate = credentialTypes || (credentialType ? [credentialType] : []);
@@ -797,25 +618,60 @@ router.get('/oauth2/callback', async (req, res) => {
     
     if (remaining.length > 0) {
       console.log(`\n[NEW] Remaining providers: ${remaining.map(p => p.credentialType).join(', ')}`);
-      console.log(`Redirecting to frontend for next provider...`);
-      return res.send(`
-        <html>
-          <head><title>Provider Connected</title></head>
-          <body style="font-family: Arial; text-align: center; padding: 50px;">
-            <div style="max-width: 500px; margin: 0 auto;">
-              <div style="font-size: 64px; margin-bottom: 20px;">⚡</div>
-              <h2>Provider Connected!</h2>
-              <p>${remaining.length} more provider${remaining.length !== 1 ? 's' : ''} to connect...</p>
-              <p style="color: #6c757d;">Returning to activation wizard...</p>
-            </div>
-            <script>
-              setTimeout(() => {
-                window.location.href = '${process.env.FRONTEND_URL}/dashboard?resumeActivation=true';
-              }, 1500);
-            </script>
-          </body>
-        </html>
-      `);
+      
+      // ⚡ CRM SPECIAL LOGIC: Skip manual credentials (postgres, httpHeaderAuth)
+      // These will be configured in CRM UI later
+      if (isCRM === true) {
+        const remainingTypes = remaining.map(p => p.type);
+        const allManual = remainingTypes.every(type => type === 'manual' || type === 'apikey');
+        
+        if (allManual) {
+          console.log('[CRM] 🎯 All remaining providers are manual - skipping to workflow cloning');
+          // Fall through to cloning logic below (don't return here)
+        } else {
+          // Still have OAuth providers remaining - redirect to wizard
+          console.log('[CRM] Still have OAuth providers remaining, redirecting to wizard');
+          return res.send(`
+            <html>
+              <head><title>Provider Connected</title></head>
+              <body style="font-family: Arial; text-align: center; padding: 50px;">
+                <div style="max-width: 500px; margin: 0 auto;">
+                  <div style="font-size: 64px; margin-bottom: 20px;">⚡</div>
+                  <h2>Provider Connected!</h2>
+                  <p>${remaining.length} more provider${remaining.length !== 1 ? 's' : ''} to connect...</p>
+                  <p style="color: #6c757d;">Returning to activation wizard...</p>
+                </div>
+                <script>
+                  setTimeout(() => {
+                    window.location.href = '${process.env.FRONTEND_URL}/dashboard?resumeActivation=true';
+                  }, 1500);
+                </script>
+              </body>
+            </html>
+          `);
+        }
+      } else {
+        // Non-CRM: Always redirect to wizard for remaining providers
+        console.log(`Redirecting to frontend for next provider...`);
+        return res.send(`
+          <html>
+            <head><title>Provider Connected</title></head>
+            <body style="font-family: Arial; text-align: center; padding: 50px;">
+              <div style="max-width: 500px; margin: 0 auto;">
+                <div style="font-size: 64px; margin-bottom: 20px;">⚡</div>
+                <h2>Provider Connected!</h2>
+                <p>${remaining.length} more provider${remaining.length !== 1 ? 's' : ''} to connect...</p>
+                <p style="color: #6c757d;">Returning to activation wizard...</p>
+              </div>
+              <script>
+                setTimeout(() => {
+                  window.location.href = '${process.env.FRONTEND_URL}/dashboard?resumeActivation=true';
+                }, 1500);
+              </script>
+            </body>
+          </html>
+        `);
+      }
     }
 
     console.log(`\n[NEW] ✓ All providers completed! Proceeding with workflow activation...`);
@@ -831,9 +687,78 @@ router.get('/oauth2/callback', async (req, res) => {
     const finalCredMap = finalSession.sessionData?.credentialMap || {};
     console.log('Credential map:', finalCredMap);
 
-    // Step 8: Inject credentials into a clone of the workflow
-    console.log('\n[NEW] Step 8: Cloning workflow and injecting credentials...');
-    const newWorkflowPayload = injectCredentialsIntoWorkflow(templateWorkflow, finalCredMap, userLabel);
+    // ⚡ CRM SPECIAL HANDLING: Update webhook path for user-specific routing
+    let newWorkflowPayload;
+    if (isCRM === true) {
+      console.log('\n[CRM] 🎯 Preparing CRM-specific workflow clone...');
+      
+      // Create CRM user record to get crm_user_id
+      const crmUserResult = await crmPool.query(
+        `INSERT INTO crm_users (exora_user_id, status)
+         VALUES ($1, 'pending_setup')
+         ON CONFLICT (exora_user_id) 
+         DO UPDATE SET status = 'pending_setup'
+         RETURNING id`,
+        [userId]
+      );
+      
+      const crmUserId = crmUserResult.rows[0].id;
+      console.log(`[CRM] ✓ CRM user ID: ${crmUserId}`);
+      
+      // Update webhook node to use CRM user-specific path
+      const clonedNodes = templateWorkflow.nodes.map(node => {
+        if (node.type === 'n8n-nodes-base.webhook') {
+          console.log(`[CRM] ✓ Updating webhook path to: ${crmUserId}/automation`);
+          return {
+            ...node,
+            parameters: {
+              ...node.parameters,
+              path: `${crmUserId}/automation`
+            }
+          };
+        }
+        return node;
+      });
+      
+      // Create CRM workflow with only Google credentials (skip manual ones)
+      newWorkflowPayload = {
+        name: `CRM Automation - ${userLabel}`,
+        nodes: clonedNodes,
+        connections: templateWorkflow.connections || {},
+        settings: templateWorkflow.settings || {},
+        staticData: templateWorkflow.staticData || null
+      };
+      
+      // Inject ONLY Google credentials into the payload
+      if (Object.keys(finalCredMap).length > 0) {
+        console.log('[CRM] 🔑 Injecting Google OAuth credentials...');
+        newWorkflowPayload.nodes = newWorkflowPayload.nodes.map(node => {
+          if (node.credentials) {
+            const updatedCredentials = {};
+            Object.keys(node.credentials).forEach(credType => {
+              // Only inject OAuth credentials, skip manual ones
+              if (finalCredMap[credType] && (credType.includes('OAuth') || credType.includes('google'))) {
+                updatedCredentials[credType] = {
+                  id: finalCredMap[credType],
+                  name: `${userLabel}-${credType}`
+                };
+                console.log(`[CRM] ✓ Injected ${credType} into node ${node.name}`);
+              }
+            });
+            if (Object.keys(updatedCredentials).length > 0) {
+              node.credentials = updatedCredentials;
+            }
+          }
+          return node;
+        });
+      }
+      
+      console.log('[CRM] ✓ CRM workflow payload ready');
+    } else {
+      // Non-CRM: Use standard credential injection
+      console.log('\n[NEW] Step 8: Cloning workflow and injecting credentials...');
+      newWorkflowPayload = injectCredentialsIntoWorkflow(templateWorkflow, finalCredMap, userLabel);
+    }
 
     // Step 9: Create cloned workflow in n8n
     console.log('\n[NEW] Step 9: Creating cloned workflow in n8n...');
@@ -917,8 +842,58 @@ router.get('/oauth2/callback', async (req, res) => {
     console.log(`  Credential Map:`, finalCredMap);
     console.log('===========================================\n');
 
-    // Step 14: CRM handling is done earlier in the flow (see line ~469)
-    // This section is now only for regular workflows
+    // ⚡ CRM-SPECIFIC REDIRECT
+    if (isCRM === true) {
+      console.log('\n[CRM] 🎯 Finalizing CRM activation...');
+      
+      // Update CRM database with workflow ID
+      const crmUserResult = await crmPool.query(
+        `UPDATE crm_users 
+         SET n8n_workflow_id = $1 
+         WHERE exora_user_id = $2 
+         RETURNING id`,
+        [clonedWorkflowId, userId]
+      );
+      
+      if (crmUserResult.rows.length > 0) {
+        console.log(`[CRM] ✓ Updated CRM user with workflow ID: ${clonedWorkflowId}`);
+      }
+      
+      // Generate JWT for CRM
+      const crmToken = jwt.sign(
+        { id: userId, email: req.user?.email || 'user@example.com' },
+        process.env.JWT_SECRET,
+        { expiresIn: '7d' }
+      );
+      
+      // Determine CRM URL based on environment
+      const isProduction = process.env.NODE_ENV === 'production';
+      const CRM_FRONTEND_URL = isProduction 
+        ? 'https://crm.exora.solutions' 
+        : (process.env.CRM_FRONTEND_URL || 'http://localhost:3001');
+      
+      console.log(`[CRM] NODE_ENV: ${process.env.NODE_ENV}, isProduction: ${isProduction}`);
+      console.log(`[CRM] ✅ Redirecting to: ${CRM_FRONTEND_URL}`);
+      
+      return res.send(`
+        <html>
+          <head><title>CRM Activated</title></head>
+          <body style="font-family: Arial; text-align: center; padding: 50px;">
+            <div style="max-width: 500px; margin: 0 auto;">
+              <div style="font-size: 64px; margin-bottom: 20px;">✅</div>
+              <h2>CRM Activated Successfully!</h2>
+              <p>Your automation workflow is ready.</p>
+              <p style="color: #6c757d;">Redirecting to CRM setup...</p>
+            </div>
+            <script>
+              setTimeout(() => {
+                window.location.href = '${CRM_FRONTEND_URL}?token=${crmToken}&setup=true';
+              }, 2000);
+            </script>
+          </body>
+        </html>
+      `);
+    }
 
     // Step 14 (for regular workflows): Show success page and redirect (prevent loop)
     return res.send(`

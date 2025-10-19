@@ -24,8 +24,15 @@ router.get('/', authenticateToken, async (req, res) => {
     const allWorkflows = result.workflows;
     const templateWorkflows = allWorkflows.filter(wf => {
       const name = wf.name || '';
-      // Exclude workflows that start with "user-" or contain " — " (cloned workflows)
-      return !name.match(/^user-\d+/i) && !name.includes(' — ');
+      // Exclude workflows that:
+      // - Start with "user-" (no space)
+      // - Contain "user -" (with space) anywhere
+      // - Contain " — " (cloned workflows)
+      // - Start with "CRM Automation -" (cloned CRM workflows)
+      return !name.match(/^user-\d+/i) && 
+             !name.toLowerCase().includes('user -') && 
+             !name.includes(' — ') &&
+             !name.startsWith('CRM Automation -');
     });
 
     console.log(`Found ${allWorkflows.length} workflows (${templateWorkflows.length} templates, ${allWorkflows.length - templateWorkflows.length} user-cloned)`);
