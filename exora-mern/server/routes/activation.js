@@ -534,13 +534,15 @@ router.get('/oauth2/callback', async (req, res) => {
           return node;
         });
         
+        // Only include properties that n8n accepts for creating a new workflow
         const newWorkflowPayload = {
-          ...templateWorkflow,
           name: `CRM Automation - ${userLabel}`,
           nodes: clonedNodes,
+          connections: templateWorkflow.connections || {},
           active: false,  // Will be activated after setup
-          id: undefined,
-          versionId: undefined
+          settings: templateWorkflow.settings || {},
+          staticData: templateWorkflow.staticData || null,
+          tags: templateWorkflow.tags || []
         };
 
         const createWfResp = await n8nAxios.post('/workflows', newWorkflowPayload);
