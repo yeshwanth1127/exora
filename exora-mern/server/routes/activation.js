@@ -174,7 +174,8 @@ router.post('/activate-workflow', async (req, res) => {
         userId,
         workflowId,
         credentialTypes: allCredentialTypes, // Array of all credential types
-        provider: 'google'
+        provider: 'google',
+        isCRM: isCRM || false  // Pass CRM flag to callback
       });
 
       const unifiedAuthUrl = buildGoogleAuthUrl({
@@ -467,6 +468,8 @@ router.get('/oauth2/callback', async (req, res) => {
     }
     
     const { sessionId, userId, workflowId, credentialType, credentialTypes, provider, isCRM } = parsed;
+    
+    console.log(`\n[OAUTH CALLBACK] Parsed state: isCRM=${isCRM}, userId=${userId}, workflowId=${workflowId}`);
     
     // ====================================================================================
     // CRM SPECIAL FLOW: Skip credential collection, just clone and redirect
