@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { getIndustryTemplates, completeSetup } from '../../services/api';
 import './SetupWizard.css';
 
@@ -14,10 +14,6 @@ const SetupWizard = ({ onComplete, user }) => {
     telegram_chat_id: ''
   });
 
-  useState(() => {
-    loadIndustries();
-  }, []);
-
   const loadIndustries = async () => {
     try {
       const data = await getIndustryTemplates();
@@ -26,6 +22,11 @@ const SetupWizard = ({ onComplete, user }) => {
       console.error('Failed to load industries:', error);
     }
   };
+
+  useEffect(() => {
+    loadIndustries();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleNext = () => {
     if (step < 3) setStep(step + 1);
