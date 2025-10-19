@@ -37,7 +37,7 @@ export const validateToken = async (token) => {
   const response = await axios.get(`${API_BASE_URL}/auth/validate`, {
     headers: { Authorization: `Bearer ${token}` },
   });
-  return response.data.user;
+  return response.data;
 };
 
 // ==================== INDUSTRY ====================

@@ -10,7 +10,9 @@ router.get('/validate', validateExoraToken, (req, res) => {
     user: {
       exora_user_id: req.user.exora_user_id,
       crm_user_id: req.user.crm_user_id,
-      email: req.user.email
+      email: req.user.email,
+      status: req.user.crm_user?.status || 'pending_setup',
+      crm_user: req.user.crm_user
     }
   });
 });

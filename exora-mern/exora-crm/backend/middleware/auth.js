@@ -25,18 +25,31 @@ async function validateExoraToken(req, res, next) {
       return res.status(401).json({ error: 'Invalid token: missing user ID' });
     }
     
-    // Get CRM user
-    const result = await pool.query(
+    // Get or create CRM user
+    let result = await pool.query(
       'SELECT * FROM crm_users WHERE exora_user_id = $1',
       [exoraUserId]
     );
     
-    const crmUser = result.rows[0] || null;
+    let crmUser = result.rows[0];
+    
+    // Auto-create CRM user if doesn't exist
+    if (!crmUser) {
+      console.log(`[Auth] Creating CRM user for exora_user_id: ${exoraUserId}`);
+      const createResult = await pool.query(
+        `INSERT INTO crm_users (exora_user_id, status) 
+         VALUES ($1, 'pending_setup') 
+         RETURNING *`,
+        [exoraUserId]
+      );
+      crmUser = createResult.rows[0];
+      console.log(`[Auth] CRM user created with id: ${crmUser.id}`);
+    }
     
     // Attach to request
     req.user = {
       exora_user_id: exoraUserId,
-      crm_user_id: crmUser ? crmUser.id : null,
+      crm_user_id: crmUser.id,
       email: email,
       crm_user: crmUser
     };
@@ -55,7 +68,7 @@ async function validateExoraToken(req, res, next) {
 }
 
 /**
- * Ensure user has CRM activated
+ * Ensure user has CRM user record
  * Use this for all CRM endpoints
  */
 function requireCRMActivation(req, res, next) {
@@ -65,11 +78,37 @@ function requireCRMActivation(req, res, next) {
       message: 'Please activate CRM from Exora dashboard first.'
     });
   }
+  // Allow access even if status is 'pending_setup'
+  // The frontend will handle showing the setup wizard
+  next();
+}
+
+/**
+ * Ensure user has completed setup
+ * Use this for endpoints that require fully configured CRM
+ */
+function requireCompleteSetup(req, res, next) {
+  if (!req.user.crm_user_id) {
+    return res.status(403).json({ 
+      error: 'CRM not activated',
+      message: 'Please activate CRM from Exora dashboard first.'
+    });
+  }
+  
+  if (req.user.crm_user?.status === 'pending_setup') {
+    return res.status(403).json({ 
+      error: 'Setup required',
+      message: 'Please complete CRM setup first.',
+      needs_setup: true
+    });
+  }
+  
   next();
 }
 
 module.exports = {
   validateExoraToken,
-  requireCRMActivation
+  requireCRMActivation,
+  requireCompleteSetup
 };
 

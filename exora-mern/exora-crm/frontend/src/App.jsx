@@ -44,14 +44,15 @@ function App() {
     if (token) {
       try {
         console.log('[CRM] Validating token from URL...');
-        const userData = await validateToken(token);
+        const response = await validateToken(token);
+        const userData = response.user || response;
         console.log('[CRM] Token validation successful:', userData);
         
         localStorage.setItem('crm_token', token);
         setUser(userData);
         setAuthenticated(true);
 
-        if (setupFlag === 'true' || userData.status === 'pending_setup') {
+        if (setupFlag === 'true' || userData.status === 'pending_setup' || userData.crm_user?.status === 'pending_setup') {
           console.log('[CRM] User needs setup, showing wizard');
           setNeedsSetup(true);
         }
@@ -98,13 +99,14 @@ function App() {
       if (storedToken) {
         console.log('[CRM] Found stored token, validating...');
         try {
-          const userData = await validateToken(storedToken);
+          const response = await validateToken(storedToken);
+          const userData = response.user || response;
           console.log('[CRM] Stored token validation successful:', userData);
           
           setUser(userData);
           setAuthenticated(true);
 
-          if (userData.status === 'pending_setup') {
+          if (userData.status === 'pending_setup' || userData.crm_user?.status === 'pending_setup') {
             console.log('[CRM] User needs setup, showing wizard');
             setNeedsSetup(true);
           }
