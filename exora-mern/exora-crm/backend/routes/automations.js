@@ -1,6 +1,7 @@
 const express = require('express');
 const { pool } = require('../config/db');
 const { validateExoraToken, requireCRMActivation } = require('../middleware/auth');
+const { syncUserAutomations, needsSync } = require('../services/userAutomationSyncService');
 const { v4: uuidv4 } = require('uuid');
 
 const router = express.Router();
@@ -8,16 +9,45 @@ const router = express.Router();
 router.use(validateExoraToken);
 router.use(requireCRMActivation);
 
-// GET /api/automations/modules - List all available automation modules
+// GET /api/automations/modules - List available automation modules for THIS USER
 router.get('/modules', async (req, res) => {
   try {
-    const result = await pool.query(`
-      SELECT * FROM automation_modules 
-      WHERE is_active = true 
-      ORDER BY category, name
-    `);
+    const crmUserId = req.user.crm_user_id;
     
-    res.json({ modules: result.rows });
+    // Check if user needs sync (no modules in catalog)
+    const shouldSync = await needsSync(crmUserId);
+    
+    if (shouldSync) {
+      console.log(`[Automations] User ${crmUserId} has no modules, triggering sync...`);
+      try {
+        await syncUserAutomations(crmUserId);
+      } catch (syncError) {
+        console.error('[Automations] Sync failed:', syncError.message);
+        // Return error with helpful message
+        return res.status(500).json({ 
+          error: 'Failed to discover automations from workflow',
+          details: syncError.message,
+          suggestion: 'Please check that your CRM workflow is properly configured in n8n'
+        });
+      }
+    }
+    
+    // Fetch user's automation catalog
+    const result = await pool.query(`
+      SELECT 
+        module_key, name, description, icon, category,
+        config_schema, required_credentials, workflow_id,
+        last_synced_at, is_active
+      FROM user_automation_modules 
+      WHERE crm_user_id = $1 AND is_active = true 
+      ORDER BY category, name
+    `, [crmUserId]);
+    
+    res.json({ 
+      modules: result.rows,
+      user_workflow_id: result.rows[0]?.workflow_id,
+      last_synced: result.rows[0]?.last_synced_at
+    });
   } catch (error) {
     console.error('List modules error:', error);
     res.status(500).json({ error: error.message });

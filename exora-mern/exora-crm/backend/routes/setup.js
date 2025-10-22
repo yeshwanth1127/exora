@@ -51,34 +51,16 @@ router.post('/complete', validateExoraToken, async (req, res) => {
     
     const crmUser = result.rows[0];
     
-    // Auto-enable recommended automations for chosen industry
-    const industryTemplate = getIndustryTemplate(industry);
-    
-    if (industryTemplate.recommended_automations && industryTemplate.recommended_automations.length > 0) {
-      console.log(`[Setup] Auto-enabling ${industryTemplate.recommended_automations.length} automations for ${industry}`);
-      
-      for (const moduleKey of industryTemplate.recommended_automations) {
-        const defaultConfig = industryTemplate.default_configs?.[moduleKey] || {};
-        
-        try {
-          await pool.query(`
-            INSERT INTO automation_configs (crm_user_id, module_key, enabled, config_data)
-            VALUES ($1, $2, true, $3)
-            ON CONFLICT (crm_user_id, module_key) DO NOTHING
-          `, [crmUser.id, moduleKey, JSON.stringify(defaultConfig)]);
-          
-          console.log(`[Setup] Enabled ${moduleKey} with config:`, defaultConfig);
-        } catch (err) {
-          console.error(`[Setup] Failed to enable ${moduleKey}:`, err.message);
-          // Continue with other modules even if one fails
-        }
-      }
-    }
+    // ✅ NO AUTO-ENABLING: Users will manually enable automations from /automations page
+    // Automations are discovered from user's n8n workflow dynamically
+    console.log(`[Setup] Setup complete for ${industry} - User: ${crmUser.business_name}`);
+    console.log(`[Setup] User should visit /automations to enable features`);
     
     res.json({
       success: true,
       crm_user: crmUser,
-      automations_enabled: industryTemplate.recommended_automations || []
+      message: 'Setup complete! Visit the Automations page to enable features.',
+      next_step: '/automations'
     });
     
   } catch (error) {

@@ -28,6 +28,8 @@ app.use('/api/webhooks', require('./routes/webhooks'));
 app.use('/api/automations', require('./routes/automations'));
 app.use('/api/settings', require('./routes/settings'));
 app.use('/api/workflow', require('./routes/workflowManagement'));
+app.use('/api/admin', require('./routes/admin'));
+app.use('/api/internal', require('./routes/internal')); // Internal server-to-server APIs
 
 // Health check
 app.get('/health', (req, res) => {
@@ -62,6 +64,19 @@ async function startServer() {
     if (!dbConnected) {
       console.error('Failed to connect to database. Please check your .env configuration.');
       process.exit(1);
+    }
+    
+    // Optional: Auto-sync automations from n8n on startup
+    if (process.env.AUTO_SYNC_AUTOMATIONS === 'true') {
+      console.log('\n🔄 AUTO_SYNC_AUTOMATIONS enabled, syncing all active users...\n');
+      try {
+        const { syncAllUsers } = require('./services/userAutomationSyncService');
+        const syncResult = await syncAllUsers({ onlyActive: true });
+        console.log(`\n✅ Auto-sync complete: ${syncResult.successful}/${syncResult.total} users synced\n`);
+      } catch (syncError) {
+        console.error('\n⚠️ Auto-sync failed (non-critical):', syncError.message);
+        console.error('Server will continue starting...\n');
+      }
     }
     
     app.listen(PORT, () => {

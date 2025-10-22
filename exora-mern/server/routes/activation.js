@@ -857,6 +857,43 @@ router.get('/oauth2/callback', async (req, res) => {
       
       if (crmUserResult.rows.length > 0) {
         console.log(`[CRM] ✓ Updated CRM user with workflow ID: ${clonedWorkflowId}`);
+        
+        const crmUserId = crmUserResult.rows[0].id;
+        
+        // ✨ NEW: Trigger automation discovery from user's workflow
+        console.log(`[CRM] 🔍 Triggering automation discovery from workflow...`);
+        try {
+          const axios = require('axios');
+          const CRM_API_URL = isProduction 
+            ? 'https://crm-api.exora.solutions' 
+            : (process.env.CRM_API_URL || 'http://localhost:8000');
+          
+          // Call CRM backend to sync user's automations
+          const syncResponse = await axios.post(
+            `${CRM_API_URL}/api/internal/sync-user-automations`,
+            {
+              crm_user_id: crmUserId,
+              workflow_id: clonedWorkflowId
+            },
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                // Internal API call - add internal auth header if needed
+                'X-Internal-Request': 'true'
+              },
+              timeout: 15000
+            }
+          );
+          
+          if (syncResponse.data.success) {
+            console.log(`[CRM] ✅ Automation discovery complete: ${syncResponse.data.modules_discovered} modules found`);
+          } else {
+            console.warn(`[CRM] ⚠️ Automation discovery returned non-success:`, syncResponse.data);
+          }
+        } catch (syncError) {
+          console.error(`[CRM] ⚠️ Automation discovery failed (non-critical):`, syncError.message);
+          // Don't fail activation if sync fails - user can manually sync later
+        }
       }
       
       // Generate JWT for CRM
@@ -867,12 +904,18 @@ router.get('/oauth2/callback', async (req, res) => {
       );
       
       // Determine CRM URL based on environment
-      const isProduction = process.env.NODE_ENV === 'production';
+      // Use production URL if FRONTEND_URL contains 'exora.solutions'
+      const isProduction = process.env.FRONTEND_URL?.includes('exora.solutions') || 
+                          process.env.NODE_ENV === 'production';
+      
       const CRM_FRONTEND_URL = isProduction 
         ? 'https://crm.exora.solutions' 
         : (process.env.CRM_FRONTEND_URL || 'http://localhost:3001');
       
-      console.log(`[CRM] NODE_ENV: ${process.env.NODE_ENV}, isProduction: ${isProduction}`);
+      console.log(`[CRM] 🔍 Detection:`);
+      console.log(`[CRM]   - NODE_ENV: ${process.env.NODE_ENV}`);
+      console.log(`[CRM]   - FRONTEND_URL: ${process.env.FRONTEND_URL}`);
+      console.log(`[CRM]   - isProduction: ${isProduction}`);
       console.log(`[CRM] ✅ Redirecting to: ${CRM_FRONTEND_URL}`);
       
       return res.send(`
