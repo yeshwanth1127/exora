@@ -66,18 +66,11 @@ async function startServer() {
       process.exit(1);
     }
     
-    // Optional: Auto-sync automations from n8n on startup
-    if (process.env.AUTO_SYNC_AUTOMATIONS === 'true') {
-      console.log('\n🔄 AUTO_SYNC_AUTOMATIONS enabled, syncing all active users...\n');
-      try {
-        const { syncAllUsers } = require('./services/userAutomationSyncService');
-        const syncResult = await syncAllUsers({ onlyActive: true });
-        console.log(`\n✅ Auto-sync complete: ${syncResult.successful}/${syncResult.total} users synced\n`);
-      } catch (syncError) {
-        console.error('\n⚠️ Auto-sync failed (non-critical):', syncError.message);
-        console.error('Server will continue starting...\n');
-      }
-    }
+    // Start background auto-sync job
+    // This automatically syncs users who have workflows but no automation catalog
+    const { startAutoSyncJob } = require('./services/autoSyncService');
+    startAutoSyncJob();
+    console.log('✅ Background auto-sync job started (checks every 5 minutes)');
     
     app.listen(PORT, () => {
       const isProduction = process.env.NODE_ENV === 'production';
