@@ -11,3 +11,4 @@ DELETE FROM automation_configs;
 -- After running this, all automation cards will be gray
 -- Users can then manually enable what they want
 
+

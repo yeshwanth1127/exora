@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../../services/api';
+import WhatsAppConnection from '../../components/WhatsAppConnection/WhatsAppConnection';
 import './Settings.css';
 
 const Settings = () => {
@@ -113,6 +114,12 @@ const Settings = () => {
             onClick={() => setActiveTab('integrations')}
           >
             🔗 Integrations
+          </button>
+          <button
+            className={`tab-button ${activeTab === 'whatsapp' ? 'active' : ''}`}
+            onClick={() => setActiveTab('whatsapp')}
+          >
+            💬 WhatsApp
           </button>
         </div>
 
@@ -275,6 +282,10 @@ const Settings = () => {
                 </button>
               </div>
             </form>
+          )}
+
+          {activeTab === 'whatsapp' && (
+            <WhatsAppConnection />
           )}
         </div>
       </div>

@@ -70,3 +70,4 @@ COMMENT ON COLUMN user_automation_modules.workflow_id IS 'n8n workflow ID this m
 COMMENT ON COLUMN user_automation_modules.config_schema IS 'JSON Schema for dynamic configuration form generation';
 
 
+

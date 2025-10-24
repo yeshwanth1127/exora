@@ -1,0 +1,180 @@
+===============================================================================
+EVOLUTION API INTEGRATION - DEPLOYMENT STEPS
+===============================================================================
+
+WHAT WAS IMPLEMENTED:
+
+1. Database migrations for Evolution API session tracking
+2. Evolution API service wrapper (all API operations)
+3. WhatsApp integration service (business logic)
+4. Backend routes for WhatsApp management
+5. Evolution webhook receiver (handles inbound messages)
+6. Health monitoring job (checks sessions every 5 minutes)
+7. Frontend WhatsApp connection UI (QR code display)
+
+===============================================================================
+DEPLOYMENT STEPS ON YOUR VPS:
+===============================================================================
+
+1. RUN DATABASE MIGRATIONS
+   
+   cd /var/www/exora-crm  # or your CRM path
+   
+   sudo -u postgres psql -d exora-crm -f database/add-evolution-fields.sql
+   sudo -u postgres psql -d exora-crm -f database/create-evolution-webhooks.sql
+
+
+2. CONFIGURE ENVIRONMENT VARIABLES
+   
+   Edit backend/.env and add/update:
+   
+   EVOLUTION_API_URL=https://evolution.exora.solutions
+   EVOLUTION_API_KEY=your_evolution_api_key_here
+   EVOLUTION_WEBHOOK_URL=https://crm-api.exora.solutions/api/webhooks/evolution
+   EVOLUTION_WEBHOOK_SECRET=your_secret_for_validation
+
+
+3. CONFIGURE EVOLUTION API SERVER
+   
+   In your Evolution API deployment, set webhook URL:
+   https://crm-api.exora.solutions/api/webhooks/evolution
+   
+   Enable webhook events:
+   - QRCODE_UPDATED
+   - CONNECTION_UPDATE  
+   - MESSAGES_UPSERT
+   - MESSAGES_UPDATE
+
+
+4. RESTART CRM BACKEND
+   
+   pm2 restart exora-crm-backend
+   
+   Check logs:
+   pm2 logs exora-crm-backend --lines 30
+   
+   Should see:
+   - "Background auto-sync job started"
+   - "Evolution API health monitoring started"
+
+
+5. RESTART FRONTEND (if needed)
+   
+   cd frontend
+   npm run build
+   pm2 restart exora-crm-frontend  # if using PM2 to serve
+
+
+6. CLEAR OLD AUTOMATION DATA (OPTIONAL)
+   
+   If you want to reset users to clean state:
+   
+   sudo -u postgres psql -d exora-crm -f database/clear-old-enabled-automations.sql
+
+===============================================================================
+TESTING THE INTEGRATION:
+===============================================================================
+
+TEST 1: Connect WhatsApp
+-------------------------
+1. Login to CRM
+2. Go to Settings → WhatsApp tab
+3. Click "Connect WhatsApp"
+4. QR code should appear
+5. Scan with WhatsApp (Settings → Linked Devices → Link a Device)
+6. Page should update to "Connected ✓"
+7. Should show your phone number
+
+TEST 2: Send Test Message
+--------------------------
+1. Send WhatsApp message to the connected number
+2. Check CRM backend logs: pm2 logs exora-crm-backend
+3. Should see:
+   - "Evolution Webhook Event received"
+   - "Inbound message from +123..."
+   - "Triggering n8n workflow"
+4. Check CRM Inbox - message should appear
+
+TEST 3: Auto-Reply (if enabled)
+--------------------------------
+1. Enable WhatsApp automation in /automations page
+2. Configure with auto_reply = true
+3. Send message from customer phone
+4. Should receive AI-powered auto-reply
+5. Check activities table - should have both messages
+
+===============================================================================
+TROUBLESHOOTING:
+===============================================================================
+
+Issue: QR code doesn't appear
+------------------------------
+Check:
+- Evolution API is running: curl https://evolution.exora.solutions/instance/fetchInstances
+- EVOLUTION_API_URL and EVOLUTION_API_KEY set in .env
+- Check logs: pm2 logs exora-crm-backend | grep Evolution
+
+Issue: Messages not received
+-----------------------------
+Check:
+- Evolution webhook configured correctly
+- Webhook URL accessible from Evolution API server
+- Check evolution_webhook_events table for logged events:
+  SELECT * FROM evolution_webhook_events ORDER BY created_at DESC LIMIT 10;
+
+Issue: Can't send messages
+---------------------------
+Check:
+- WhatsApp status is "connected"
+- Instance ID matches in database and Evolution API
+- Check n8n workflow logs
+- Verify Evolution API key is correct
+
+===============================================================================
+DATABASE VERIFICATION:
+===============================================================================
+
+Check user has Evolution instance:
+
+sudo -u postgres psql -d exora-crm -c "
+  SELECT 
+    business_name,
+    evolution_instance_id,
+    evolution_instance_status,
+    evolution_phone_number,
+    evolution_last_connected_at
+  FROM crm_users 
+  WHERE evolution_instance_id IS NOT NULL;
+"
+
+Check webhook events:
+
+sudo -u postgres psql -d exora-crm -c "
+  SELECT 
+    event_type,
+    from_phone,
+    message_body,
+    processed,
+    created_at
+  FROM evolution_webhook_events 
+  ORDER BY created_at DESC 
+  LIMIT 20;
+"
+
+===============================================================================
+WHAT HAPPENS NOW:
+===============================================================================
+
+1. User connects WhatsApp → Gets their own Evolution instance
+2. Customer sends message → Evolution webhook → CRM → User's n8n workflow
+3. Workflow processes message → Stores in DB → Generates AI reply (if enabled)
+4. Workflow sends reply → Evolution API → Customer's WhatsApp
+5. All messages logged in activities table
+6. Health check runs every 5 minutes to ensure sessions stay connected
+7. If session disconnects → User notified to reconnect
+
+===============================================================================
+COMPLETE! The WhatsApp integration is ready to use.
+===============================================================================
+
+

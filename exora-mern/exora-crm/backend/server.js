@@ -25,11 +25,13 @@ app.use('/api/activities', require('./routes/activities'));
 app.use('/api/staff', require('./routes/staff'));
 app.use('/api/automation-history', require('./routes/automationHistory'));
 app.use('/api/webhooks', require('./routes/webhooks'));
+app.use('/api/webhooks', require('./routes/evolutionWebhook')); // Evolution API webhooks
 app.use('/api/automations', require('./routes/automations'));
 app.use('/api/settings', require('./routes/settings'));
 app.use('/api/workflow', require('./routes/workflowManagement'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/internal', require('./routes/internal')); // Internal server-to-server APIs
+app.use('/api/whatsapp', require('./routes/whatsapp')); // WhatsApp management
 
 // Health check
 app.get('/health', (req, res) => {
@@ -71,6 +73,12 @@ async function startServer() {
     const { startAutoSyncJob } = require('./services/autoSyncService');
     startAutoSyncJob();
     console.log('✅ Background auto-sync job started (checks every 5 minutes)');
+    
+    // Start Evolution API health check job
+    // Monitors WhatsApp session health and handles auto-reconnect
+    const { startHealthCheckJob } = require('./jobs/evolutionHealthCheck');
+    startHealthCheckJob();
+    console.log('✅ Evolution API health monitoring started (checks every 5 minutes)');
     
     app.listen(PORT, () => {
       const isProduction = process.env.NODE_ENV === 'production';
