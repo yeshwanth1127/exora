@@ -236,24 +236,8 @@ const Settings = () => {
             <form onSubmit={handleSubmit} className="settings-form">
               <h2>Integration Settings</h2>
               
-              <div className="integration-card">
-                <div className="integration-header">
-                  <span className="integration-icon">💬</span>
-                  <h3>WhatsApp (Evolution API)</h3>
-                  <span className={`status-badge ${formData.whatsapp_instance_name ? 'connected' : ''}`}>
-                    {formData.whatsapp_instance_name ? 'Connected' : 'Not Connected'}
-                  </span>
-                </div>
-                <div className="form-group">
-                  <label>Instance Name</label>
-                  <input
-                    type="text"
-                    value={formData.whatsapp_instance_name}
-                    onChange={(e) => handleChange('whatsapp_instance_name', e.target.value)}
-                    placeholder="my-business-instance"
-                  />
-                  <span className="field-hint">Your Evolution API instance name</span>
-                </div>
+              <div className="integration-info">
+                <p>💬 <strong>WhatsApp:</strong> Go to the <button type="button" className="link-button" onClick={() => setActiveTab('whatsapp')}>WhatsApp tab</button> to connect your account</p>
               </div>
 
               <div className="integration-card">
