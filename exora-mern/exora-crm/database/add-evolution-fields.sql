@@ -24,3 +24,4 @@ COMMENT ON COLUMN crm_users.evolution_phone_number IS 'Connected WhatsApp phone 
 COMMENT ON COLUMN crm_users.evolution_last_connected_at IS 'Last successful connection timestamp for health monitoring';
 
 
+

@@ -471,3 +471,4 @@ COMMENT ON TABLE activities IS 'All communications and interactions';
 COMMENT ON TABLE user_automation_modules IS 'Per-user automation catalog discovered from their cloned n8n workflow';
 COMMENT ON TABLE evolution_webhook_events IS 'Log of all webhook events received from Evolution API';
 
+

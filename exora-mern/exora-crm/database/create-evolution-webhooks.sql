@@ -50,3 +50,4 @@ COMMENT ON COLUMN evolution_webhook_events.event_type IS 'Event types: messages.
 COMMENT ON COLUMN evolution_webhook_events.processed IS 'Whether the event was successfully processed and routed to n8n';
 
 
+
