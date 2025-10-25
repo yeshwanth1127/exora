@@ -12,3 +12,4 @@ DELETE FROM automation_configs;
 -- Users can then manually enable what they want
 
 
+
