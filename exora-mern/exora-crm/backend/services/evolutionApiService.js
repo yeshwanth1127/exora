@@ -37,7 +37,7 @@ async function createInstance(instanceName, options = {}) {
       ...options
     };
     
-    const response = await evolutionApi.post('/instance/create', payload);
+    const response = await evolutionApi.post('/instance/createInstance', payload);
     
     console.log(`[Evolution] Instance created successfully: ${instanceName}`);
     
