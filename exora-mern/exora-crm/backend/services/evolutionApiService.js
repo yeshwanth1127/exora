@@ -34,7 +34,6 @@ async function createInstance(instanceName, options = {}) {
     const payload = {
       instanceName: instanceName,
       qrcode: true,
-      integration: 'WHATSAPP-BAILEYS',
       ...options
     };
     
