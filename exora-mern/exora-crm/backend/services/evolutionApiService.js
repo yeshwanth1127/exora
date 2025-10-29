@@ -33,11 +33,10 @@ async function createInstance(instanceName, options = {}) {
     
     const payload = {
       instanceName: instanceName,
-      qrcode: true,
       ...options
     };
     
-    const response = await evolutionApi.post('/instance/createInstance', payload);
+    const response = await evolutionApi.post('/instance/create', payload);
     
     console.log(`[Evolution] Instance created successfully: ${instanceName}`);
     
@@ -64,16 +63,26 @@ async function getQRCode(instanceName) {
   try {
     const response = await evolutionApi.get(`/instance/connect/${instanceName}`);
     
+    // Check if the response contains an error
+    if (response.data?.error === true) {
+      throw new Error(`Evolution API error: ${response.data?.message || 'Unknown error'}`);
+    }
+    
+    // Check if QR code is available
+    if (!response.data?.qrcode?.base64) {
+      throw new Error('QR code not available in response');
+    }
+    
     return {
       success: true,
-      qrcode: response.data?.qrcode?.base64,
+      qrcode: response.data.qrcode.base64,
       pairingCode: response.data?.pairingCode,
       code: response.data?.code
     };
     
   } catch (error) {
     console.error(`[Evolution] Failed to get QR for ${instanceName}:`, error.message);
-    throw new Error(`Failed to get QR code: ${error.response?.data?.message || error.message}`);
+    throw new Error(`Failed to get QR code: ${error.message}`);
   }
 }
 

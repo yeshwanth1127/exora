@@ -55,18 +55,76 @@ async function initializeUserWhatsApp(crmUserId) {
     // Use crm_user_id as instance name for consistency
     const instanceName = crmUserId;
     
-    // Create new instance in Evolution API
-    console.log('[WhatsApp] Creating Evolution instance...');
-    const instanceResult = await evolutionApi.createInstance(instanceName, {
-      reject_call: false,
-      msg_call: '',
-      groups_ignore: true,
-      always_online: true
-    });
+    // Check if instance already exists
+    let instanceResult;
+    try {
+      console.log('[WhatsApp] Checking if instance already exists...');
+      const existingInstance = await evolutionApi.getInstance(instanceName);
+      console.log('[WhatsApp] Instance already exists:', existingInstance.instanceName);
+      
+      // Use existing instance
+      instanceResult = {
+        success: true,
+        instanceName: existingInstance.instanceName,
+        status: existingInstance.status
+      };
+      
+      // Set webhook for existing instance if not already set
+      try {
+        console.log('[WhatsApp] Setting webhook for existing instance...');
+        await evolutionApi.setWebhook(instanceName, WEBHOOK_BASE_URL);
+      } catch (webhookError) {
+        console.warn('[WhatsApp] Failed to set webhook for existing instance:', webhookError.message);
+        // Continue anyway - webhook might already be set
+      }
+    } catch (notFoundError) {
+      // Instance doesn't exist, create new one
+      console.log('[WhatsApp] Instance not found, creating new Evolution instance...');
+      instanceResult = await evolutionApi.createInstance(instanceName, {
+        integration: 'WHATSAPP-BAILEYS',
+        webhook: {
+          url: WEBHOOK_BASE_URL,
+          webhook_by_events: true,
+          events: [
+            'QRCODE_UPDATED',
+            'CONNECTION_UPDATE',
+            'MESSAGES_UPSERT',
+            'MESSAGES_UPDATE',
+            'SEND_MESSAGE'
+          ]
+        }
+      });
+    }
     
-    // Set webhook for this instance
-    console.log('[WhatsApp] Setting webhook URL...');
-    await evolutionApi.setWebhook(instanceName, WEBHOOK_BASE_URL);
+    // Note: Webhook is set during instance creation, no separate call needed
+    
+    // Try to get QR code separately with retry mechanism
+    let qrCode = null;
+    let retryCount = 0;
+    const maxRetries = 1; // Single attempt since Evolution API has a bug
+    const startTime = Date.now();
+    const maxTimeout = 3000; // 3 seconds max to avoid long waits
+    
+    while (!qrCode && retryCount < maxRetries && (Date.now() - startTime) < maxTimeout) {
+      try {
+        console.log(`[WhatsApp] Attempting to get QR code (attempt ${retryCount + 1}/${maxRetries})`);
+        const qrResult = await evolutionApi.getQRCode(instanceName);
+        qrCode = qrResult.qrcode;
+        console.log('[WhatsApp] QR code obtained successfully');
+        break; // Exit loop immediately on success
+      } catch (qrError) {
+        console.warn(`[WhatsApp] Failed to get QR code (attempt ${retryCount + 1}):`, qrError.message);
+        retryCount++;
+        if (retryCount < maxRetries) {
+          // Wait 1 second before retry
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+    }
+    
+    if (!qrCode) {
+      console.warn('[WhatsApp] Could not obtain QR code due to Evolution API bug. User will need to refresh manually.');
+    }
     
     // Store instance info in database
     const qrExpiresAt = new Date(Date.now() + 40000); // QR expires in 40 seconds
@@ -79,7 +137,7 @@ async function initializeUserWhatsApp(crmUserId) {
           evolution_qr_expires_at = $3,
           evolution_webhook_url = $4
       WHERE id = $5
-    `, [instanceName, instanceResult.qrcode, qrExpiresAt, WEBHOOK_BASE_URL, crmUserId]);
+    `, [instanceName, qrCode, qrExpiresAt, WEBHOOK_BASE_URL, crmUserId]);
     
     console.log('✅ [WhatsApp] Initialization complete');
     console.log('   Instance ID:', instanceName);
@@ -90,10 +148,10 @@ async function initializeUserWhatsApp(crmUserId) {
     return {
       success: true,
       instance_id: instanceName,
-      qr_code: instanceResult.qrcode,
+      qr_code: qrCode,
       qr_expires_at: qrExpiresAt.toISOString(),
       status: 'pending_qr',
-      message: 'Scan QR code with WhatsApp to connect'
+      message: qrCode ? 'Scan QR code with WhatsApp to connect' : 'Instance created successfully. Please click "Refresh QR Code" to generate the QR code for WhatsApp connection.'
     };
     
   } catch (error) {
@@ -195,8 +253,36 @@ async function refreshQRCode(crmUserId) {
     
     console.log('[WhatsApp] Refreshing QR code for instance:', instanceName);
     
-    // Get fresh QR from Evolution API
-    const qrResult = await evolutionApi.getQRCode(instanceName);
+    // Get fresh QR from Evolution API with retry mechanism
+    let qrCode = null;
+    let retryCount = 0;
+    const maxRetries = 3;
+    const startTime = Date.now();
+    const maxTimeout = 10000; // 10 seconds max
+    
+    while (!qrCode && retryCount < maxRetries && (Date.now() - startTime) < maxTimeout) {
+      try {
+        console.log(`[WhatsApp] Attempting to refresh QR code (attempt ${retryCount + 1}/${maxRetries})`);
+        const qrResult = await evolutionApi.getQRCode(instanceName);
+        qrCode = qrResult.qrcode;
+        console.log('[WhatsApp] QR code refreshed successfully');
+      } catch (qrError) {
+        console.warn(`[WhatsApp] Failed to refresh QR code (attempt ${retryCount + 1}):`, qrError.message);
+        retryCount++;
+        if (retryCount < maxRetries) {
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+      }
+    }
+    
+    if (!qrCode) {
+      if ((Date.now() - startTime) >= maxTimeout) {
+        throw new Error('QR code generation timed out after 10 seconds. Please try again later.');
+      } else {
+        throw new Error('Could not obtain QR code after all retries. Please try again later.');
+      }
+    }
+    
     const qrExpiresAt = new Date(Date.now() + 40000);
     
     // Update database
@@ -206,11 +292,11 @@ async function refreshQRCode(crmUserId) {
           evolution_qr_expires_at = $2,
           evolution_instance_status = 'pending_qr'
       WHERE id = $3
-    `, [qrResult.qrcode, qrExpiresAt, crmUserId]);
+    `, [qrCode, qrExpiresAt, crmUserId]);
     
     return {
       success: true,
-      qr_code: qrResult.qrcode,
+      qr_code: qrCode,
       qr_expires_at: qrExpiresAt.toISOString()
     };
     
@@ -255,11 +341,11 @@ async function reconnectUserWhatsApp(crmUserId) {
           evolution_qr_expires_at = $2,
           evolution_instance_status = 'pending_qr'
       WHERE id = $3
-    `, [qrResult.qrcode, qrExpiresAt, crmUserId]);
+    `, [qrCode, qrExpiresAt, crmUserId]);
     
     return {
       success: true,
-      qr_code: qrResult.qrcode,
+      qr_code: qrCode,
       qr_expires_at: qrExpiresAt.toISOString(),
       message: 'Scan QR code to reconnect'
     };

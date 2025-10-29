@@ -1,0 +1,364 @@
+{
+  "name": "Exora One - MVP (Autonomous Business Operator)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "webhook/{{userId}}/exora-event",
+        "responseMode": "onReceived",
+        "responseData": "={\"status\":\"received\"}"
+      },
+      "name": "Webhook - Event In",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 100],
+      "notes": "Input Layer: Receives events from WhatsApp/Email/Calendar"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Normalize incoming event into standard format\nconst payload = $json;\nconst event = {\n  type: payload.type || 'message',\n  channel: payload.channel || 'whatsapp',\n  userId: payload.userId || payload.user_id || $parameter.userId || 'demo',\n  from: payload.from || payload.sender || payload.email || null,\n  text: payload.text || payload.body || payload.subject || '',\n  meta: payload.meta || {},\n  raw: payload\n};\nreturn [{ json: { event } }];"
+      },
+      "name": "Normalize Event",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [520, 100],
+      "notes": "Input Layer: Standardizes event format"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT payload FROM exora_memory WHERE user_id = $1 ORDER BY created_at DESC LIMIT 20;",
+        "queryParametersUi": {
+          "parameter": [
+            {
+              "name": "userId",
+              "value": "={{ $json.event.userId }}"
+            }
+          ]
+        }
+      },
+      "name": "Memory - Recall Context",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [820, 100],
+      "credentials": {
+        "postgres": {
+          "id": "postgresDefault",
+          "name": "Postgres"
+        }
+      },
+      "notes": "Memory Layer: Gets recent context for better decisions"
+    },
+    {
+      "parameters": {
+        "model": "ollama:llama3",
+        "instructions": "You are the Planner Agent. Analyze the incoming event and decide what action to take. Return strict JSON with: { \"intent\": <'send_message'|'schedule_meeting'|'generate_quote'|'follow_up'>, \"entities\": <extracted data object>, \"confidence\": <0-1>, \"reasoning\": <brief explanation> }",
+        "inputData": "={{ JSON.stringify({ event: $json.event, context: $node['Memory - Recall Context'].rows || [] }) }}"
+      },
+      "name": "Planner - AI Agent (Decision Engine)",
+      "type": "n8n-nodes-ai.agent",
+      "typeVersion": 1,
+      "position": [1120, 100],
+      "notes": "Planner Layer: AI decides what to do"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Parse Planner output and extract action\nlet action = {};\ntry {\n  const txt = $json.choices && $json.choices[0] && $json.choices[0].message && $json.choices[0].message.content || $json.text || '{}';\n  action = JSON.parse(txt);\n} catch(e) {\n  // Fallback: naive keyword detection\n  const text = ($json.event || {}).text || '';\n  if (text.toLowerCase().includes('book') || text.toLowerCase().includes('schedule') || text.toLowerCase().includes('meeting')) {\n    action = { intent: 'schedule_meeting', entities: {}, confidence: 0.7, reasoning: 'Keyword match' };\n  } else if (text.toLowerCase().includes('quote') || text.toLowerCase().includes('price') || text.toLowerCase().includes('cost')) {\n    action = { intent: 'generate_quote', entities: {}, confidence: 0.7, reasoning: 'Keyword match' };\n  } else if (text.length > 0) {\n    action = { intent: 'send_message', entities: {}, confidence: 0.6, reasoning: 'Default response' };\n  } else {\n    action = { intent: 'send_message', entities: {}, confidence: 0.5, reasoning: 'Empty fallback' };\n  }\n}\nreturn [{ json: { action, originalEvent: $json.event, originalContext: $node['Memory - Recall Context'].rows || [] } }];"
+      },
+      "name": "Parse Planner Output",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1400, 100],
+      "notes": "Planner Layer: Processes AI decision"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.action.intent }}",
+              "operation": "equal",
+              "value2": "send_message"
+            }
+          ]
+        }
+      },
+      "name": "IF - Send Message?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1680, -40],
+      "notes": "Executor Routing"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.action.intent }}",
+              "operation": "equal",
+              "value2": "schedule_meeting"
+            }
+          ]
+        }
+      },
+      "name": "IF - Schedule Meeting?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1680, 120],
+      "notes": "Executor Routing"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.action.intent }}",
+              "operation": "equal",
+              "value2": "generate_quote"
+            }
+          ]
+        }
+      },
+      "name": "IF - Generate Quote?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1680, 280],
+      "notes": "Executor Routing"
+    },
+    {
+      "parameters": {
+        "model": "ollama:llama3",
+        "instructions": "You are MessagingAgent. Draft a short, professional reply to the incoming message. Keep it friendly and match the user's tone.",
+        "inputData": "={{ $json.originalEvent.text }}",
+        "inputContext": "={{ JSON.stringify($json.originalContext) }}"
+      },
+      "name": "Executor - Draft Message (AI)",
+      "type": "n8n-nodes-ai.agent",
+      "typeVersion": 1,
+      "position": [1960, -40],
+      "notes": "Executor Layer: Creates message"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Extract drafted message\nlet message = '';\ntry {\n  message = $json.choices && $json.choices[0] && $json.choices[0].message && $json.choices[0].message.content || $json.text || '';\n} catch(e) {\n  message = 'Thank you for your message!';\n}\n\nconst evt = $node['Parse Planner Output'].json.originalEvent;\nreturn [{ json: {\n  to: evt.from,\n  channel: evt.channel || 'whatsapp',\n  message: message,\n  originalEvent: evt\n} }];"
+      },
+      "name": "Prepare Outbound Message",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [2220, -40]
+    },
+    {
+      "parameters": {
+        "authentication": "headerAuth",
+        "url": "=https://evolution.exora.solutions/sendMessage",
+        "method": "POST",
+        "jsonParameters": true,
+        "headerParametersJson": "={\"Authorization\": \"Bearer {{ $credentials.evolutionApi.key }}\"}",
+        "bodyParametersJson": "={\"to\": $json.to, \"channel\": $json.channel, \"message\": $json.message}"
+      },
+      "name": "Executor - Send via Evolution",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [2480, -40],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "evolutionApi",
+          "name": "Evolution API Key"
+        }
+      },
+      "notes": "Executor Layer: Sends message"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Build calendar event from planner entities and event data\nconst evt = $node['Parse Planner Output'].json.originalEvent;\nconst entities = $node['Parse Planner Output'].json.action.entities || {};\n\nconst startTime = entities.startTime || entities.meetingTime || new Date(Date.now() + 24*3600*1000).toISOString();\nconst duration = entities.duration || 30;\nconst endTime = entities.endTime || new Date(new Date(startTime).getTime() + duration*60000).toISOString();\n\nreturn [{ json: {\n  calendarPayload: {\n    summary: entities.summary || `Meeting with ${evt.from}`,\n    start: { dateTime: startTime, timeZone: 'Asia/Kolkata' },\n    end: { dateTime: endTime, timeZone: 'Asia/Kolkata' },\n    attendees: [{ email: evt.from }],\n    description: `Auto-created from: ${evt.text}`\n  },\n  originalEvent: evt\n} }];"
+      },
+      "name": "Executor - Build Calendar Event",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1960, 120]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "resource": "event",
+        "additionalFields": {},
+        "eventResource": "={{ $json.calendarPayload }}"
+      },
+      "name": "Executor - Create in Google Calendar",
+      "type": "n8n-nodes-gsuite.calendar",
+      "typeVersion": 1,
+      "position": [2220, 120],
+      "credentials": {
+        "googleApi": {
+          "id": "googleOAuth2Api",
+          "name": "Google OAuth2 API"
+        }
+      },
+      "notes": "Executor Layer: Creates calendar event"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Generate quote from planner entities\nconst evt = $node['Parse Planner Output'].json.originalEvent;\nconst entities = $node['Parse Planner Output'].json.action.entities || {};\n\nconst quote = {\n  id: 'Q-' + Date.now(),\n  to: evt.from,\n  items: entities.items || [{ description: 'Service', price: entities.price || 10000 }],\n  total: entities.total || entities.price || 10000,\n  validUntil: new Date(Date.now() + 7*24*3600*1000).toISOString().split('T')[0]\n};\n\nconst message = `Here is your quote (ID: ${quote.id}).\\nTotal: ₹${quote.total}\\nValid until: ${quote.validUntil}\\nReply to confirm.`;\n\nreturn [{ json: { quote, message, originalEvent: evt } }];"
+      },
+      "name": "Executor - Build Quote",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1960, 280]
+    },
+    {
+      "parameters": {
+        "authentication": "headerAuth",
+        "url": "=https://evolution.exora.solutions/sendMessage",
+        "method": "POST",
+        "jsonParameters": true,
+        "headerParametersJson": "={\"Authorization\": \"Bearer {{ $credentials.evolutionApi.key }}\"}",
+        "bodyParametersJson": "={\"to\": $json.originalEvent.from, \"channel\": 'whatsapp', \"message\": $json.message}"
+      },
+      "name": "Executor - Send Quote via Evolution",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [2220, 280],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "evolutionApi",
+          "name": "Evolution API Key"
+        }
+      },
+      "notes": "Executor Layer: Sends quote"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": "public",
+        "table": "exora_memory",
+        "columns": "user_id, event_type, payload, created_at",
+        "additionalFields": {}
+      },
+      "name": "Memory - Log Event",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [2760, 120],
+      "credentials": {
+        "postgres": {
+          "id": "postgresDefault",
+          "name": "Postgres"
+        }
+      },
+      "notes": "Memory Layer: Stores event for learning"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Respond to webhook\nreturn [{ json: { status: 'processed', timestamp: new Date().toISOString() } }];"
+      },
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [3040, 120]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 24
+            }
+          ]
+        }
+      },
+      "name": "Trigger Observer (Daily)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [520, 620],
+      "notes": "Observer Layer: Daily optimization check"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT payload FROM exora_memory WHERE created_at > now() - interval '1 day' ORDER BY created_at DESC LIMIT 200;",
+        "queryParametersUi": {}
+      },
+      "name": "Observer - Fetch Recent",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [820, 620],
+      "credentials": {
+        "postgres": {
+          "id": "postgresDefault",
+          "name": "Postgres"
+        }
+      },
+      "notes": "Observer Layer: Gets recent events"
+    },
+    {
+      "parameters": {
+        "model": "ollama:llama3",
+        "instructions": "You are ObserverAgent. Analyze recent business events and suggest optimizations. Return JSON array: [{id, title, confidence, description, suggestedAction}]",
+        "inputData": "={{ $json.map(r=>r.payload).join('\\n') }}"
+      },
+      "name": "Observer - AI Analysis",
+      "type": "n8n-nodes-ai.agent",
+      "typeVersion": 1,
+      "position": [1120, 620],
+      "notes": "Observer Layer: AI suggests improvements"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Parse suggestions and store\nlet suggestions = [];\ntry {\n  const txt = $json.choices && $json.choices[0] && $json.choices[0].message && $json.choices[0].message.content || '[]';\n  suggestions = JSON.parse(txt);\n} catch(e) {\n  suggestions = [{ id: 's1', title: 'Auto follow-ups', confidence: 0.8, description: 'Set up automatic follow-up chain', suggestedAction: {} }];\n}\n\n// Store each suggestion\nconst promises = suggestions.map(s => {\n  return $node['Observer - Store Suggestion'].run({ json: { suggestion: s } });\n});\n\nreturn [{ json: { suggestions: suggestions.length, timestamp: new Date().toISOString() } }];"
+      },
+      "name": "Observer - Parse & Store",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1400, 620]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": "public",
+        "table": "exora_suggestions",
+        "columns": "user_id, suggestion, created_at",
+        "additionalFields": {}
+      },
+      "name": "Observer - Store Suggestion",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [1680, 620],
+      "credentials": {
+        "postgres": {
+          "id": "postgresDefault",
+          "name": "Postgres"
+        }
+      },
+      "notes": "Observer Layer: Stores AI suggestions"
+    }
+  ],
+  "connections": {
+    "Webhook - Event In": { "main": [[{ "node": "Normalize Event", "type": "main", "index": 0 }]] },
+    "Normalize Event": { "main": [[{ "node": "Memory - Recall Context", "type": "main", "index": 0 }]] },
+    "Memory - Recall Context": { "main": [[{ "node": "Planner - AI Agent (Decision Engine)", "type": "main", "index": 0 }]] },
+    "Planner - AI Agent (Decision Engine)": { "main": [[{ "node": "Parse Planner Output", "type": "main", "index": 0 }]] },
+    "Parse Planner Output": { "main": [[{ "node": "IF - Send Message?", "type": "main", "index": 0 }, { "node": "IF - Schedule Meeting?", "type": "main", "index": 1 }, { "node": "IF - Generate Quote?", "type": "main", "index": 2 }, { "node": "Memory - Log Event", "type": "main", "index": 3 }]] },
+    "IF - Send Message?": { "main": [[{ "node": "Executor - Draft Message (AI)", "type": "main", "index": 0 }], []] },
+    "IF - Schedule Meeting?": { "main": [[{ "node": "Executor - Build Calendar Event", "type": "main", "index": 0 }], []] },
+    "IF - Generate Quote?": { "main": [[{ "node": "Executor - Build Quote", "type": "main", "index": 0 }], []] },
+    "Executor - Draft Message (AI)": { "main": [[{ "node": "Prepare Outbound Message", "type": "main", "index": 0 }]] },
+    "Prepare Outbound Message": { "main": [[{ "node": "Executor - Send via Evolution", "type": "main", "index": 0 }]] },
+    "Executor - Send via Evolution": { "main": [[{ "node": "Memory - Log Event", "type": "main", "index": 0 }]] },
+    "Executor - Build Calendar Event": { "main": [[{ "node": "Executor - Create in Google Calendar", "type": "main", "index": 0 }]] },
+    "Executor - Create in Google Calendar": { "main": [[{ "node": "Memory - Log Event", "type": "main", "index": 0 }]] },
+    "Executor - Build Quote": { "main": [[{ "node": "Executor - Send Quote via Evolution", "type": "main", "index": 0 }]] },
+    "Executor - Send Quote via Evolution": { "main": [[{ "node": "Memory - Log Event", "type": "main", "index": 0 }]] },
+    "Memory - Log Event": { "main": [[{ "node": "Respond to Webhook", "type": "main", "index": 0 }]] },
+    "Trigger Observer (Daily)": { "main": [[{ "node": "Observer - Fetch Recent", "type": "main", "index": 0 }]] },
+    "Observer - Fetch Recent": { "main": [[{ "node": "Observer - AI Analysis", "type": "main", "index": 0 }]] },
+    "Observer - AI Analysis": { "main": [[{ "node": "Observer - Parse & Store", "type": "main", "index": 0 }]] },
+    "Observer - Parse & Store": { "main": [[{ "node": "Observer - Store Suggestion", "type": "main", "index": 0 }]] }
+  },
+  "active": true,
+  "settings": {
+    "timezone": "Asia/Kolkata",
+    "executionOrder": "v1"
+  },
+  "staticData": null
+}
+  
