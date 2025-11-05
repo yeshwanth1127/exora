@@ -18,6 +18,10 @@ const AnimatedHalfBox = ({
   const bottomHorizontalLineRef = useRef(null);
   const bottomVerticalLineRef = useRef(null);
   const textContainerRef = useRef(null);
+  const corner1Ref = useRef(null);
+  const corner2Ref = useRef(null);
+  const corner3Ref = useRef(null);
+  const corner4Ref = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -27,6 +31,10 @@ const AnimatedHalfBox = ({
     const bottomHorizontalLine = bottomHorizontalLineRef.current;
     const bottomVerticalLine = bottomVerticalLineRef.current;
     const textContainer = textContainerRef.current;
+    const corner1 = corner1Ref.current;
+    const corner2 = corner2Ref.current;
+    const corner3 = corner3Ref.current;
+    const corner4 = corner4Ref.current;
 
     if (!container || !topHorizontalLine || !topVerticalLine || !bottomHorizontalLine || !bottomVerticalLine || !textContainer) return;
 
@@ -35,7 +43,8 @@ const AnimatedHalfBox = ({
     gsap.set(topVerticalLine, { scaleY: 0, transformOrigin: 'top center' });
     gsap.set(bottomHorizontalLine, { scaleX: 0, transformOrigin: 'left center' });
     gsap.set(bottomVerticalLine, { scaleY: 0, transformOrigin: 'bottom center' });
-    gsap.set(textContainer, { opacity: 0, y: 20 });
+    gsap.set(textContainer, { opacity: 0, y: 30 });
+    gsap.set([corner1, corner2, corner3, corner4], { scale: 0, opacity: 0 });
 
     // Create the animation timeline
     const tl = gsap.timeline({
@@ -61,31 +70,39 @@ const AnimatedHalfBox = ({
     // Animate lines emerging from top right
     tl.to(topHorizontalLine, {
       scaleX: 1,
-      duration: 1.2,
+      duration: 0.8,
       ease: 'power3.out'
     })
     .to(topVerticalLine, {
       scaleY: 1,
-      duration: 1.0,
+      duration: 0.8,
       ease: 'power3.out'
-    }, '-=0.6') // Start vertical line slightly before horizontal finishes
+    }, '-=0.4')
     // Animate lines emerging from bottom left
     .to(bottomHorizontalLine, {
       scaleX: 1,
-      duration: 1.2,
-      ease: 'power3.out'
-    }, '-=0.8') // Start bottom lines as top lines are finishing
-    .to(bottomVerticalLine, {
-      scaleY: 1,
-      duration: 1.0,
+      duration: 0.8,
       ease: 'power3.out'
     }, '-=0.6')
+    .to(bottomVerticalLine, {
+      scaleY: 1,
+      duration: 0.8,
+      ease: 'power3.out'
+    }, '-=0.4')
+    // Animate corners in
+    .to([corner1, corner2, corner3, corner4], {
+      scale: 1,
+      opacity: 1,
+      duration: 0.5,
+      ease: 'back.out(1.7)'
+    }, '-=0.3')
+    // Animate text
     .to(textContainer, {
       opacity: 1,
       y: 0,
       duration: 0.8,
       ease: 'power2.out'
-    }, '-=0.4'); // Start text animation as lines are finishing
+    }, '-=0.2');
 
     return () => {
       tl.kill();
@@ -94,6 +111,12 @@ const AnimatedHalfBox = ({
 
   return (
     <div ref={containerRef} className={`animated-half-box ${className}`}>
+      {/* Corner decorative elements */}
+      <div ref={corner1Ref} className="corner-decoration corner-1"></div>
+      <div ref={corner2Ref} className="corner-decoration corner-2"></div>
+      <div ref={corner3Ref} className="corner-decoration corner-3"></div>
+      <div ref={corner4Ref} className="corner-decoration corner-4"></div>
+      
       {/* Top horizontal line (right) */}
       <div 
         ref={topHorizontalLineRef}
@@ -140,6 +163,10 @@ const AnimatedHalfBox = ({
             isActive={isVisible}
           />
         </div>
+        
+        {/* Floating orbs for extra visual appeal */}
+        <div className="floating-orb orb-1"></div>
+        <div className="floating-orb orb-2"></div>
       </div>
     </div>
   );

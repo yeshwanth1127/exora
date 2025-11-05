@@ -33,6 +33,36 @@ const JoinUs = () => {
     });
   };
 
+  const formVariants = {
+    hidden: { opacity: 0, scale: 0.9 },
+    visible: { 
+      opacity: 1, 
+      scale: 1,
+      transition: { 
+        duration: 0.5,
+        when: "beforeChildren",
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.4 }
+    }
+  };
+
+  const iconVariants = {
+    hover: { 
+      scale: 1.1, 
+      rotate: 5,
+      transition: { duration: 0.3 }
+    }
+  };
+
   return (
     <div className="join-page">
       <Particles
@@ -60,7 +90,7 @@ const JoinUs = () => {
             textColor: '#fff', 
             links: [
               { label: 'Products', ariaLabel: 'Products page', href: '/products' },
-              { label: 'Solutions', ariaLabel: 'Solutions', href: '/products#solutions' }
+              { label: 'Solutions', ariaLabel: 'Solutions', href: '/solutions' }
             ]
           },
           { 
@@ -78,204 +108,330 @@ const JoinUs = () => {
       <div className="join-container">
         <motion.div
           className="join-hero"
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
         >
-          <h1 className="join-title">Join the AI Revolution</h1>
-          <p className="join-subtitle">
-            Get in touch with our team to start your automation journey.
-          </p>
-        </motion.div>
-
-        <div className="join-content">
-          <motion.div
-            className="contact-form-section"
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
+          <motion.h1 
+            className="join-title"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <div className="form-card">
-              <h2 className="form-title">Get Started Today</h2>
-              <p className="form-description">
-                Fill out the form below and our team will reach out within 24 hours.
-              </p>
-
-              {submitted ? (
-                <div className="success-message">
-                  <div className="success-icon">✓</div>
-                  <h3>Thank you!</h3>
-                  <p>We've received your message and will be in touch soon.</p>
-                </div>
-              ) : (
-                <form className="contact-form" onSubmit={handleSubmit}>
-                  <div className="form-group">
-                    <label htmlFor="name">Full Name *</label>
-                    <input
-                      type="text"
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      required
-                      placeholder="John Doe"
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label htmlFor="email">Email Address *</label>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      required
-                      placeholder="john@company.com"
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label htmlFor="company">Company Name</label>
-                    <input
-                      type="text"
-                      id="company"
-                      name="company"
-                      value={formData.company}
-                      onChange={handleChange}
-                      placeholder="Your Company"
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label htmlFor="message">How can we help? *</label>
-                    <textarea
-                      id="message"
-                      name="message"
-                      value={formData.message}
-                      onChange={handleChange}
-                      required
-                      rows="5"
-                      placeholder="Tell us about your automation needs..."
-                    ></textarea>
-                  </div>
-
-                  <button type="submit" className="submit-button">
-                    Send Message
-                  </button>
-                </form>
-              )}
-            </div>
-          </motion.div>
-
-          <motion.div
-            className="contact-info-section"
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
+            Join the AI Revolution
+          </motion.h1>
+          <motion.p 
+            className="join-subtitle"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            <div className="info-card">
-              <h2 className="info-title">Other Ways to Connect</h2>
+            Get in touch with our team to start your automation journey.
+          </motion.p>
+        </motion.div>
 
-              <div className="contact-method">
-                <div className="method-icon">📧</div>
+        {/* Contact Form Section */}
+        <motion.div
+          className="contact-form-section"
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+        >
+          <motion.div 
+            className="form-card"
+            variants={formVariants}
+            initial="hidden"
+            animate="visible"
+            whileHover={{ 
+              borderColor: 'rgba(168, 85, 247, 0.4)',
+              boxShadow: '0 20px 60px rgba(168, 85, 247, 0.15)'
+            }}
+          >
+            <motion.h2 className="form-title" variants={itemVariants}>
+              Get Started Today
+            </motion.h2>
+            <motion.p className="form-description" variants={itemVariants}>
+              Fill out the form below and our team will reach out within 24 hours.
+            </motion.p>
+
+            {submitted ? (
+              <motion.div 
+                className="success-message"
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: "spring", stiffness: 200, damping: 15 }}
+              >
+                <motion.div 
+                  className="success-icon"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                >
+                  ✓
+                </motion.div>
+                <motion.h3
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.4 }}
+                >
+                  Thank you!
+                </motion.h3>
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  We've received your message and will be in touch soon.
+                </motion.p>
+              </motion.div>
+            ) : (
+              <form className="contact-form" onSubmit={handleSubmit}>
+                <motion.div className="form-group" variants={itemVariants}>
+                  <label htmlFor="name">Full Name *</label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                    placeholder="John Doe"
+                  />
+                </motion.div>
+
+                <motion.div className="form-group" variants={itemVariants}>
+                  <label htmlFor="email">Email Address *</label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    placeholder="john@company.com"
+                  />
+                </motion.div>
+
+                <motion.div className="form-group" variants={itemVariants}>
+                  <label htmlFor="company">Company Name</label>
+                  <input
+                    type="text"
+                    id="company"
+                    name="company"
+                    value={formData.company}
+                    onChange={handleChange}
+                    placeholder="Your Company"
+                  />
+                </motion.div>
+
+                <motion.div className="form-group" variants={itemVariants}>
+                  <label htmlFor="message">How can we help? *</label>
+                  <textarea
+                    id="message"
+                    name="message"
+                    value={formData.message}
+                    onChange={handleChange}
+                    required
+                    rows="5"
+                    placeholder="Tell us about your automation needs..."
+                  ></textarea>
+                </motion.div>
+
+                <motion.button 
+                  type="submit" 
+                  className="submit-button"
+                  variants={itemVariants}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Send Message
+                </motion.button>
+              </form>
+            )}
+          </motion.div>
+        </motion.div>
+
+        {/* Other Ways to Connect */}
+        <motion.div
+          className="contact-info-section"
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, delay: 0.3 }}
+        >
+          <motion.div 
+            className="info-card"
+            whileHover={{ 
+              borderColor: 'rgba(168, 85, 247, 0.4)',
+              boxShadow: '0 20px 60px rgba(168, 85, 247, 0.15)'
+            }}
+          >
+            <motion.h2 
+              className="info-title"
+              initial={{ opacity: 0, y: -10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              Other Ways to Connect
+            </motion.h2>
+
+            <div className="contact-methods-grid">
+              <motion.div 
+                className="contact-method"
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                whileHover={{ scale: 1.02 }}
+              >
+                <motion.div 
+                  className="method-icon"
+                  variants={iconVariants}
+                  whileHover="hover"
+                >
+                  📧
+                </motion.div>
                 <div className="method-content">
                   <h3>Email Us</h3>
                   <p>hello@exora.ai</p>
                   <p>support@exora.ai</p>
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="contact-method">
-                <div className="method-icon">💬</div>
+              <motion.div 
+                className="contact-method"
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                whileHover={{ scale: 1.02 }}
+              >
+                <motion.div 
+                  className="method-icon"
+                  variants={iconVariants}
+                  whileHover="hover"
+                >
+                  💬
+                </motion.div>
                 <div className="method-content">
                   <h3>Live Chat</h3>
                   <p>Available Mon-Fri, 9AM-6PM EST</p>
-                  <button className="chat-button" onClick={() => navigate('/')}>
+                  <motion.button 
+                    className="chat-button" 
+                    onClick={() => navigate('/')}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
                     Start Chat
-                  </button>
+                  </motion.button>
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="contact-method">
-                <div className="method-icon">📞</div>
+              <motion.div 
+                className="contact-method"
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                whileHover={{ scale: 1.02 }}
+              >
+                <motion.div 
+                  className="method-icon"
+                  variants={iconVariants}
+                  whileHover="hover"
+                >
+                  📞
+                </motion.div>
                 <div className="method-content">
                   <h3>Schedule a Call</h3>
                   <p>Book a 30-minute consultation</p>
-                  <button className="schedule-button" onClick={() => navigate('/auth')}>
+                  <motion.button 
+                    className="schedule-button" 
+                    onClick={() => navigate('/auth')}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
                     Book Now
-                  </button>
+                  </motion.button>
                 </div>
-              </div>
-
-              <div className="social-links">
-                <h3 className="social-title">Follow Us</h3>
-                <div className="social-icons">
-                  <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="social-icon">
-                    𝕏
-                  </a>
-                  <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="social-icon">
-                    in
-                  </a>
-                  <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="social-icon">
-                    gh
-                  </a>
-                </div>
-              </div>
+              </motion.div>
             </div>
 
-            <div className="quick-start-card">
-              <h3 className="quick-start-title">Want to Try It First?</h3>
-              <p className="quick-start-text">
-                Start with our free trial—no credit card required.
-              </p>
-              <button className="trial-button" onClick={() => navigate('/auth')}>
-                Start Free Trial
-              </button>
+            <div className="social-links">
+              <motion.h3 
+                className="social-title"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+              >
+                Follow Us
+              </motion.h3>
+              <div className="social-icons">
+                <motion.a 
+                  href="https://twitter.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="social-icon"
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  𝕏
+                </motion.a>
+                <motion.a 
+                  href="https://linkedin.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="social-icon"
+                  whileHover={{ scale: 1.1, rotate: -5 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  in
+                </motion.a>
+                <motion.a 
+                  href="https://github.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="social-icon"
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  gh
+                </motion.a>
+              </div>
             </div>
           </motion.div>
-        </div>
 
-        <motion.section
-          className="faq-section"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
-          <h2 className="faq-title">Frequently Asked Questions</h2>
-          <div className="faq-grid">
-            <div className="faq-item">
-              <h3 className="faq-question">How quickly can I get started?</h3>
-              <p className="faq-answer">
-                Most customers are up and running within 48 hours. Our team handles the setup—you just provide the requirements.
-              </p>
-            </div>
-            <div className="faq-item">
-              <h3 className="faq-question">Do you offer custom solutions?</h3>
-              <p className="faq-answer">
-                Absolutely! Our Enterprise plan includes custom agent development tailored to your specific workflows.
-              </p>
-            </div>
-            <div className="faq-item">
-              <h3 className="faq-question">What kind of support do you provide?</h3>
-              <p className="faq-answer">
-                We offer 24/7 email support, priority Slack channels for Pro+ customers, and dedicated account managers for Enterprise.
-              </p>
-            </div>
-            <div className="faq-item">
-              <h3 className="faq-question">Is my data secure?</h3>
-              <p className="faq-answer">
-                Yes. We're SOC 2 Type II certified, GDPR compliant, and offer private cloud deployments for sensitive data.
-              </p>
-            </div>
-          </div>
-        </motion.section>
+          <motion.div 
+            className="quick-start-card"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            whileHover={{ 
+              borderColor: 'rgba(168, 85, 247, 0.5)',
+              boxShadow: '0 20px 60px rgba(168, 85, 247, 0.2)'
+            }}
+          >
+            <h3 className="quick-start-title">Want to Try It First?</h3>
+            <p className="quick-start-text">
+              Start with our free trial—no credit card required.
+            </p>
+            <motion.button 
+              className="trial-button" 
+              onClick={() => navigate('/auth')}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              Start Free Trial
+            </motion.button>
+          </motion.div>
+        </motion.div>
       </div>
     </div>
   );
 };
 
 export default JoinUs;
-
-

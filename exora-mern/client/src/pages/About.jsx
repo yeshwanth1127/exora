@@ -34,7 +34,7 @@ const About = () => {
             textColor: '#fff', 
             links: [
               { label: 'Products', ariaLabel: 'Products page', href: '/products' },
-              { label: 'Solutions', ariaLabel: 'Solutions', href: '/products#solutions' }
+              { label: 'Solutions', ariaLabel: 'Solutions', href: '/solutions' }
             ]
           },
           { 
@@ -50,139 +50,181 @@ const About = () => {
       />
 
       <div className="about-container">
+        {/* Hero Section */}
         <motion.div
           className="about-hero"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          <h1 className="about-title">About Exora</h1>
+          <div className="hero-visual" aria-hidden="true">
+            <div className="hero-core"></div>
+            <div className="hero-ring ring-1"></div>
+            <div className="hero-ring ring-2"></div>
+            <div className="hero-ring ring-3"></div>
+          </div>
+          <h1 className="about-title">Shaping the Future of Human–AI Collaboration</h1>
           <p className="about-subtitle">
-            Building the future of intelligent automation, one agent at a time.
+            At Exora, we’re building tools that think, act, and create — so you can move faster.
           </p>
+          <button
+            className="about-hero-button"
+            onClick={() => {
+              const el = document.querySelector('#our-vision');
+              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
+          >
+            Discover Our Mission
+          </button>
         </motion.div>
 
+        {/* Our Vision - split layout */}
         <motion.section
-          className="about-section"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
+          id="our-vision"
+          className="about-section vision-section"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <div className="content-card">
-            <h2 className="section-title">Our Story</h2>
-            <p className="section-text">
-              Exora was born from a simple observation: businesses waste countless hours on repetitive tasks that could be automated, 
-              yet most automation tools require armies of developers and months of implementation.
-            </p>
-            <p className="section-text">
-              We set out to change that. Founded by a team of AI researchers and enterprise software veterans, Exora brings 
-              cutting-edge AI agent technology to businesses of all sizes—without the complexity, without the overhead, 
-              and without compromising on power.
-            </p>
-            <p className="section-text">
-              Today, we're helping hundreds of companies reclaim thousands of hours, reduce costs by up to 90%, and scale operations 
-              that would otherwise require massive teams.
-            </p>
+          <div className="vision-wrapper">
+            <div className="vision-text">
+              <h2 className="section-title">Our Vision</h2>
+              <p className="section-text">
+                We believe in an intelligent world — one where every repetitive task disappears,
+                and humans focus on creation.
+              </p>
+              <p className="section-text">
+                Agentic AI unlocks a new era of productivity: adaptive, context-aware, and truly collaborative.
+              </p>
+            </div>
+            <div className="vision-visual" aria-hidden="true">
+              <div className="globe"></div>
+              <div className="globe-orbit orbit-1"></div>
+              <div className="globe-orbit orbit-2"></div>
+              <div className="globe-orbit orbit-3"></div>
+            </div>
           </div>
         </motion.section>
 
+        {/* The Technology - interactive cards */}
         <motion.section
-          className="about-section"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
+          className="about-section tech-section"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+        >
+          <div className="content-card transparent-card">
+            <h2 className="section-title">The Technology</h2>
+            <div className="tech-grid">
+              <div className="tech-card">
+                <div className="tech-icon">🧩</div>
+                <h3>AI Understanding</h3>
+                <p>Natural language meets precision logic.</p>
+              </div>
+              <div className="tech-card">
+                <div className="tech-icon">🧭</div>
+                <h3>Context Engine</h3>
+                <p>Understands your intent beyond words.</p>
+              </div>
+              <div className="tech-card">
+                <div className="tech-icon">⚙️</div>
+                <h3>Automation Core</h3>
+                <p>Executes with real‑world awareness.</p>
+              </div>
+            </div>
+          </div>
+        </motion.section>
+
+        {/* Our Journey - timeline */}
+        <motion.section
+          className="about-section journey-section"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          <div className="content-card">
-            <h2 className="section-title">Our Mission</h2>
-            <p className="section-text">
-              To democratize AI automation and make intelligent agents accessible to every business—from solopreneurs 
-              to enterprises—empowering teams to focus on what truly matters: innovation, strategy, and growth.
-            </p>
+          <div className="content-card transparent-card">
+            <h2 className="section-title">Our Journey</h2>
+            <div className="timeline">
+              <div className="milestone">
+                <div className="dot"></div>
+                <div className="year">2022</div>
+                <p className="milestone-text">Founding year — agentic prototypes in the lab.</p>
+              </div>
+              <div className="milestone">
+                <div className="dot"></div>
+                <div className="year">2023</div>
+                <p className="milestone-text">First enterprise deployments across ops and support.</p>
+              </div>
+              <div className="milestone">
+                <div className="dot"></div>
+                <div className="year">2024</div>
+                <p className="milestone-text">Context Engine v2 — real‑time reasoning at scale.</p>
+              </div>
+              <div className="milestone future">
+                <div className="dot"></div>
+                <div className="year">Future</div>
+                <p className="milestone-text">Ambient AI — assistants that feel invisible but helpful.</p>
+              </div>
+            </div>
           </div>
         </motion.section>
 
+        {/* Our Ecosystem */}
         <motion.section
-          className="about-section"
+          className="about-section ecosystem-section"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.3 }}
         >
-          <div className="content-card">
-            <h2 className="section-title">What Makes Us Different</h2>
-            <div className="features-grid">
-              <div className="feature-item">
-                <div className="feature-icon">🧠</div>
-                <h3 className="feature-title">True Intelligence</h3>
-                <p className="feature-text">
-                  Our agents don't just follow scripts—they reason, adapt, and make contextual decisions in real-time.
-                </p>
-              </div>
-              <div className="feature-item">
-                <div className="feature-icon">⚡</div>
-                <h3 className="feature-title">Rapid Deployment</h3>
-                <p className="feature-text">
-                  Go from concept to production in days, not months. No massive dev teams required.
-                </p>
-              </div>
-              <div className="feature-item">
-                <div className="feature-icon">🔒</div>
-                <h3 className="feature-title">Enterprise Security</h3>
-                <p className="feature-text">
-                  Bank-level encryption, private deployments, and complete data sovereignty.
-                </p>
-              </div>
-              <div className="feature-item">
-                <div className="feature-icon">📈</div>
-                <h3 className="feature-title">Continuous Learning</h3>
-                <p className="feature-text">
-                  Agents that improve with every interaction, getting smarter over time.
-                </p>
-              </div>
+          <div className="content-card transparent-card">
+            <h2 className="section-title">Our Ecosystem</h2>
+            <p className="section-text" style={{ marginTop: '-8px' }}>
+              An interconnected AI ecosystem built for the future.
+            </p>
+
+            <div className="ecosystem-map">
+              {/* SVG links */}
+              <svg className="eco-links" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                <g stroke="#a855f7" strokeWidth="0.6" strokeLinecap="round" opacity="0.6">
+                  {/* core (50,50) connections */}
+                  <line x1="50" y1="50" x2="20" y2="30" />
+                  <line x1="50" y1="50" x2="80" y2="28" />
+                  <line x1="50" y1="50" x2="18" y2="70" />
+                  <line x1="50" y1="50" x2="82" y2="72" />
+                  <line x1="50" y1="50" x2="50" y2="12" />
+                </g>
+              </svg>
+
+              {/* Nodes */}
+              <div className="eco-node core" title="Assistant">Assistant</div>
+              <div className="eco-node automation" title="Automation Core">Automation Core</div>
+              <div className="eco-node speech" title="Speech Engine">Speech Engine</div>
+              <div className="eco-node workspace" title="AI Workspace">AI Workspace</div>
+              <div className="eco-node context" title="Context AI">Context AI</div>
+              <div className="eco-node sdks" title="SDKs & APIs">SDKs & APIs</div>
             </div>
           </div>
         </motion.section>
 
+        {/* Philosophy */}
         <motion.section
-          className="about-section"
+          className="about-section philosophy-section"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.4 }}
         >
-          <div className="content-card">
-            <h2 className="section-title">Leadership Team</h2>
-            <div className="team-grid">
-              <div className="team-member">
-                <div className="team-avatar">👨‍💼</div>
-                <h3 className="team-name">Alex Chen</h3>
-                <p className="team-role">Co-Founder & CEO</p>
-                <p className="team-bio">
-                  Former Head of AI at TechCorp. PhD in Machine Learning from Stanford. 15 years building enterprise software.
-                </p>
-              </div>
-              <div className="team-member">
-                <div className="team-avatar">👩‍💻</div>
-                <h3 className="team-name">Sarah Mitchell</h3>
-                <p className="team-role">Co-Founder & CTO</p>
-                <p className="team-bio">
-                  Ex-Google AI researcher. Led teams building production AI systems used by millions. MIT Computer Science.
-                </p>
-              </div>
-              <div className="team-member">
-                <div className="team-avatar">👨‍💻</div>
-                <h3 className="team-name">Marcus Johnson</h3>
-                <p className="team-role">VP of Engineering</p>
-                <p className="team-bio">
-                  Previously at Amazon Web Services. Expert in distributed systems and scalable architectures. Carnegie Mellon alumnus.
-                </p>
-              </div>
-            </div>
+          <div className="philosophy-card">
+            <p className="philosophy-quote">“AI is not replacing you — it’s redefining how you create.”</p>
+            <div className="ambient-particles" aria-hidden="true"></div>
           </div>
         </motion.section>
 
+        {/* CTA */}
         <motion.section
           className="about-cta-section"
           initial={{ opacity: 0 }}
@@ -191,12 +233,12 @@ const About = () => {
           transition={{ duration: 0.6, delay: 0.5 }}
         >
           <div className="cta-card">
-            <h2 className="cta-title">Ready to Transform Your Business?</h2>
+            <h2 className="cta-title">Join the future — today.</h2>
             <p className="cta-text">
-              Join hundreds of companies already automating with Exora.
+              Explore the platform and see what agentic AI can unlock.
             </p>
-            <button className="cta-button" onClick={() => navigate('/auth')}>
-              Get Started Today
+            <button className="cta-button" onClick={() => navigate('/products')}>
+              Explore the Platform
             </button>
           </div>
         </motion.section>

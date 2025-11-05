@@ -7,115 +7,84 @@ import CardNav from '../components/CardNav';
 const Products = () => {
   const navigate = useNavigate();
 
-  const products = [
+  const b2bFeatures = [
     {
-      id: 1,
-      icon: '🤖',
-      name: 'Customer Service Agents',
-      tagline: 'Your 24/7 Support Team',
-      description: 'AI agents that handle customer inquiries, resolve issues, and escalate complex cases—all while maintaining your brand voice.',
-      features: [
-        'Multi-channel support (email, chat, phone)',
-        'Sentiment analysis & smart escalation',
-        'Automatic ticket categorization',
-        'Response in 50+ languages'
-      ],
-      metrics: {
-        efficiency: '95% automation rate',
-        speed: '< 30s avg response time',
-        satisfaction: '4.8/5 CSAT score'
-      }
+      icon: '🏢',
+      title: 'Enterprise Scale',
+      description: 'Deploy hundreds of agents across your organization with centralized management.'
     },
     {
-      id: 2,
+      icon: '🔗',
+      title: 'Seamless Integration',
+      description: 'Connect with 1000+ tools—Salesforce, HubSpot, Slack, Microsoft 365, and more.'
+    },
+    {
+      icon: '🛡️',
+      title: 'Enterprise Security',
+      description: 'SOC 2, GDPR, HIPAA compliant. Private cloud deployments available.'
+    },
+    {
       icon: '📊',
-      name: 'Sales Automation Agents',
-      tagline: 'Never Miss a Lead',
-      description: 'Qualify prospects, schedule meetings, send personalized follow-ups, and update your CRM—automatically.',
-      features: [
-        'Lead qualification & scoring',
-        'Automated email sequences',
-        'Meeting scheduling & reminders',
-        'CRM auto-sync (Salesforce, HubSpot, etc.)'
-      ],
-      metrics: {
-        efficiency: '70% time saved',
-        speed: 'Instant lead response',
-        satisfaction: '3x more meetings booked'
-      }
+      title: 'Advanced Analytics',
+      description: 'Real-time dashboards, ROI tracking, and performance monitoring.'
     },
     {
-      id: 3,
-      icon: '💼',
-      name: 'Operations Management Agents',
-      tagline: 'Run Your Business on Autopilot',
-      description: 'Coordinate tasks, allocate resources, predict bottlenecks, and optimize workflows across your entire operation.',
-      features: [
-        'Task assignment & tracking',
-        'Resource optimization',
-        'Bottleneck prediction',
-        'Performance analytics'
-      ],
-      metrics: {
-        efficiency: '60% cost reduction',
-        speed: '40% faster execution',
-        satisfaction: '99.5% uptime'
-      }
+      icon: '⚙️',
+      title: 'Custom Workflows',
+      description: 'Build complex, multi-step automations tailored to your business processes.'
     },
     {
-      id: 4,
-      icon: '📈',
-      name: 'Data Intelligence Agents',
-      tagline: 'Turn Data into Decisions',
-      description: 'Analyze data, spot trends, generate reports, and surface actionable insights—without a data team.',
-      features: [
-        'Automated report generation',
-        'Anomaly detection',
-        'Predictive analytics',
-        'Natural language queries'
-      ],
-      metrics: {
-        efficiency: '10x faster analysis',
-        speed: 'Real-time insights',
-        satisfaction: '92% forecast accuracy'
-      }
-    },
-    {
-      id: 5,
-      icon: '🔄',
-      name: 'Workflow Automation Agents',
-      tagline: 'Connect Everything, Automate Anything',
-      description: 'Build complex workflows that span multiple tools and systems. Our agents handle the heavy lifting.',
-      features: [
-        '1000+ app integrations',
-        'Custom workflow builder',
-        'Error handling & retry logic',
-        'Audit logs & compliance'
-      ],
-      metrics: {
-        efficiency: '85% manual work eliminated',
-        speed: '24/7 execution',
-        satisfaction: 'ROI in < 2 months'
-      }
-    },
-    {
-      id: 6,
-      icon: '🔐',
-      name: 'Enterprise AI Platform',
-      tagline: 'Built for Scale, Security & Compliance',
-      description: 'Full-featured platform with private deployments, custom models, and enterprise-grade security.',
-      features: [
-        'Private cloud deployment',
-        'Custom model training',
-        'SSO & role-based access',
-        'SOC 2 & GDPR compliant'
-      ],
-      metrics: {
-        efficiency: 'Unlimited agents',
-        speed: 'Dedicated support',
-        satisfaction: '99.99% SLA'
-      }
+      icon: '👥',
+      title: 'Team Collaboration',
+      description: 'Role-based access, team workspaces, and collaborative agent development.'
     }
+  ];
+
+  const ghostFeatures = [
+    {
+      icon: '🧠',
+      title: 'Context-Aware Intelligence',
+      description: 'Understands your workflow and adapts to your unique patterns.'
+    },
+    {
+      icon: '⚡',
+      title: 'Real-Time Action',
+      description: 'Executes tasks instantly when you need them, without delays.'
+    },
+    {
+      icon: '🪶',
+      title: 'Seamless System Integration',
+      description: 'Native integration with your OS, apps, and files.'
+    },
+    {
+      icon: '🧭',
+      title: 'Proactive Assistance',
+      description: 'Anticipates your needs and acts before you ask.'
+    },
+    {
+      icon: '🔒',
+      title: 'Private by Design',
+      description: 'All data stays on your device. No cloud required.'
+    },
+    {
+      icon: '🎯',
+      title: 'Focused Productivity',
+      description: 'Simplifies your digital life by handling routine tasks automatically.'
+    }
+  ];
+
+  const b2bBenefits = [
+    { stat: '90%', label: 'Cost Reduction' },
+    { stat: '10x', label: 'Faster Deployment' },
+    { stat: '24/7', label: 'Always On' },
+    { stat: '99.9%', label: 'Uptime SLA' }
+  ];
+
+  const ghostBenefits = [
+    { stat: '100%', label: 'Private & Local' },
+    { stat: '0', label: 'Cloud Dependency' },
+    { stat: '<1s', label: 'Response Time' },
+    { stat: '∞', label: 'Customizable' }
   ];
 
   return (
@@ -145,7 +114,7 @@ const Products = () => {
             textColor: '#fff', 
             links: [
               { label: 'Products', ariaLabel: 'Products page', href: '/products' },
-              { label: 'Solutions', ariaLabel: 'Solutions', href: '/products#solutions' }
+              { label: 'Solutions', ariaLabel: 'Solutions', href: '/solutions' }
             ]
           },
           { 
@@ -167,58 +136,148 @@ const Products = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          <h1 className="products-title">Our AI Agents</h1>
+          <h1 className="products-title">Choose Your Path</h1>
           <p className="products-subtitle">
-            Purpose-built agents for every business function. Deploy in minutes, scale instantly.
+            Tailored AI solutions for businesses and individuals
           </p>
         </motion.div>
 
-        <div className="products-grid">
-          {products.map((product, index) => (
-            <motion.div
-              key={product.id}
-              className="product-card"
-              initial={{ opacity: 0, y: 50, scale: 0.95 }}
-              whileInView={{ opacity: 1, y: 0, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              whileHover={{ y: -8, transition: { duration: 0.3 } }}
-            >
-              <div className="product-icon">{product.icon}</div>
-              <h2 className="product-name">{product.name}</h2>
-              <p className="product-tagline">{product.tagline}</p>
-              <p className="product-description">{product.description}</p>
+        {/* Products Dual Layout */}
+        <div className="products-dual-layout">
+          {/* B2B Section */}
+          <motion.section
+            className="product-category"
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <div className="category-header">
+              <div className="category-badge">Business</div>
+              <h2 className="category-title">B2B Agentic Automation</h2>
+              <p className="category-subtitle">
+                Powerful AI agents that transform your entire organization. 
+                Scale operations, reduce costs, and automate complex business workflows.
+              </p>
+            </div>
 
-              <div className="product-features">
-                <h3 className="features-title">Key Features:</h3>
-                <ul className="features-list">
-                  {product.features.map((feature, i) => (
-                    <li key={i} className="feature-item">
-                      <span className="feature-bullet">✓</span>
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+            <div className="benefits-grid">
+              {b2bBenefits.map((benefit, index) => (
+                <motion.div
+                  key={index}
+                  className="benefit-card"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                >
+                  <div className="benefit-stat">{benefit.stat}</div>
+                  <div className="benefit-label">{benefit.label}</div>
+                </motion.div>
+              ))}
+            </div>
 
-              <div className="product-metrics">
-                <div className="metric">
-                  <div className="metric-value">{product.metrics.efficiency}</div>
-                  <div className="metric-label">Efficiency</div>
-                </div>
-                <div className="metric">
-                  <div className="metric-value">{product.metrics.speed}</div>
-                  <div className="metric-label">Speed</div>
-                </div>
-                <div className="metric">
-                  <div className="metric-value">{product.metrics.satisfaction}</div>
-                  <div className="metric-label">Results</div>
-                </div>
-              </div>
-            </motion.div>
-          ))}
+            <div className="features-grid">
+              {b2bFeatures.map((feature, index) => (
+                <motion.div
+                  key={index}
+                  className="feature-card"
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  whileHover={{ y: -5, transition: { duration: 0.3 } }}
+                >
+                  <div className="feature-icon">{feature.icon}</div>
+                  <h3 className="feature-title">{feature.title}</h3>
+                  <p className="feature-description">{feature.description}</p>
+                </motion.div>
+              ))}
+            </div>
+
+            <div className="category-cta">
+              <button className="cta-button primary" onClick={() => navigate('/solutions')}>
+                Explore Business Solutions
+              </button>
+            </div>
+          </motion.section>
+
+          {/* Divider */}
+          <motion.div
+            className="products-divider"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1 }}
+          >
+            <div className="divider-line"></div>
+            <div className="divider-text">OR</div>
+            <div className="divider-line"></div>
+          </motion.div>
+
+          {/* Ghost Section */}
+          <motion.section
+            className="product-category"
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          >
+          <div className="category-header">
+            <div className="category-badge ghost-badge">Personal</div>
+            <h2 className="category-title">Ghost — Your Sixth Sense</h2>
+            <p className="category-subtitle">
+              A local, context-aware AI that lives within your system. 
+              It learns your habits, acts where you need it, and stays invisible when you don't.
+            </p>
+            <p className="category-highlight">
+              Private. Intelligent. Effortless.
+            </p>
+          </div>
+
+          <div className="benefits-grid">
+            {ghostBenefits.map((benefit, index) => (
+              <motion.div
+                key={index}
+                className="benefit-card ghost-benefit"
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+              >
+                <div className="benefit-stat">{benefit.stat}</div>
+                <div className="benefit-label">{benefit.label}</div>
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="features-grid">
+            {ghostFeatures.map((feature, index) => (
+              <motion.div
+                key={index}
+                className="feature-card ghost-feature"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                whileHover={{ y: -5, transition: { duration: 0.3 } }}
+              >
+                <div className="feature-icon">{feature.icon}</div>
+                <h3 className="feature-title">{feature.title}</h3>
+                <p className="feature-description">{feature.description}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="category-cta">
+            <button className="cta-button ghost-cta" onClick={() => navigate('/personal-ai')}>
+              Explore Ghost
+            </button>
+          </div>
+        </motion.section>
         </div>
 
+        {/* Bottom CTA */}
         <motion.section
           className="products-cta-section"
           initial={{ opacity: 0 }}
@@ -229,7 +288,7 @@ const Products = () => {
           <div className="cta-card">
             <h2 className="cta-title">Ready to Get Started?</h2>
             <p className="cta-text">
-              Choose your agent, customize to your needs, and deploy in minutes.
+              Choose the right solution for you and transform how you work.
             </p>
             <div className="cta-buttons">
               <button className="cta-button primary" onClick={() => navigate('/auth')}>
@@ -247,5 +306,3 @@ const Products = () => {
 };
 
 export default Products;
-
-

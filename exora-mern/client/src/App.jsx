@@ -1,6 +1,7 @@
 import './App.css'
 import { useEffect, useState } from 'react'
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { ActivationProvider } from './contexts/ActivationContext'
 import Particles from './components/Particles'
@@ -29,17 +30,33 @@ import BusinessSolutions from './pages/BusinessSolutions'
 import PersonalAI from './pages/PersonalAI'
 import About from './pages/About'
 import Products from './pages/Products'
+import Solutions from './pages/Solutions'
 import JoinUs from './pages/JoinUs'
 
 function App() {
-  const [isMobile, setIsMobile] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
+  // Better mobile detection - check synchronously first, then enhance with matchMedia
+  const getIsMobile = () => {
+    // Check viewport width
+    const widthCheck = window.innerWidth <= 768
+    // Check for touch capability (better mobile detection)
+    const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+    // Use matchMedia for more reliable detection
+    const mediaQuery = window.matchMedia('(max-width: 768px)')
+    // Combine checks - if media query matches OR (width check AND touch capability)
+    return mediaQuery.matches || (widthCheck && hasTouch) || widthCheck
+  }
+  
+  // Initialize with synchronous check to avoid flash
+  const initialMobile = typeof window !== 'undefined' ? getIsMobile() : false
+  const [isMobile, setIsMobile] = useState(initialMobile)
+  const [isLoading, setIsLoading] = useState(false) // Set to false since we have initial detection
   const [isChatbotOpen, setIsChatbotOpen] = useState(false)
 
   useEffect(() => {
+    // Double-check on mount to catch any edge cases
     const checkMobile = () => {
-      const mobile = window.innerWidth <= 768
-      console.log('Screen width:', window.innerWidth, 'Is mobile:', mobile)
+      const mobile = getIsMobile()
+      console.log('Mobile detection - Screen width:', window.innerWidth, 'Is mobile:', mobile, 'Touch:', 'ontouchstart' in window)
       setIsMobile(mobile)
       setIsLoading(false)
     }
@@ -47,10 +64,33 @@ function App() {
     // Check immediately
     checkMobile()
     
-    // Add resize listener
+    // Use matchMedia listener for better performance and reliability
+    const mediaQuery = window.matchMedia('(max-width: 768px)')
+    const handleMediaChange = (e) => {
+      const mobile = e.matches || getIsMobile()
+      console.log('Media query changed - Is mobile:', mobile)
+      setIsMobile(mobile)
+    }
+    
+    // Modern browsers support addEventListener on MediaQueryList
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleMediaChange)
+    } else {
+      // Fallback for older browsers
+      mediaQuery.addListener(handleMediaChange)
+    }
+    
+    // Also listen to resize as fallback
     window.addEventListener('resize', checkMobile)
     
-    return () => window.removeEventListener('resize', checkMobile)
+    return () => {
+      if (mediaQuery.removeEventListener) {
+        mediaQuery.removeEventListener('change', handleMediaChange)
+      } else {
+        mediaQuery.removeListener(handleMediaChange)
+      }
+      window.removeEventListener('resize', checkMobile)
+    }
   }, [])
 
   useEffect(() => {
@@ -123,31 +163,31 @@ function App() {
     )
   }
 
-  // Show mobile layout for devices 768px and below
-  if (isMobile) {
-    console.log('Rendering mobile layout')
-    return <MobileLayout isChatbotOpen={isChatbotOpen} onChatbotToggle={() => setIsChatbotOpen(!isChatbotOpen)} />
-  }
-
-  console.log('Rendering desktop layout - Screen width:', window.innerWidth)
+  console.log('Rendering app - Screen width:', window.innerWidth, 'Is mobile:', isMobile)
 
   return (
     <Router>
       <AuthProvider>
         <ActivationProvider>
-          <Routes>
-            <Route path="/auth" element={<AuthPage />} />
-            <Route path="/dashboard" element={<BusinessDashboard />} />
-            <Route path="/personal-dashboard" element={<PersonalDashboard />} />
-            <Route path="/workflow-activation" element={<WorkflowActivation />} />
-            <Route path="/oauth/callback" element={<OAuthCallback />} />
-            <Route path="/business-solutions" element={<BusinessSolutions />} />
-            <Route path="/personal-ai" element={<PersonalAI />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/products" element={<Products />} />
-            <Route path="/join" element={<JoinUs />} />
-            <Route path="/" element={<HomePage />} />
-          </Routes>
+          {/* Show mobile layout for devices 768px and below */}
+          {isMobile ? (
+            <MobileLayout isChatbotOpen={isChatbotOpen} onChatbotToggle={() => setIsChatbotOpen(!isChatbotOpen)} />
+          ) : (
+            <Routes>
+              <Route path="/auth" element={<AuthPage />} />
+              <Route path="/dashboard" element={<BusinessDashboard />} />
+              <Route path="/personal-dashboard" element={<PersonalDashboard />} />
+              <Route path="/workflow-activation" element={<WorkflowActivation />} />
+              <Route path="/oauth/callback" element={<OAuthCallback />} />
+              <Route path="/business-solutions" element={<BusinessSolutions />} />
+              <Route path="/personal-ai" element={<PersonalAI />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/products" element={<Products />} />
+              <Route path="/solutions" element={<Solutions />} />
+              <Route path="/join" element={<JoinUs />} />
+              <Route path="/" element={<HomePage />} />
+            </Routes>
+          )}
         </ActivationProvider>
       </AuthProvider>
     </Router>
@@ -155,29 +195,10 @@ function App() {
 }
 
 function HomePage() {
-  const [isMobile, setIsMobile] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
   const [isChatbotOpen, setIsChatbotOpen] = useState(false)
   const [isWaitlistOpen, setIsWaitlistOpen] = useState(false)
   const { user, isAuthenticated } = useAuth()
   const navigate = useNavigate()
-
-  useEffect(() => {
-    const checkMobile = () => {
-      const mobile = window.innerWidth <= 768
-      console.log('Screen width:', window.innerWidth, 'Is mobile:', mobile)
-      setIsMobile(mobile)
-      setIsLoading(false)
-    }
-    
-    // Check immediately
-    checkMobile()
-    
-    // Add resize listener
-    window.addEventListener('resize', checkMobile)
-    
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
 
   useEffect(() => {
     const io = new IntersectionObserver((entries) => {
@@ -232,30 +253,6 @@ function HomePage() {
       statObserver.disconnect();
     };
   }, []);
-
-  // Show loading state briefly to prevent flash
-  if (isLoading) {
-    return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh', 
-        background: '#000',
-        color: '#fff'
-      }}>
-        Loading...
-      </div>
-    )
-  }
-
-  // Show mobile layout for devices 768px and below
-  if (isMobile) {
-    console.log('Rendering mobile layout')
-    return <MobileLayout isChatbotOpen={isChatbotOpen} onChatbotToggle={() => setIsChatbotOpen(!isChatbotOpen)} />
-  }
-
-  console.log('Rendering desktop layout - Screen width:', window.innerWidth)
 
   return (
     <div style={{ position: 'relative', width: '100%', minHeight: '100vh', background: '#000000' }}>
@@ -279,7 +276,7 @@ function HomePage() {
                     textColor: '#fff', 
                     links: [ 
                       { label: 'Products', ariaLabel: 'Products page', href: '/products' }, 
-                      { label: 'Solutions', ariaLabel: 'Solutions', href: '/products#solutions' } 
+                      { label: 'Solutions', ariaLabel: 'Solutions', href: '/solutions' } 
                     ] 
                   },
                   { 
@@ -320,19 +317,86 @@ function HomePage() {
         />
 
         <section id="products" className="section reveal-on-scroll" data-delay="0ms">
-          <div className="section-header">
-            <h2>Why Choose Agentic AI?</h2>
-            <p>Traditional automation follows rules. Our agents adapt, reason, and decide in real time.</p>
-          </div>
-          <AnimatedHalfBox 
-            text={`• Adaptability to Complex, Dynamic Environments
-• Contextual Understanding and Decision-Making
-• Self-Improvement and Learning Capabilities
-• Reduced Maintenance Overhead
-• 90% cost reduction for your business
-• Real-time problem solving and optimization`}
-            triggerId="products"
-          />
+          <motion.div 
+            className="products-dual-columns"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {/* Left: Why Choose Agentic AI */}
+            <div className="products-column">
+              <div className="products-column-header">
+                <h2 className="products-column-title">Why Choose Agentic AI?</h2>
+                <p className="products-column-subtitle">Traditional automation follows rules. Our agents adapt, reason, and decide in real time.</p>
+              </div>
+              <div className="agentic-cards">
+                {[
+                  { icon: '🧠', title: 'Adaptability', text: 'Thrives in complex, changing environments.' },
+                  { icon: '🎯', title: 'Reasoning', text: 'Decides with context — not just rules.' },
+                  { icon: '📈', title: 'Self‑Improving', text: 'Learns from every interaction.' },
+                  { icon: '⚡', title: 'Real‑Time', text: 'Understands and acts instantly.' }
+                ].map((item, i) => (
+                  <motion.div
+                    key={item.title}
+                    className="agentic-card"
+                    initial={{ opacity: 0, y: 16 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.45, delay: 0.08 * i }}
+                    whileHover={{ y: -6 }}
+                  >
+                    <div className="agentic-card-icon">{item.icon}</div>
+                    <div className="agentic-card-body">
+                      <h3 className="agentic-card-title">{item.title}</h3>
+                      <p className="agentic-card-text">{item.text}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Vertical Divider */}
+            <div className="products-vertical-divider"></div>
+
+            {/* Right: Ghost */}
+            <div className="products-column">
+              <div className="products-column-header">
+                <h2 className="products-column-title">Ghost — Your Computer's Sixth Sense</h2>
+                <p className="products-column-subtitle">A local, context-aware AI that lives within your system.</p>
+                <p className="products-column-subtitle" style={{ marginTop: '12px' }}>It learns your habits, acts where you need it, and stays invisible when you don't.</p>
+                <p className="products-column-subtitle" style={{ marginTop: '16px', fontWeight: '600', color: '#c084fc' }}>Private. Intelligent. Effortless.</p>
+              </div>
+              <div className="ghost-content">
+                <div className="ghost-features">
+                  <div className="ghost-feature-item">
+                    <span className="ghost-feature-icon">🧠</span>
+                    <h3>Context-Aware Intelligence</h3>
+                  </div>
+                  <div className="ghost-feature-item">
+                    <span className="ghost-feature-icon">⚡</span>
+                    <h3>Real-Time Action</h3>
+                  </div>
+                  <div className="ghost-feature-item">
+                    <span className="ghost-feature-icon">🪶</span>
+                    <h3>Seamless System Integration</h3>
+                  </div>
+                  <div className="ghost-feature-item">
+                    <span className="ghost-feature-icon">🧭</span>
+                    <h3>Proactive Assistance</h3>
+                  </div>
+                  <div className="ghost-feature-item">
+                    <span className="ghost-feature-icon">🔒</span>
+                    <h3>Private by Design</h3>
+                  </div>
+                  <div className="ghost-feature-item">
+                    <span className="ghost-feature-icon">🎯</span>
+                    <h3>Focused Productivity</h3>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
         </section>
 
         <section id="solutions" className="section reveal-on-scroll" data-delay="20ms">
@@ -354,154 +418,8 @@ function HomePage() {
 
 
         <section id="company" className="section futuristic-section reveal-on-scroll" data-delay="0ms">
-          <div className="section-header" style={{ marginBottom: '40px', background: 'none', backdropFilter: 'none' }}>
-            <div className="powers-exora-title-container">
-              <div className="powers-exora-title-single">
-                <div className="marquee-single">
-                  <div className="marquee__inner-single">
-                    <span>What Powers Exora&nbsp;&nbsp;*&nbsp;&nbsp;</span>
-                    <span>What Powers Exora&nbsp;&nbsp;*&nbsp;&nbsp;</span>
-                    <span>What Powers Exora&nbsp;&nbsp;*&nbsp;&nbsp;</span>
-                    <span>What Powers Exora&nbsp;&nbsp;*&nbsp;&nbsp;</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="futuristic-grid">
-            <div className="futuristic-card" data-card="1">
-              <div className="card-glow"></div>
-              <div className="card-dotgrid">
-                <DotGrid
-                  dotSize={4}
-                  gap={16}
-                  baseColor="rgba(168, 85, 247, 0.2)"
-                  activeColor="rgba(168, 85, 247, 0.6)"
-                  proximity={80}
-                  shockRadius={120}
-                  shockStrength={2}
-                  resistance={900}
-                  returnDuration={1.0}
-                />
-              </div>
-              <div className="card-content">
-                <h3 className="card-title">Our Story</h3>
-                <p className="card-description">Born from a simple belief — AI should think like your business, not just automate it. Exora was built to bridge human insight with machine precision, helping teams move faster, smarter, and effortlessly.</p>
-                <p className="card-tagline">"Built for those who want their AI to understand, not just execute."</p>
-              </div>
-              <div className="card-border"></div>
-            </div>
-            <div className="futuristic-card" data-card="2">
-              <div className="card-glow"></div>
-              <div className="card-dotgrid">
-                <DotGrid
-                  dotSize={4}
-                  gap={16}
-                  baseColor="rgba(168, 85, 247, 0.2)"
-                  activeColor="rgba(168, 85, 247, 0.6)"
-                  proximity={80}
-                  shockRadius={120}
-                  shockStrength={2}
-                  resistance={900}
-                  returnDuration={1.0}
-                />
-              </div>
-              <div className="card-content">
-                <h3 className="card-title">Our Mission</h3>
-                <p className="card-description">To empower businesses and individuals with intelligent agents that feel less like tools and more like teammates. Exora's mission is to make AI collaboration as natural as working with a human expert — only faster, scalable, and available 24/7.</p>
-                <p className="card-tagline">"AI that works with you, not just for you."</p>
-              </div>
-              <div className="card-border"></div>
-            </div>
-            <div className="futuristic-card" data-card="3">
-              <div className="card-glow"></div>
-              <div className="card-dotgrid">
-                <DotGrid
-                  dotSize={4}
-                  gap={16}
-                  baseColor="rgba(168, 85, 247, 0.2)"
-                  activeColor="rgba(168, 85, 247, 0.6)"
-                  proximity={80}
-                  shockRadius={120}
-                  shockStrength={2}
-                  resistance={900}
-                  returnDuration={1.0}
-                />
-              </div>
-              <div className="card-content">
-                <h3 className="card-title">Our Vision</h3>
-                <p className="card-description">A world where every business, from startup to enterprise, runs on personalized AI agents — amplifying human potential and redefining productivity. We see AI not as a replacement for people, but as the most powerful partner they've ever had.</p>
-                <p className="card-tagline">"AI that scales human ambition."</p>
-              </div>
-              <div className="card-border"></div>
-            </div>
-            <div className="futuristic-card" data-card="4">
-              <div className="card-glow"></div>
-              <div className="card-dotgrid">
-                <DotGrid
-                  dotSize={4}
-                  gap={16}
-                  baseColor="rgba(168, 85, 247, 0.2)"
-                  activeColor="rgba(168, 85, 247, 0.6)"
-                  proximity={80}
-                  shockRadius={120}
-                  shockStrength={2}
-                  resistance={900}
-                  returnDuration={1.0}
-                />
-              </div>
-              <div className="card-content">
-                <h3 className="card-title">Core Values</h3>
-                <p className="card-description">Innovation that never stops learning. Partnerships built on trust. Transparency in every process. And an unshakable focus on the people and businesses we serve. These values power every solution we create — and every automation we deliver.</p>
-                <p className="card-tagline">"Built on intelligence. Driven by integrity."</p>
-              </div>
-              <div className="card-border"></div>
-            </div>
-            <div className="futuristic-card" data-card="5">
-              <div className="card-glow"></div>
-              <div className="card-dotgrid">
-                <DotGrid
-                  dotSize={4}
-                  gap={16}
-                  baseColor="rgba(168, 85, 247, 0.2)"
-                  activeColor="rgba(168, 85, 247, 0.6)"
-                  proximity={80}
-                  shockRadius={120}
-                  shockStrength={2}
-                  resistance={900}
-                  returnDuration={1.0}
-                />
-              </div>
-              <div className="card-content">
-                <h3 className="card-title">Custom AI Agents</h3>
-                <p className="card-description">Tailored to your business. Designed to think, decide, and act — just like your best employee would. Whether it's a desktop assistant or a web agent, Exora builds task-specific AI that integrates seamlessly into your daily operations.</p>
-                <p className="card-tagline">"Your business, powered by purpose-built AI."</p>
-              </div>
-              <div className="card-border"></div>
-            </div>
-            <div className="futuristic-card" data-card="6">
-              <div className="card-glow"></div>
-              <div className="card-dotgrid">
-                <DotGrid
-                  dotSize={4}
-                  gap={16}
-                  baseColor="rgba(168, 85, 247, 0.2)"
-                  activeColor="rgba(168, 85, 247, 0.6)"
-                  proximity={80}
-                  shockRadius={120}
-                  shockStrength={2}
-                  resistance={900}
-                  returnDuration={1.0}
-                />
-              </div>
-              <div className="card-content">
-                <h3 className="card-title">Data & Integration</h3>
-                <p className="card-description">Your data is your edge — we make sure it stays that way. From ETL and RAG pipelines to secure integrations and private vector search, Exora ensures your AI has context, accuracy, and complete security.</p>
-                <p className="card-tagline">"Intelligence powered by your data — protected, connected, perfected."</p>
-              </div>
-              <div className="card-border"></div>
-            </div>
-          </div>
+          {/* Intentionally left empty for future content */}
+          <div style={{ minHeight: '40px' }} />
         </section>
 
 

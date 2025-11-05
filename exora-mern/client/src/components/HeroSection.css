@@ -10,6 +10,7 @@
   overflow: hidden;
   background: transparent;
   padding: 80px 24px 100px;
+  box-sizing: border-box;
 }
 
 /* Subtle Gradient Background */
@@ -52,7 +53,10 @@
   grid-template-columns: 1fr auto 1fr;
   gap: 60px;
   max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
   align-items: start;
+  box-sizing: border-box;
 }
 
 /* Individual Column */
@@ -69,7 +73,14 @@
   flex-direction: row;
   gap: 12px;
   justify-content: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+}
+
+.hero-button-group .hero-btn-primary,
+.hero-button-group .hero-btn-secondary,
+.hero-button-group .hero-btn-download {
+  flex: 1;
+  min-width: 0;
 }
 
 .column-title {
@@ -121,7 +132,7 @@
   background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
   color: white;
   border: none;
-  padding: 16px 40px;
+  padding: 14px 24px;
   border-radius: 12px;
   font-size: 16px;
   font-weight: 600;
@@ -133,6 +144,7 @@
   position: relative;
   overflow: hidden;
   will-change: transform;
+  white-space: nowrap;
 }
 
 .hero-btn-primary::before {
@@ -161,7 +173,7 @@
   background: transparent;
   color: #a855f7;
   border: 2px solid rgba(168, 85, 247, 0.5);
-  padding: 14px 38px;
+  padding: 14px 32px;
   border-radius: 12px;
   font-size: 16px;
   font-weight: 600;
@@ -170,6 +182,7 @@
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   will-change: transform;
+  white-space: nowrap;
 }
 
 .hero-btn-secondary:hover {
@@ -177,6 +190,38 @@
   border-color: #a855f7;
   color: #c084fc;
   box-shadow: 0 8px 24px rgba(168, 85, 247, 0.3);
+}
+
+/* Download Button */
+.hero-btn-download {
+  background: transparent;
+  color: #a855f7;
+  border: 2px solid rgba(168, 85, 247, 0.5);
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  will-change: transform;
+  white-space: nowrap;
+}
+
+.hero-btn-download:hover {
+  background: rgba(168, 85, 247, 0.1);
+  border-color: #a855f7;
+  color: #c084fc;
+  box-shadow: 0 8px 24px rgba(168, 85, 247, 0.3);
+}
+
+.hero-btn-download svg {
+  transition: opacity 0.3s ease;
+}
+
+.hero-btn-download:hover svg {
+  opacity: 1;
 }
 
 /* Scroll Down Indicator */
@@ -207,31 +252,235 @@
   color: rgba(255, 255, 255, 0.7);
 }
 
-/* Responsive Design */
+/* ============================================
+   MOBILE DESIGN - Card-Based Vertical Layout
+   ============================================ */
 @media (max-width: 968px) {
   .hero-section-new {
-    padding: 120px 20px 80px;
+    padding: 80px 20px 60px !important;
+    min-height: auto;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    width: 100% !important;
+    max-width: calc(100vw - 40px) !important;
+    box-sizing: border-box !important;
+    margin: 0 auto !important;
+    left: auto !important;
+    right: auto !important;
+    position: relative !important;
+    text-align: center !important;
+    display: flex !important;
+    flex-direction: column !important;
   }
 
   .hero-main-headline {
-    margin-bottom: 60px;
+    margin: 0 auto 48px auto !important;
+    font-size: clamp(32px, 7vw, 56px);
+    padding: 0 !important;
+    text-align: center !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    left: auto !important;
+    right: auto !important;
+    position: relative !important;
+    display: block !important;
   }
 
+  /* Redesign: Vertical card layout */
   .hero-dual-columns {
-    grid-template-columns: 1fr;
-    gap: 60px;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 24px;
+    width: calc(100% - 0px) !important;
+    max-width: 500px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    left: 0 !important;
+    right: 0 !important;
+    position: relative !important;
+    text-align: center !important;
   }
 
+  /* Hide divider on mobile */
   .hero-vertical-divider {
     display: none;
   }
 
+  /* Card-style columns */
+  .hero-column {
+    background: rgba(168, 85, 247, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(168, 85, 247, 0.25);
+    border-radius: 20px;
+    padding: 32px 24px;
+    text-align: center !important;
+    gap: 20px;
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    left: auto !important;
+    right: auto !important;
+  }
+
+  /* Subtle glow effect */
+  .hero-column::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .hero-column:hover::before {
+    opacity: 1;
+  }
+
+  .hero-column:hover {
+    transform: translateY(-4px);
+    border-color: rgba(168, 85, 247, 0.4);
+    box-shadow: 
+      0 12px 40px rgba(168, 85, 247, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  }
+
+  .column-title {
+    font-size: clamp(16px, 4vw, 20px);
+    margin: 0;
+    position: relative;
+    z-index: 1;
+  }
+
   .column-description {
+    font-size: clamp(14px, 3.5vw, 16px);
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.85);
+    margin: 0;
     min-height: auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    margin-top: 8px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-button-group .hero-btn-primary,
+  .hero-button-group .hero-btn-secondary,
+  .hero-button-group .hero-btn-download {
+    width: 100%;
+    padding: 14px 20px;
+    font-size: 15px;
+    border-radius: 12px;
+    flex: none;
+  }
+
+  .hero-btn-download {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .hero-btn-download span {
+    font-size: 14px;
+  }
+
+  .hero-btn-download svg {
+    width: 16px;
+    height: 16px;
   }
 
   .scroll-indicator-hero {
-    bottom: 40px;
+    bottom: 30px;
+  }
+}
+
+/* Small mobile phones */
+@media (max-width: 480px) {
+  .hero-section-new {
+    padding: 60px 16px 50px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    margin: 0;
+    left: 0;
+    right: 0;
+  }
+
+  .hero-main-headline {
+    margin: 0 auto 36px auto;
+    font-size: clamp(28px, 8vw, 48px);
+    padding: 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    left: 0;
+    right: 0;
+  }
+
+  .hero-dual-columns {
+    gap: 20px;
+    max-width: 100%;
+    width: 100%;
+    padding: 0;
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
+    left: 0;
+    right: 0;
+  }
+
+  .hero-column {
+    padding: 28px 20px;
+    gap: 18px;
+    border-radius: 18px;
+  }
+
+  .column-title {
+    font-size: 16px;
+  }
+
+  .column-description {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .hero-button-group {
+    gap: 8px;
+  }
+
+  .hero-button-group .hero-btn-primary,
+  .hero-button-group .hero-btn-secondary,
+  .hero-button-group .hero-btn-download {
+    padding: 12px 18px;
+    font-size: 14px;
+  }
+
+  .scroll-indicator-hero {
+    bottom: 20px;
+    font-size: 10px;
   }
 }
 
@@ -256,7 +505,8 @@
 
 /* Smooth button interactions */
 .hero-btn-primary,
-.hero-btn-secondary {
+.hero-btn-secondary,
+.hero-btn-download {
   -webkit-tap-highlight-color: transparent;
   user-select: none;
 }
@@ -265,7 +515,8 @@
   transform: scale(0.98);
 }
 
-.hero-btn-secondary:active {
+.hero-btn-secondary:active,
+.hero-btn-download:active {
   transform: scale(0.98);
 }
 
