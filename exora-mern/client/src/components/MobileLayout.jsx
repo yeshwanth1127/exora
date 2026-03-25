@@ -1,16 +1,12 @@
 import React, { useEffect, useState } from 'react'
-import { useNavigate, Routes, Route } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { Routes, Route, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import './MobileLayout.css'
 import CardNav from './CardNav'
 import Particles from './Particles'
-import Chatbot from './Chatbot'
-import HeroSection from './HeroSection'
-import DotGrid from './DotGrid'
-import FlowingMenu from './FlowingMenu'
-import AnimatedHalfBox from './AnimatedHalfBox'
-import WaitlistPopup from './WaitlistPopup'
+import TypewriterText from './TypewriterText'
+import GlassIcons from './GlassIcons'
+import { FiLink2, FiCpu, FiZap, FiLayers, FiBox } from 'react-icons/fi'
 import AuthPage from '../pages/AuthPage'
 import BusinessDashboard from '../pages/BusinessDashboard'
 import PersonalDashboard from '../pages/PersonalDashboard'
@@ -25,8 +21,6 @@ import JoinUs from '../pages/JoinUs'
 
 const MobileLayout = ({ isChatbotOpen, onChatbotToggle }) => {
   const { user, isAuthenticated } = useAuth()
-  const navigate = useNavigate()
-  const [isWaitlistOpen, setIsWaitlistOpen] = useState(false)
 
   useEffect(() => {
     console.log('Mobile Layout rendered!')
@@ -85,279 +79,94 @@ const MobileLayout = ({ isChatbotOpen, onChatbotToggle }) => {
     };
   }, [])
 
-  // Mobile Home Component - Same content as desktop, responsive styling
-  const MobileHome = () => (
-    <main className="landing-wrap mobile-centered" style={{ position: 'relative', zIndex: 10, width: '100%', margin: '0 auto', textAlign: 'center' }}>
-      <HeroSection 
-        onOpenChat={() => onChatbotToggle()}
-        showDashboardButton={isAuthenticated}
-        onDashboardClick={() => {
-          const dashboardPath = user?.usageType === 'personal' ? '/personal-dashboard' : '/dashboard';
-          navigate(dashboardPath);
-        }}
-        onOpenWaitlist={() => setIsWaitlistOpen(true)}
-      />
+  const WHY_US_GLASS_ITEMS = [
+    { icon: <FiLink2 />, color: 'blue', label: 'Connects all your systems' },
+    { icon: <FiCpu />, color: 'purple', label: 'Encodes your business logic' },
+    { icon: <FiZap />, color: 'orange', label: 'Automates execution' },
+    { icon: <FiLayers />, color: 'indigo', label: 'Orchestrates AI agents' },
+    { icon: <FiBox />, color: 'green', label: 'Becomes the core operating layer of your company' },
+  ]
 
-      <section id="products" className="section reveal-on-scroll" data-delay="0ms">
-        <motion.div 
-          className="products-dual-columns"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-        >
-          {/* Left: Why Choose Agentic AI */}
-          <div className="products-column">
-            <div className="products-column-header">
-              <h2 className="products-column-title">Why Choose Agentic AI?</h2>
-              <p className="products-column-subtitle">Traditional automation follows rules. Our agents adapt, reason, and decide in real time.</p>
+  // Mobile Home: hero section + Why Us with GlassIcons (same as desktop)
+  const MobileHome = () => {
+    const [startTypewriter, setStartTypewriter] = useState(false)
+    const navigate = useNavigate()
+
+    useEffect(() => {
+      const t = setTimeout(() => setStartTypewriter(true), 400)
+      return () => clearTimeout(t)
+    }, [])
+
+    return (
+      <>
+        <section className="mobile-hero">
+          <div className="mobile-hero-content">
+            <h1 className="mobile-hero-title">Your Business. On Autopilot.</h1>
+            <div className="mobile-hero-subtitle-wrapper">
+              <TypewriterText
+                text="AI agents that execute, optimize, and scale your operations 24/7."
+                speed={30}
+                isActive={startTypewriter}
+                className="mobile-hero-typewriter-subtitle"
+              />
             </div>
-            <AnimatedHalfBox 
-              text={`• Adaptability to Complex, Dynamic Environments
-• Contextual Understanding and Decision-Making
-• Self-Improvement and Learning Capabilities
-• Reduced Maintenance Overhead
-• 90% cost reduction for your business
-• Real-time problem solving and optimization`}
-              triggerId="products"
-            />
-          </div>
-
-          {/* Vertical Divider */}
-          <div className="products-vertical-divider"></div>
-
-          {/* Right: Ghost */}
-          <div className="products-column">
-            <div className="products-column-header">
-              <h2 className="products-column-title">Ghost — Your Computer's Sixth Sense</h2>
-              <p className="products-column-subtitle">A local, context-aware AI that lives within your system.</p>
-              <p className="products-column-subtitle" style={{ marginTop: '12px' }}>It learns your habits, acts where you need it, and stays invisible when you don't.</p>
-              <p className="products-column-subtitle" style={{ marginTop: '16px', fontWeight: '600', color: '#c084fc' }}>Private. Intelligent. Effortless.</p>
+            <div className="mobile-hero-buttons">
+              <button
+                type="button"
+                className="mobile-primary-button large"
+                onClick={() => navigate('/join')}
+              >
+                Book a Free Automation Audit
+              </button>
+              <button
+                type="button"
+                className="mobile-secondary-button large"
+                onClick={() => navigate('/personal-ai')}
+              >
+                See How Ghost Works
+              </button>
             </div>
-            <div className="ghost-content">
-              <div className="ghost-features">
-                <div className="ghost-feature-item">
-                  <span className="ghost-feature-icon">🧠</span>
-                  <h3>Context-Aware Intelligence</h3>
-                </div>
-                <div className="ghost-feature-item">
-                  <span className="ghost-feature-icon">⚡</span>
-                  <h3>Real-Time Action</h3>
-                </div>
-                <div className="ghost-feature-item">
-                  <span className="ghost-feature-icon">🪶</span>
-                  <h3>Seamless System Integration</h3>
-                </div>
-                <div className="ghost-feature-item">
-                  <span className="ghost-feature-icon">🧭</span>
-                  <h3>Proactive Assistance</h3>
-                </div>
-                <div className="ghost-feature-item">
-                  <span className="ghost-feature-icon">🔒</span>
-                  <h3>Private by Design</h3>
-                </div>
-                <div className="ghost-feature-item">
-                  <span className="ghost-feature-icon">🎯</span>
-                  <h3>Focused Productivity</h3>
-                </div>
+            {/* Two-column block: same copy as PC (stacked on mobile) */}
+            <div className="mobile-hero-two-columns">
+              <div className="mobile-hero-column mobile-hero-column-left">
+                <h2 className="mobile-hero-column-title">For Your Business</h2>
+                <p className="mobile-hero-column-text">End To End Tailored AI Employee that works 24/7</p>
+              </div>
+              <div className="mobile-hero-central-icon">
+                <img src="/logo_solo.png" alt="EXORA" className="mobile-hero-logo-separator" />
+              </div>
+              <div className="mobile-hero-column mobile-hero-column-right">
+                <h2 className="mobile-hero-column-title">For Your Life</h2>
+                <p className="mobile-hero-column-text">AI Agent For Your Daily Work. In Your System</p>
               </div>
             </div>
           </div>
-        </motion.div>
-      </section>
+        </section>
 
-      <section id="solutions" className="section reveal-on-scroll" data-delay="20ms">
-        <div className="section-header">
-          <h2>Comprehensive AI Agent Solutions</h2>
-          <p>End‑to‑end agents across your customer, sales, operations, and data teams.</p>
-        </div>
-        <div style={{ height: '520px', position: 'relative' }}>
-          <FlowingMenu
-            items={[
-              { link: '#', title: 'Customer Service Agents', subtitle: 'Handle complex inquiries, bookings and appointment scheduling, autonomously; escalate only when needed.' },
-              { link: '#', title: 'Sales Process Automation', subtitle: 'Qualify, nurture, schedule, and negotiate within your parameters.' },
-              { link: '#', title: 'Operations Management', subtitle: 'Predict bottlenecks, allocate resources, and coordinate teams.' },
-              { link: '#', title: 'Data Intelligence Agents', subtitle: 'Analyze data, spot trends, and surface actionable recommendations.' }
-            ]}
-          />
-        </div>
-      </section>
+        {/* Why Us section with GlassIcons (same as desktop) */}
+        <section className="why-us-section-mobile">
+          <div className="why-us-container-mobile">
+            <h2 className="why-us-title-mobile">Why Us?</h2>
+            <h3 className="why-us-main-heading-mobile">We Provide Software Infrastructure, Not a Tool</h3>
+            <p className="why-us-intro-mobile">
+              Most companies today run on a fragile mix of tools, people, spreadsheets, and manual coordination.
+            </p>
+            <p className="why-us-subheading-mobile">
+              Exora replaces this with a unified, purpose-built software infrastructure that:
+            </p>
+            <div className="why-us-glass-icons-wrapper why-us-glass-icons-mobile">
+              <GlassIcons items={WHY_US_GLASS_ITEMS} className="why-us-glass-icons" colorful={false} />
+            </div>
+            <div className="why-us-closing-mobile">
+              <p className="why-us-closing-line-mobile">We don&apos;t sell features.</p>
+              <p className="why-us-closing-line-mobile">We install digital infrastructure.</p>
+            </div>
+          </div>
+        </section>
+      </>
+    )
+  }
 
-      <section id="company" className="section futuristic-section reveal-on-scroll" data-delay="0ms">
-        <div className="section-header" style={{ marginBottom: '40px', background: 'none', backdropFilter: 'none' }}>
-          <div className="powers-exora-title-container">
-            <div className="powers-exora-title-single">
-              <div className="marquee-single">
-                <div className="marquee__inner-single">
-                  <span>What Powers Exora&nbsp;&nbsp;*&nbsp;&nbsp;</span>
-                  <span>What Powers Exora&nbsp;&nbsp;*&nbsp;&nbsp;</span>
-                  <span>What Powers Exora&nbsp;&nbsp;*&nbsp;&nbsp;</span>
-                  <span>What Powers Exora&nbsp;&nbsp;*&nbsp;&nbsp;</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="futuristic-grid">
-          <div className="futuristic-card" data-card="1">
-            <div className="card-glow"></div>
-            <div className="card-dotgrid">
-              <DotGrid
-                dotSize={4}
-                gap={16}
-                baseColor="rgba(168, 85, 247, 0.2)"
-                activeColor="rgba(168, 85, 247, 0.6)"
-                proximity={80}
-                shockRadius={120}
-                shockStrength={2}
-                resistance={900}
-                returnDuration={1.0}
-              />
-            </div>
-            <div className="card-content">
-              <h3 className="card-title">Our Story</h3>
-              <p className="card-description">Born from a simple belief — AI should think like your business, not just automate it. Exora was built to bridge human insight with machine precision, helping teams move faster, smarter, and effortlessly.</p>
-              <p className="card-tagline">"Built for those who want their AI to understand, not just execute."</p>
-            </div>
-            <div className="card-border"></div>
-          </div>
-          <div className="futuristic-card" data-card="2">
-            <div className="card-glow"></div>
-            <div className="card-dotgrid">
-              <DotGrid
-                dotSize={4}
-                gap={16}
-                baseColor="rgba(168, 85, 247, 0.2)"
-                activeColor="rgba(168, 85, 247, 0.6)"
-                proximity={80}
-                shockRadius={120}
-                shockStrength={2}
-                resistance={900}
-                returnDuration={1.0}
-              />
-            </div>
-            <div className="card-content">
-              <h3 className="card-title">Our Mission</h3>
-              <p className="card-description">To empower businesses and individuals with intelligent agents that feel less like tools and more like teammates. Exora's mission is to make AI collaboration as natural as working with a human expert — only faster, scalable, and available 24/7.</p>
-              <p className="card-tagline">"AI that works with you, not just for you."</p>
-            </div>
-            <div className="card-border"></div>
-          </div>
-          <div className="futuristic-card" data-card="3">
-            <div className="card-glow"></div>
-            <div className="card-dotgrid">
-              <DotGrid
-                dotSize={4}
-                gap={16}
-                baseColor="rgba(168, 85, 247, 0.2)"
-                activeColor="rgba(168, 85, 247, 0.6)"
-                proximity={80}
-                shockRadius={120}
-                shockStrength={2}
-                resistance={900}
-                returnDuration={1.0}
-              />
-            </div>
-            <div className="card-content">
-              <h3 className="card-title">Our Vision</h3>
-              <p className="card-description">A world where every business, from startup to enterprise, runs on personalized AI agents — amplifying human potential and redefining productivity. We see AI not as a replacement for people, but as the most powerful partner they've ever had.</p>
-              <p className="card-tagline">"AI that scales human ambition."</p>
-            </div>
-            <div className="card-border"></div>
-          </div>
-          <div className="futuristic-card" data-card="4">
-            <div className="card-glow"></div>
-            <div className="card-dotgrid">
-              <DotGrid
-                dotSize={4}
-                gap={16}
-                baseColor="rgba(168, 85, 247, 0.2)"
-                activeColor="rgba(168, 85, 247, 0.6)"
-                proximity={80}
-                shockRadius={120}
-                shockStrength={2}
-                resistance={900}
-                returnDuration={1.0}
-              />
-            </div>
-            <div className="card-content">
-              <h3 className="card-title">Core Values</h3>
-              <p className="card-description">Innovation that never stops learning. Partnerships built on trust. Transparency in every process. And an unshakable focus on the people and businesses we serve. These values power every solution we create — and every automation we deliver.</p>
-              <p className="card-tagline">"Built on intelligence. Driven by integrity."</p>
-            </div>
-            <div className="card-border"></div>
-          </div>
-          <div className="futuristic-card" data-card="5">
-            <div className="card-glow"></div>
-            <div className="card-dotgrid">
-              <DotGrid
-                dotSize={4}
-                gap={16}
-                baseColor="rgba(168, 85, 247, 0.2)"
-                activeColor="rgba(168, 85, 247, 0.6)"
-                proximity={80}
-                shockRadius={120}
-                shockStrength={2}
-                resistance={900}
-                returnDuration={1.0}
-              />
-            </div>
-            <div className="card-content">
-              <h3 className="card-title">Custom AI Agents</h3>
-              <p className="card-description">Tailored to your business. Designed to think, decide, and act — just like your best employee would. Whether it's a desktop assistant or a web agent, Exora builds task-specific AI that integrates seamlessly into your daily operations.</p>
-              <p className="card-tagline">"Your business, powered by purpose-built AI."</p>
-            </div>
-            <div className="card-border"></div>
-          </div>
-          <div className="futuristic-card" data-card="6">
-            <div className="card-glow"></div>
-            <div className="card-dotgrid">
-              <DotGrid
-                dotSize={4}
-                gap={16}
-                baseColor="rgba(168, 85, 247, 0.2)"
-                activeColor="rgba(168, 85, 247, 0.6)"
-                proximity={80}
-                shockRadius={120}
-                shockStrength={2}
-                resistance={900}
-                returnDuration={1.0}
-              />
-            </div>
-            <div className="card-content">
-              <h3 className="card-title">Data & Integration</h3>
-              <p className="card-description">Your data is your edge — we make sure it stays that way. From ETL and RAG pipelines to secure integrations and private vector search, Exora ensures your AI has context, accuracy, and complete security.</p>
-              <p className="card-tagline">"Intelligence powered by your data — protected, connected, perfected."</p>
-            </div>
-            <div className="card-border"></div>
-          </div>
-        </div>
-      </section>
-
-      <section id="join" className="section section--cta reveal-on-scroll" data-delay="0ms">
-        <div className="cta-card">
-          <h3>Automate what you do every day—at OS speed</h3>
-          <p>Join Scribe AI's waitlist to get early access.</p>
-          <button className="waitlist-button" onClick={() => setIsWaitlistOpen(true)}>Join the Waitlist</button>
-        </div>
-      </section>
-
-      <footer className="footer">
-        <div className="footer-inner">
-          <div className="brand">Exora</div>
-          <div className="links">
-            <a href="#">Docs</a>
-            <a href="#">Security</a>
-            <a href="#">Contact</a>
-          </div>
-          <div className="copy">© {new Date().getFullYear()} Exora, Inc.</div>
-        </div>
-      </footer>
-      
-      {/* Waitlist Popup */}
-      <WaitlistPopup isOpen={isWaitlistOpen} onClose={() => setIsWaitlistOpen(false)} />
-    </main>
-  )
 
   return (
     <div className="mobile-layout-wrapper" style={{ position: 'relative', width: '100%', minHeight: '100vh', background: '#000000' }}>
@@ -430,8 +239,6 @@ const MobileLayout = ({ isChatbotOpen, onChatbotToggle }) => {
         <Route path="/" element={<MobileHome />} />
       </Routes>
       
-      {/* Chatbot */}
-      <Chatbot isOpen={isChatbotOpen} onToggle={onChatbotToggle} hideFloatingButton={true} />
     </div>
   )
 }

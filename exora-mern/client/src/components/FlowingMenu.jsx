@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 import { gsap } from 'gsap'
 
 import './FlowingMenu.css'
@@ -67,16 +68,24 @@ function MenuItem({ link = '#', title = '', subtitle = '', image }) {
     </React.Fragment>
   ))
 
+  const isInternal = link.startsWith('/')
+  const linkProps = {
+    className: 'menu__item-link',
+    onMouseEnter: handleMouseEnter,
+    onMouseLeave: handleMouseLeave,
+  }
+
   return (
     <div className="menu__item" ref={itemRef}>
-      <a
-        className="menu__item-link"
-        href={link}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-      >
-        {title}
-      </a>
+      {isInternal ? (
+        <Link to={link} {...linkProps}>
+          {title}
+        </Link>
+      ) : (
+        <a href={link} {...linkProps}>
+          {title}
+        </a>
+      )}
       <div className="marquee" ref={marqueeRef}>
         <div className="marquee__inner-wrap" ref={marqueeInnerRef}>
           <div className="marquee__inner" aria-hidden="true">

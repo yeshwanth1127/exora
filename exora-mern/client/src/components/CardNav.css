@@ -74,15 +74,15 @@
   justify-content: center;
   cursor: pointer;
   gap: 6px;
-  color: #fff;
+  color: #ffffff !important;
 }
 
-.hamburger-menu:hover .hamburger-line { opacity: 0.75; }
+.hamburger-menu:hover .hamburger-line { opacity: 0.85; }
 
 .hamburger-line {
   width: 28px;
   height: 2px;
-  background-color: currentColor;
+  background-color: #ffffff !important;
   transition: transform 0.25s ease, opacity 0.2s ease, margin 0.3s ease;
   transform-origin: 50% 50%;
 }
@@ -133,6 +133,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-shrink: 0;
 }
 
 .card-nav-home-button {
@@ -140,16 +141,26 @@
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(168, 85, 247, 0.3);
-  color: white;
+  color: #ffffff !important;
   border-radius: 8px;
   width: 42px;
   height: 36px;
+  min-width: 42px;
+  min-height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.25rem;
   cursor: pointer;
   transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.card-nav-home-button svg {
+  width: 20px;
+  height: 20px;
+  fill: #ffffff !important;
+  color: #ffffff !important;
 }
 
 .card-nav-home-button:hover {
@@ -161,8 +172,8 @@
 
 .card-nav-cta-button {
   background-color: rgba(17,17,17,0.75);
-  color: white;
-  border: none;
+  color: #ffffff !important;
+  border: 1px solid rgba(168, 85, 247, 0.25);
   border-radius: 10px;
   padding: 0 0.9rem;
   height: 36px;
@@ -187,6 +198,35 @@
   z-index: 1;
 }
 .card-nav.open .card-nav-content { visibility: visible; pointer-events: auto; }
+
+/* Mobile: all three sections fit inside nav box, no scrolling; labels only, no subsections */
+@media (max-width: 768px) {
+  .card-nav.open {
+    min-height: 280px !important;
+    max-height: calc(100vh - 24px) !important;
+    height: auto !important;
+    overflow: hidden !important;
+    transition: min-height 0.35s ease-out, height 0.35s ease-out;
+  }
+  .card-nav.open .card-nav-content {
+    visibility: visible !important;
+    pointer-events: auto !important;
+    overflow: hidden !important;
+    padding: 0.75rem 0.75rem 1rem 0.75rem;
+  }
+  .card-nav.open .nav-card {
+    opacity: 1 !important;
+    transform: none !important;
+    flex: 0 0 auto !important;
+    min-height: 48px !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding: 12px 14px;
+  }
+  .card-nav.open .nav-card-links {
+    display: none !important;
+  }
+}
 
 .nav-card {
   height: 100%;

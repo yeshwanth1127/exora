@@ -15,7 +15,7 @@ const HeroSection = ({ onOpenChat, showDashboardButton, onDashboardClick, onOpen
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
       >
-        "Smarter, faster productivity — with AI."
+        run your busiiness on autopilot with exora systems
       </motion.h1>
 
       {/* Two Columns - Side by Side */}

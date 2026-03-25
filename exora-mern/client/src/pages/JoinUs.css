@@ -21,12 +21,13 @@
 .join-title {
   font-size: clamp(40px, 6vw, 72px);
   font-weight: 800;
-  background: linear-gradient(135deg, #ffffff, #c084fc, #a855f7);
+  background: linear-gradient(135deg, #ff00ff 0%, #c084fc 40%, #a855f7 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 24px;
   letter-spacing: -0.02em;
+  filter: brightness(1.2);
 }
 
 .join-subtitle {
@@ -59,10 +60,11 @@
 .form-title {
   font-size: clamp(28px, 4vw, 36px);
   font-weight: 700;
-  background: linear-gradient(135deg, #ffffff, #c084fc);
+  background: linear-gradient(135deg, #c084fc 0%, #a855f7 50%, #7c3aed 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+  color: transparent;
   margin-bottom: 12px;
 }
 
@@ -87,7 +89,7 @@
 .form-group label {
   font-size: 14px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.82);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -114,7 +116,7 @@
 
 .form-group input::placeholder,
 .form-group textarea::placeholder {
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.36);
 }
 
 .form-group textarea {
@@ -277,7 +279,7 @@
 .social-title {
   font-size: 18px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.82);
   margin-bottom: 16px;
 }
 

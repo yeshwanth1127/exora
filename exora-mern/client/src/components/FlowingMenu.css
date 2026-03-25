@@ -18,7 +18,11 @@
   overflow: hidden;
   text-align: center;
   box-shadow: 0 -1px rgba(255,255,255,0.08);
-  min-height: 60px;
+  min-height: 88px;
+  background-color: rgba(0, 0, 0, 0.4);
+  background-image: radial-gradient(circle at center, rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+  background-size: 14px 14px;
+  background-position: 0 0;
 }
 
 .menu__item-link {
@@ -33,7 +37,7 @@
   white-space: nowrap;
   font-weight: 600;
   color: #fff;
-  font-size: 3.6vh;
+  font-size: clamp(22px, 4.8vh, 48px);
   transition: all 0.3s ease;
 }
 
@@ -71,16 +75,16 @@
   height: 100%;
   width: 200%;
   will-change: transform;
-  animation: marquee 14s linear infinite;
+  animation: marquee 28s linear infinite;
 }
 
 .marquee span {
   color: #0b0614;
   white-space: nowrap;
   font-weight: 400;
-  font-size: 3.2vh;
+  font-size: clamp(18px, 3.6vh, 36px);
   line-height: 1.2;
-  padding: 1vh 2vw 0;
+  padding: 1vh 2.5vw 0;
 }
 
 .menu__item-link:hover + .marquee {
@@ -96,42 +100,42 @@
 /* Mobile styles */
 @media (max-width: 768px) {
   .menu__item {
-    min-height: 50px;
+    min-height: 70px;
   }
   
   .menu__item-link {
-    font-size: clamp(16px, 4vw, 24px);
+    font-size: clamp(18px, 4.5vw, 28px);
     padding: 8px 12px;
   }
   
   .marquee span {
-    font-size: clamp(14px, 3.5vw, 20px);
-    padding: 0.5vh 1vw 0;
+    font-size: clamp(16px, 3.8vw, 22px);
+    padding: 0.5vh 1.5vw 0;
   }
   
   .marquee__inner {
-    animation-duration: 10s;
+    animation-duration: 22s;
   }
 }
 
 /* Small mobile styles */
 @media (max-width: 480px) {
   .menu__item {
-    min-height: 45px;
+    min-height: 62px;
   }
   
   .menu__item-link {
-    font-size: clamp(14px, 5vw, 20px);
+    font-size: clamp(16px, 5vw, 22px);
     padding: 6px 8px;
   }
   
   .marquee span {
-    font-size: clamp(12px, 4vw, 18px);
-    padding: 0.3vh 0.8vw 0;
+    font-size: clamp(14px, 4vw, 20px);
+    padding: 0.3vh 1vw 0;
   }
   
   .marquee__inner {
-    animation-duration: 8s;
+    animation-duration: 18s;
   }
 }
 

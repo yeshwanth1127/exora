@@ -171,7 +171,10 @@
   font-weight: 800;
   line-height: 1.2;
   margin-bottom: 20px;
-  color: #ffffff;
+  background: linear-gradient(135deg, #c084fc, #a855f7, #7c3aed);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .mobile-hero-title .highlight {
@@ -191,24 +194,64 @@
   margin-right: auto;
 }
 
-.mobile-hero-buttons {
+.mobile-hero-subtitle-wrapper {
+  margin: 12px 0 24px 0;
+  min-height: 48px;
   display: flex;
-  flex-direction: column;
-  gap: 12px;
-  max-width: 300px;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobile-hero-typewriter-subtitle {
+  font-size: 18px;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.5;
+  text-align: center;
+  width: 100%;
+  max-width: 400px;
   margin: 0 auto;
 }
 
+.mobile-hero-typewriter-subtitle.typewriter-text,
+.mobile-hero-typewriter-subtitle .typewriter-content,
+.mobile-hero-typewriter-subtitle .typewriter-line {
+  text-align: center;
+}
+
+.mobile-hero-typewriter-subtitle .typewriter-cursor {
+  display: none;
+}
+
+.mobile-hero-buttons {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: stretch;
+  gap: clamp(6px, 2vw, 12px);
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 clamp(8px, 4vw, 16px);
+  box-sizing: border-box;
+}
+
 .mobile-primary-button {
+  flex: 1 1 0;
+  min-width: 0;
   background: linear-gradient(135deg, #a855f7, #7c3aed);
   color: white;
   border: none;
-  padding: 16px 24px;
-  border-radius: 12px;
-  font-size: 16px;
+  padding: clamp(10px, 2.5vw, 16px) clamp(8px, 2vw, 20px);
+  border-radius: clamp(8px, 2vw, 12px);
+  font-size: clamp(11px, 2.6vw, 15px);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  white-space: normal;
+  line-height: 1.25;
+  text-align: center;
 }
 
 .mobile-primary-button:hover {
@@ -217,20 +260,25 @@
 }
 
 .mobile-primary-button.large {
-  padding: 18px 28px;
-  font-size: 18px;
+  padding: clamp(10px, 2.5vw, 14px) clamp(8px, 2vw, 18px);
+  font-size: clamp(11px, 2.6vw, 15px);
 }
 
 .mobile-secondary-button {
+  flex: 1 1 0;
+  min-width: 0;
   background: transparent;
   color: #a855f7;
   border: 2px solid #a855f7;
-  padding: 14px 24px;
-  border-radius: 12px;
-  font-size: 16px;
+  padding: clamp(8px, 2.2vw, 14px) clamp(8px, 2vw, 20px);
+  border-radius: clamp(8px, 2vw, 12px);
+  font-size: clamp(11px, 2.6vw, 15px);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  white-space: normal;
+  line-height: 1.25;
+  text-align: center;
 }
 
 .mobile-secondary-button:hover {
@@ -239,8 +287,52 @@
 }
 
 .mobile-secondary-button.large {
-  padding: 16px 26px;
-  font-size: 18px;
+  padding: clamp(8px, 2.2vw, 12px) clamp(8px, 2vw, 18px);
+  font-size: clamp(11px, 2.6vw, 15px);
+}
+
+/* Two-column block: same copy as PC, stacked on mobile */
+.mobile-hero-two-columns {
+  margin-top: 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  max-width: 340px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.mobile-hero-column {
+  text-align: center;
+}
+
+.mobile-hero-column-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 8px 0;
+}
+
+.mobile-hero-column-text {
+  font-size: 15px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.68);
+  margin: 0;
+}
+
+.mobile-hero-central-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 0;
+}
+
+.mobile-hero-logo-separator {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  opacity: 0.9;
 }
 
 .mobile-hero-visual {

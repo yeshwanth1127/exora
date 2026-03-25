@@ -4,7 +4,7 @@
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
+  color: rgba(255, 255, 255, 0.72);
   background-color: #242424;
 
   font-synthesis: none;
@@ -13,11 +13,33 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-html, body, #root {
+html {
   background: #000000;
   width: 100%;
   min-height: 100%;
   overflow-x: hidden;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #000000;
+  width: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+#root {
+  background: #000000;
+  width: 100%;
+  min-height: 100%;
+  overflow: hidden;
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -327,7 +349,7 @@ html, body, #root {
 
 .futuristic-subtitle {
   font-size: clamp(1.1rem, 2.5vw, 1.4rem);
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.72);
   max-width: 800px;
   margin: 0 auto;
   line-height: 1.6;
@@ -477,7 +499,7 @@ html, body, #root {
 
 .card-description {
   font-size: 1rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.62);
   line-height: 1.6;
   margin: 0 0 8px 0;
 }
@@ -810,7 +832,7 @@ html, body, #root {
 .products-column-subtitle {
   font-size: clamp(14px, 1.8vw, 16px);
   line-height: 1.6;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.62);
   margin: 0;
 }
 
@@ -857,7 +879,7 @@ html, body, #root {
 .agentic-card-text {
   margin: 0;
   font-size: 13px;
-  color: rgba(255,255,255,0.75);
+  color: rgba(255,255,255,0.68);
 }
 
 /* Products Vertical Divider */

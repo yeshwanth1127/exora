@@ -1,0 +1,110 @@
+.agent-page {
+  min-height: 100vh;
+  background: #000000;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.agent-container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 120px 24px 80px;
+  position: relative;
+  z-index: 10;
+}
+
+.agent-content {
+  padding: 0;
+}
+
+.agent-back {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  margin-bottom: 32px;
+  padding: 0;
+  font-family: inherit;
+  transition: color 0.2s ease;
+}
+
+.agent-back:hover {
+  color: rgba(255, 255, 255, 1);
+}
+
+.agent-title {
+  font-family: 'Helvetica Now Display', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: clamp(28px, 5vw, 42px);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  margin: 0 0 16px 0;
+  line-height: 1.2;
+}
+
+.agent-subtitle {
+  font-size: clamp(16px, 2vw, 18px);
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.6;
+  margin: 0 0 32px 0;
+}
+
+.agent-description {
+  font-size: clamp(16px, 2vw, 18px);
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.agent-section-heading {
+  font-family: 'Helvetica Now Display', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: clamp(14px, 1.5vw, 16px);
+  font-weight: 600;
+  color: rgba(168, 85, 247, 0.95);
+  margin: 0 0 12px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.agent-features {
+  margin-bottom: 28px;
+}
+
+.agent-features-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.agent-features-list li {
+  font-size: clamp(15px, 1.8vw, 17px);
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.6;
+  padding: 6px 0;
+  padding-left: 20px;
+  position: relative;
+}
+
+.agent-features-list li::before {
+  content: '→';
+  position: absolute;
+  left: 0;
+  color: rgba(168, 85, 247, 0.8);
+}
+
+.agent-problem {
+  margin-bottom: 24px;
+}
+
+.agent-problem-text {
+  font-size: clamp(15px, 1.8vw, 17px);
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.agent-not-found {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 18px;
+  margin-bottom: 16px;
+}

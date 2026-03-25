@@ -10,6 +10,12 @@ const ArrowIcon = (props) => (
   </svg>
 )
 
+const HomeIcon = (props) => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
+    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+  </svg>
+)
+
 const ExoraTypeInline = () => {
   const FULL_TEXT = 'EXORA'
   const [typed, setTyped] = useState('')
@@ -67,9 +73,6 @@ const CardNav = ({
   const tlRef = useRef(null)
   const { user, logout } = useAuth()
   const navigate = useNavigate()
-  
-  // Check if we're on the home page
-  const isHomePage = window.location.pathname === '/'
 
   const safeItems = useMemo(() => (items || []).slice(0, 3), [items])
 
@@ -155,29 +158,23 @@ const CardNav = ({
   }, [isExpanded])
 
   const toggleMenu = () => {
-    console.log('Toggle menu clicked, isExpanded:', isExpanded, 'tl exists:', !!tlRef.current)
     const tl = tlRef.current
-    if (!tl) {
-      console.log('No timeline found, creating new one')
-      const newTl = createTimeline()
-      if (newTl) {
-        tlRef.current = newTl
-        if (!isExpanded) {
-          setIsHamburgerOpen(true)
-          setIsExpanded(true)
-          newTl.play(0)
-        }
-      }
-      return
-    }
     if (!isExpanded) {
       setIsHamburgerOpen(true)
       setIsExpanded(true)
-      tl.play(0)
+      const t = tl ?? createTimeline()
+      if (t) {
+        if (!tl) tlRef.current = t
+        t.play(0)
+      }
     } else {
       setIsHamburgerOpen(false)
-      tl.eventCallback('onReverseComplete', () => setIsExpanded(false))
-      tl.reverse()
+      if (tl) {
+        tl.eventCallback('onReverseComplete', () => setIsExpanded(false))
+        tl.reverse()
+      } else {
+        setIsExpanded(false)
+      }
     }
   }
 
@@ -210,18 +207,17 @@ const CardNav = ({
           </div>
 
           <div className="nav-buttons-group">
-            {!isHomePage && (
-              <button
-                type="button"
-                className="card-nav-home-button cursor-target"
-                style={{ backgroundColor: buttonBgColor, color: buttonTextColor }}
-                onClick={() => navigate('/')}
-                title="Go to Home"
-              >
-                🏠
-              </button>
-            )}
-            
+            <button
+              type="button"
+              className="card-nav-home-button cursor-target"
+              style={{ backgroundColor: buttonBgColor, color: buttonTextColor }}
+              onClick={() => navigate('/')}
+              title="Go to Home"
+              aria-label="Go to Home"
+            >
+              <HomeIcon />
+            </button>
+
             <button
               type="button"
               className="card-nav-cta-button cursor-target"
