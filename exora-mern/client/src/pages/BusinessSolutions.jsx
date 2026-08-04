@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { FiArrowLeft, FiCheck, FiCpu, FiBarChart2, FiSettings, FiTrendingUp } from 'react-icons/fi';
 import './BusinessSolutions.css';
 
 const BusinessSolutions = () => {
@@ -8,25 +9,25 @@ const BusinessSolutions = () => {
 
   const solutions = [
     {
-      icon: '🤖',
+      icon: <FiCpu />,
       title: 'Customer Service Agents',
       description: 'Handle complex inquiries, bookings, and appointment scheduling autonomously. Escalate only when needed.',
       features: ['24/7 Availability', 'Multi-language Support', 'Context-aware Responses', 'Smart Escalation']
     },
     {
-      icon: '📊',
+      icon: <FiBarChart2 />,
       title: 'Sales Process Automation',
       description: 'Qualify leads, nurture prospects, schedule meetings, and negotiate within your parameters.',
       features: ['Lead Qualification', 'Automated Follow-ups', 'Meeting Scheduling', 'Pipeline Management']
     },
     {
-      icon: '⚙️',
+      icon: <FiSettings />,
       title: 'Operations Management',
       description: 'Predict bottlenecks, allocate resources, and coordinate teams with intelligent automation.',
       features: ['Resource Optimization', 'Bottleneck Detection', 'Team Coordination', 'Real-time Monitoring']
     },
     {
-      icon: '📈',
+      icon: <FiTrendingUp />,
       title: 'Data Intelligence Agents',
       description: 'Analyze data, spot trends, and surface actionable recommendations for your business.',
       features: ['Trend Analysis', 'Predictive Insights', 'Custom Reports', 'Actionable Alerts']
@@ -50,7 +51,7 @@ const BusinessSolutions = () => {
         transition={{ duration: 0.8 }}
       >
         <button className="back-button" onClick={() => navigate('/')}>
-          ← Back to Home
+          <FiArrowLeft className="back-icon" /> Back to Home
         </button>
         <h1 className="solutions-title">Business Automation Solutions</h1>
         <p className="solutions-subtitle">
@@ -96,7 +97,7 @@ const BusinessSolutions = () => {
             <ul className="solution-features">
               {solution.features.map((feature, idx) => (
                 <li key={idx}>
-                  <span className="feature-check">✓</span>
+                  <span className="feature-check"><FiCheck /></span>
                   {feature}
                 </li>
               ))}
@@ -118,7 +119,7 @@ const BusinessSolutions = () => {
         <div className="cta-buttons">
           <motion.button 
             className="cta-btn-primary"
-            onClick={() => navigate('/auth')}
+            onClick={() => window.location.href = 'https://exora.solutions/contact#contact'}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >

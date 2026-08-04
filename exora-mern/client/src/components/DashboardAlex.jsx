@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './DashboardAlex.css';
+import { FiMessageSquare, FiCalendar, FiMail, FiRefreshCw, FiZap, FiCheckCircle, FiXCircle, FiInfo, FiClipboard, FiCpu, FiX, FiSmile } from 'react-icons/fi';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5555/api';
 
 const DashboardAlex = ({ isOpen, onToggle, onDashboardUpdate, isSidebar = false, currentDashboardData = null }) => {
   const [messages, setMessages] = useState([]);
@@ -397,11 +398,11 @@ const DashboardAlex = ({ isOpen, onToggle, onDashboardUpdate, isSidebar = false,
   // Helper functions for workflow display
   const getWorkflowIcon = (workflow) => {
     const name = workflow.name.toLowerCase();
-    if (name.includes('whatsapp') || name.includes('chatbot')) return '💬';
-    if (name.includes('booking') || name.includes('calendar')) return '📅';
-    if (name.includes('email')) return '📧';
-    if (name.includes('data') || name.includes('sync')) return '🔄';
-    return '⚡';
+    if (name.includes('whatsapp') || name.includes('chatbot')) return <FiMessageSquare />;
+    if (name.includes('booking') || name.includes('calendar')) return <FiCalendar />;
+    if (name.includes('email')) return <FiMail />;
+    if (name.includes('data') || name.includes('sync')) return <FiRefreshCw />;
+    return <FiZap />;
   };
 
   const getWorkflowCategory = (workflow) => {
@@ -440,7 +441,7 @@ const DashboardAlex = ({ isOpen, onToggle, onDashboardUpdate, isSidebar = false,
           setMessages(prev => [...prev, {
             id: Date.now(),
             type: 'ai',
-            content: `ℹ️ ${result.message}`,
+            content: <><FiInfo className="msg-icon msg-icon-info" /> {result.message}</>,
             timestamp: new Date()
           }]);
         } else {
@@ -448,7 +449,7 @@ const DashboardAlex = ({ isOpen, onToggle, onDashboardUpdate, isSidebar = false,
           setMessages(prev => [...prev, {
             id: Date.now(),
             type: 'ai',
-            content: `✅ ${result.message}`,
+            content: <><FiCheckCircle className="msg-icon msg-icon-success" /> {result.message}</>,
             timestamp: new Date()
           }]);
         }
@@ -468,7 +469,7 @@ const DashboardAlex = ({ isOpen, onToggle, onDashboardUpdate, isSidebar = false,
         setMessages(prev => [...prev, {
           id: Date.now(),
           type: 'ai',
-          content: "❌ Sorry, I couldn't add that workflow to your dashboard. Please try again later.",
+          content: <><FiXCircle className="msg-icon msg-icon-error" /> Sorry, I couldn't add that workflow to your dashboard. Please try again later.</>,
           timestamp: new Date()
         }]);
       }
@@ -477,7 +478,7 @@ const DashboardAlex = ({ isOpen, onToggle, onDashboardUpdate, isSidebar = false,
       setMessages(prev => [...prev, {
         id: Date.now(),
         type: 'ai',
-        content: "❌ Sorry, I encountered an error while adding the workflow. Please try again later.",
+        content: <><FiXCircle className="msg-icon msg-icon-error" /> Sorry, I encountered an error while adding the workflow. Please try again later.</>,
         timestamp: new Date()
       }]);
     }
@@ -494,7 +495,7 @@ const DashboardAlex = ({ isOpen, onToggle, onDashboardUpdate, isSidebar = false,
   if (!isOpen && !isSidebar) {
     return (
       <div className="alex-floating-trigger" onClick={onToggle}>
-        <div className="trigger-avatar">🤖</div>
+        <div className="trigger-avatar"><FiCpu /></div>
         <div className="trigger-text">Chat with Alex</div>
       </div>
     );
@@ -508,14 +509,14 @@ const DashboardAlex = ({ isOpen, onToggle, onDashboardUpdate, isSidebar = false,
         <div className="dashboard-alex-sidebar-content">
           <div className="dashboard-alex-header">
             <div className="dashboard-alex-title">
-              <div className="dashboard-alex-avatar">🤖</div>
+              <div className="dashboard-alex-avatar"><FiCpu /></div>
               <div>
                 <h3>Alex</h3>
                 <p>AI Assistant</p>
               </div>
             </div>
             <button className="dashboard-alex-close" onClick={onToggle}>
-              ✕
+              <FiX />
             </button>
           </div>
 
@@ -541,7 +542,7 @@ const DashboardAlex = ({ isOpen, onToggle, onDashboardUpdate, isSidebar = false,
                               {getWorkflowIcon(workflow)}
                             </div>
                             <div className={`workflow-status ${isAlreadyAdded ? 'added' : 'template'}`}>
-                              {isAlreadyAdded ? '✅ Added' : '📋 Template'}
+                                {isAlreadyAdded ? <><FiCheckCircle /> Added</> : <><FiClipboard /> Template</>}
                             </div>
                           </div>
                         
@@ -636,14 +637,14 @@ const DashboardAlex = ({ isOpen, onToggle, onDashboardUpdate, isSidebar = false,
       <div className="dashboard-alex-popup" onClick={(e) => e.stopPropagation()}>
         <div className="dashboard-alex-header">
           <div className="dashboard-alex-title">
-            <div className="dashboard-alex-avatar">🤖</div>
+            <div className="dashboard-alex-avatar"><FiCpu /></div>
             <div>
               <h3>Alex - Your AI Business Consultant</h3>
               <p>Let me help you set up your dashboard</p>
             </div>
           </div>
           <button className="dashboard-alex-close" onClick={onToggle}>
-            ✕
+            <FiX />
           </button>
         </div>
 
@@ -669,7 +670,7 @@ const DashboardAlex = ({ isOpen, onToggle, onDashboardUpdate, isSidebar = false,
                               {getWorkflowIcon(workflow)}
                             </div>
                             <div className={`workflow-status ${isAlreadyAdded ? 'added' : 'template'}`}>
-                              {isAlreadyAdded ? '✅ Added' : '📋 Template'}
+                                {isAlreadyAdded ? <><FiCheckCircle /> Added</> : <><FiClipboard /> Template</>}
                             </div>
                           </div>
                         

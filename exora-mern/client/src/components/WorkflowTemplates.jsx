@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../config/api';
+import { FiMessageSquare, FiCalendar, FiMail, FiRefreshCw, FiZap, FiCheck, FiX, FiCheckCircle, FiXCircle } from 'react-icons/fi';
 import './WorkflowTemplates.css';
 
 const WorkflowTemplates = ({ onClose, onWorkflowSelected }) => {
@@ -78,11 +79,11 @@ const WorkflowTemplates = ({ onClose, onWorkflowSelected }) => {
 
   const getWorkflowIcon = (workflow) => {
     const name = workflow.name.toLowerCase();
-    if (name.includes('whatsapp') || name.includes('chatbot')) return '💬';
-    if (name.includes('booking') || name.includes('calendar')) return '📅';
-    if (name.includes('email')) return '📧';
-    if (name.includes('data') || name.includes('sync')) return '🔄';
-    return '⚡';
+    if (name.includes('whatsapp') || name.includes('chatbot')) return <FiMessageSquare />;
+    if (name.includes('booking') || name.includes('calendar')) return <FiCalendar />;
+    if (name.includes('email')) return <FiMail />;
+    if (name.includes('data') || name.includes('sync')) return <FiRefreshCw />;
+    return <FiZap />;
   };
 
   const getWorkflowCategory = (workflow) => {
@@ -110,7 +111,7 @@ const WorkflowTemplates = ({ onClose, onWorkflowSelected }) => {
         <div className="workflow-templates-header">
           <h2>Available Workflow Templates</h2>
           <p>Select the workflows you'd like to add to your dashboard</p>
-          <button className="close-btn" onClick={onClose}>×</button>
+          <button className="close-btn" onClick={onClose} aria-label="Close"><FiX /></button>
         </div>
 
         <div className="workflow-templates-grid">
@@ -124,7 +125,7 @@ const WorkflowTemplates = ({ onClose, onWorkflowSelected }) => {
                 <div className="workflow-icon">{getWorkflowIcon(workflow)}</div>
                 <div className="workflow-status">
                   <span className={`status-indicator ${workflow.active ? 'active' : 'inactive'}`}>
-                    {workflow.active ? '🟢 Active' : '🔴 Inactive'}
+                    {workflow.active ? <><FiCheckCircle className="status-icon" /> Active</> : <><FiXCircle className="status-icon" /> Inactive</>}
                   </span>
                 </div>
               </div>
@@ -164,7 +165,7 @@ const WorkflowTemplates = ({ onClose, onWorkflowSelected }) => {
 
               <div className="workflow-template-footer">
                 <div className="selection-indicator">
-                  {selectedWorkflows.includes(workflow.id) ? '✓ Selected' : 'Click to select'}
+                  {selectedWorkflows.includes(workflow.id) ? <><FiCheck /> Selected</> : 'Click to select'}
                 </div>
               </div>
             </div>

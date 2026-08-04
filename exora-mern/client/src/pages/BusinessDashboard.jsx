@@ -3,7 +3,6 @@ import { io } from 'socket.io-client';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useActivation } from '../contexts/ActivationContext';
-import Particles from '../components/Particles';
 import CardNav from '../components/CardNav';
 import DotGrid from '../components/DotGrid';
 import DashboardAlex from '../components/DashboardAlex';
@@ -570,22 +569,11 @@ const BusinessDashboard = () => {
   if (!dashboardData.isConfigured) {
     return (
       <div className="dashboard">
-        <Particles
-          particleColors={['#c084fc', '#a855f7', '#7c3aed']}
-          particleCount={150}
-          particleSpread={6}
-          speed={0.03}
-          particleBaseSize={40}
-          moveParticlesOnHover={false}
-          alphaParticles={false}
-          disableRotation={false}
-        />
-        
         <CardNav
           items={[
-            { label: 'About', bgColor: '#0D0716', textColor: '#fff', links: [ { label: 'Company', ariaLabel: 'About Company', href: '#company' }, { label: 'Careers', ariaLabel: 'About Careers', href: '#company' } ] },
+            { label: 'About', bgColor: '#0D0716', textColor: '#fff', links: [ { label: 'Career', ariaLabel: 'Career page', href: '/contact' } ] },
             { label: 'Products', bgColor: '#170D27', textColor: '#fff', links: [ { label: 'Featured', ariaLabel: 'Featured Projects', href: '#products' }, { label: 'Case Studies', ariaLabel: 'Project Case Studies', href: '#solutions' } ] },
-            { label: 'Join us', bgColor: '#271E37', textColor: '#fff', links: [ { label: 'Email', ariaLabel: 'Email us', href: '#join' }, { label: 'Twitter', ariaLabel: 'Twitter', href: '#join' }, { label: 'LinkedIn', ariaLabel: 'LinkedIn', href: '#join' } ] }
+            { label: 'Contact', bgColor: '#271E37', textColor: '#fff', links: [ { label: 'Email', ariaLabel: 'Email us', href: '#join' }, { label: 'Instagram', ariaLabel: 'Instagram', href: 'https://www.instagram.com/exora.autopilot?igsh=NThjYXB5OGQ5ZHRv' }, { label: 'LinkedIn', ariaLabel: 'LinkedIn', href: 'https://www.linkedin.com/company/exora_solutions/' } ] }
           ]}
           baseColor="rgba(255,255,255,0.08)"
           menuColor="#fff"
@@ -650,23 +638,35 @@ const BusinessDashboard = () => {
 
   return (
     <div className="dashboard">
-      <Particles
-        particleColors={['#c084fc', '#a855f7', '#7c3aed']}
-        particleCount={150}
-        particleSpread={6}
-        speed={0.03}
-        particleBaseSize={40}
-        moveParticlesOnHover={false}
-        alphaParticles={false}
-        disableRotation={false}
-      />
-      
       {/* Navigation */}
       <CardNav
         items={[
-          { label: 'About', bgColor: '#0D0716', textColor: '#fff', links: [ { label: 'Company', ariaLabel: 'About Company', href: '#company' }, { label: 'Careers', ariaLabel: 'About Careers', href: '#company' } ] },
-          { label: 'Products', bgColor: '#170D27', textColor: '#fff', links: [ { label: 'Featured', ariaLabel: 'Featured Projects', href: '#products' }, { label: 'Case Studies', ariaLabel: 'Project Case Studies', href: '#solutions' } ] },
-          { label: 'Join us', bgColor: '#271E37', textColor: '#fff', links: [ { label: 'Email', ariaLabel: 'Email us', href: '#join' }, { label: 'Twitter', ariaLabel: 'Twitter', href: '#join' }, { label: 'LinkedIn', ariaLabel: 'LinkedIn', href: '#join' } ] }
+          { 
+            label: 'About', 
+            bgColor: '#0D0716', 
+            textColor: '#fff', 
+            links: [
+              { label: 'About', ariaLabel: 'About page', href: '/about' },
+              { label: 'Career', ariaLabel: 'Career info', href: '/career' }
+            ]
+          },
+          { 
+            label: 'Products', 
+            bgColor: '#170D27', 
+            textColor: '#fff', 
+            links: [
+              { label: 'Products', ariaLabel: 'Products page', href: '/products' },
+              { label: 'Solutions', ariaLabel: 'Solutions', href: '/solutions' }
+            ]
+          },
+          { 
+            label: 'Contact', 
+            bgColor: '#271E37', 
+            textColor: '#fff', 
+            links: [
+              { label: 'Contact', ariaLabel: 'Contact page', href: '/contact' }
+            ]
+          }
         ]}
         baseColor="rgba(255,255,255,0.08)"
         menuColor="#fff"

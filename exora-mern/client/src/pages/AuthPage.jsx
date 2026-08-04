@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import Particles from '../components/Particles';
 import CardNav from '../components/CardNav';
 import './AuthPage.css';
 
@@ -141,23 +140,35 @@ const AuthPage = () => {
 
   return (
     <div className="auth-page">
-      <Particles
-        particleColors={['#c084fc', '#a855f7', '#7c3aed']}
-        particleCount={200}
-        particleSpread={8}
-        speed={0.04}
-        particleBaseSize={60}
-        moveParticlesOnHover={false}
-        alphaParticles={false}
-        disableRotation={false}
-      />
-      
       {/* Navigation */}
       <CardNav
         items={[
-          { label: 'About', bgColor: '#0D0716', textColor: '#fff', links: [ { label: 'Company', ariaLabel: 'About Company', href: '#company' }, { label: 'Careers', ariaLabel: 'About Careers', href: '#company' } ] },
-          { label: 'Products', bgColor: '#170D27', textColor: '#fff', links: [ { label: 'Featured', ariaLabel: 'Featured Projects', href: '#products' }, { label: 'Case Studies', ariaLabel: 'Project Case Studies', href: '#solutions' } ] },
-          { label: 'Join us', bgColor: '#271E37', textColor: '#fff', links: [ { label: 'Email', ariaLabel: 'Email us', href: '#join' }, { label: 'Twitter', ariaLabel: 'Twitter', href: '#join' }, { label: 'LinkedIn', ariaLabel: 'LinkedIn', href: '#join' } ] }
+          { 
+            label: 'About', 
+            bgColor: '#0D0716', 
+            textColor: '#fff', 
+            links: [
+              { label: 'About', ariaLabel: 'About page', href: '/about' },
+              { label: 'Career', ariaLabel: 'Career info', href: '/career' }
+            ]
+          },
+          { 
+            label: 'Products', 
+            bgColor: '#170D27', 
+            textColor: '#fff', 
+            links: [
+              { label: 'Products', ariaLabel: 'Products page', href: '/products' },
+              { label: 'Solutions', ariaLabel: 'Solutions', href: '/solutions' }
+            ]
+          },
+          { 
+            label: 'Contact', 
+            bgColor: '#271E37', 
+            textColor: '#fff', 
+            links: [
+              { label: 'Contact', ariaLabel: 'Contact page', href: '/contact' }
+            ]
+          }
         ]}
         baseColor="rgba(255,255,255,0.08)"
         menuColor="#fff"
@@ -170,13 +181,13 @@ const AuthPage = () => {
         <div className="auth-page-container">
           <div className="auth-page-card">
             <div className="auth-page-header-content">
-              <h1 className="auth-page-title">
-                {isLogin ? 'Welcome Back' : 'Join Exora'}
+              <h1 className="auth-page-title" style={{ color: '#a855f7', background: 'none', webkitTextFillColor: 'initial', textTransform: 'uppercase' }}>
+                {isLogin ? 'WELCOME BACK' : 'GET STARTED TODAY'}
               </h1>
               <p className="auth-page-subtitle">
                 {isLogin 
                   ? 'Sign in to your account to continue' 
-                  : 'Create your account to get started'
+                  : 'Fill out the form below to create your account.'
                 }
               </p>
             </div>
@@ -192,7 +203,7 @@ const AuthPage = () => {
                 <div className="auth-page-row">
                   <div className="auth-page-field">
                     <label htmlFor="firstName" className="auth-page-label">
-                      First Name
+                      FIRST NAME
                     </label>
                     <input
                       type="text"
@@ -210,7 +221,7 @@ const AuthPage = () => {
 
                   <div className="auth-page-field">
                     <label htmlFor="lastName" className="auth-page-label">
-                      Last Name
+                      LAST NAME
                     </label>
                     <input
                       type="text"
@@ -230,7 +241,7 @@ const AuthPage = () => {
 
               <div className="auth-page-field">
                 <label htmlFor="email" className="auth-page-label">
-                  Email Address
+                  EMAIL ADDRESS
                 </label>
                 <input
                   type="email"
@@ -248,7 +259,7 @@ const AuthPage = () => {
 
               <div className="auth-page-field">
                 <label htmlFor="password" className="auth-page-label">
-                  Password
+                  PASSWORD
                 </label>
                 <input
                   type="password"
@@ -267,7 +278,7 @@ const AuthPage = () => {
               {!isLogin && (
                 <div className="auth-page-field">
                   <label htmlFor="usageType" className="auth-page-label">
-                    How will you use Exora?
+                    HOW WILL YOU USE EXORA?
                   </label>
                   <select
                     id="usageType"
@@ -310,7 +321,7 @@ const AuthPage = () => {
                 </button>
               </p>
             </div>
-          </div>
+            </div>
         </div>
       </div>
     </div>

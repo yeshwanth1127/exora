@@ -3,7 +3,6 @@ import { Routes, Route, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import './MobileLayout.css'
 import CardNav from './CardNav'
-import Particles from './Particles'
 import TypewriterText from './TypewriterText'
 import GlassIcons from './GlassIcons'
 import { FiLink2, FiCpu, FiZap, FiLayers, FiBox } from 'react-icons/fi'
@@ -101,20 +100,13 @@ const MobileLayout = ({ isChatbotOpen, onChatbotToggle }) => {
       <>
         <section className="mobile-hero">
           <div className="mobile-hero-content">
-            <h1 className="mobile-hero-title">Your Business. On Autopilot.</h1>
-            <div className="mobile-hero-subtitle-wrapper">
-              <TypewriterText
-                text="AI agents that execute, optimize, and scale your operations 24/7."
-                speed={30}
-                isActive={startTypewriter}
-                className="mobile-hero-typewriter-subtitle"
-              />
-            </div>
+            <h1 className="mobile-hero-title">YOUR<br />BUSINESS.<br />ON AUTOPILOT.</h1>
+
             <div className="mobile-hero-buttons">
               <button
                 type="button"
                 className="mobile-primary-button large"
-                onClick={() => navigate('/join')}
+                onClick={() => navigate('/contact')}
               >
                 Book a Free Automation Audit
               </button>
@@ -123,7 +115,7 @@ const MobileLayout = ({ isChatbotOpen, onChatbotToggle }) => {
                 className="mobile-secondary-button large"
                 onClick={() => navigate('/personal-ai')}
               >
-                See How Ghost Works
+                See How Ira Works
               </button>
             </div>
             {/* Two-column block: same copy as PC (stacked on mobile) */}
@@ -170,21 +162,6 @@ const MobileLayout = ({ isChatbotOpen, onChatbotToggle }) => {
 
   return (
     <div className="mobile-layout-wrapper" style={{ position: 'relative', width: '100%', minHeight: '100vh', background: '#000000' }}>
-      {/* Same background as desktop */}
-      <div className="bg-radials" />
-      
-      {/* Same particles as desktop */}
-      <Particles
-        particleColors={[ '#c084fc', '#a855f7', '#7c3aed' ]}
-        particleCount={200}
-        particleSpread={8}
-        speed={0.04}
-        particleBaseSize={60}
-        moveParticlesOnHover={true}
-        alphaParticles={false}
-        disableRotation={false}
-      />
-      
       {/* Same CardNav as desktop */}
       <CardNav
         items={[
@@ -194,7 +171,7 @@ const MobileLayout = ({ isChatbotOpen, onChatbotToggle }) => {
             textColor: '#fff', 
             links: [ 
               { label: 'About', ariaLabel: 'About page', href: '/about' }, 
-              { label: 'Company', ariaLabel: 'Company info', href: '/about#company' } 
+              { label: 'Career', ariaLabel: 'Career info', href: '/career' } 
             ] 
           },
           { 
@@ -207,12 +184,11 @@ const MobileLayout = ({ isChatbotOpen, onChatbotToggle }) => {
             ] 
           },
           { 
-            label: 'Join us', 
+            label: 'Contact', 
             bgColor: '#271E37', 
             textColor: '#fff', 
             links: [ 
-              { label: 'Join', ariaLabel: 'Join page', href: '/join' }, 
-              { label: 'Contact', ariaLabel: 'Contact us', href: '/join#contact' } 
+              { label: 'Contact', ariaLabel: 'Contact page', href: '/contact' } 
             ] 
           }
         ]}
@@ -235,7 +211,7 @@ const MobileLayout = ({ isChatbotOpen, onChatbotToggle }) => {
         <Route path="/about" element={<About />} />
         <Route path="/products" element={<Products />} />
         <Route path="/solutions" element={<Solutions />} />
-        <Route path="/join" element={<JoinUs />} />
+        <Route path="/contact" element={<JoinUs />} />
         <Route path="/" element={<MobileHome />} />
       </Routes>
       

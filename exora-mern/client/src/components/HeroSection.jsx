@@ -58,7 +58,7 @@ const HeroSection = ({ onOpenChat, showDashboardButton, onDashboardClick, onOpen
         <div className="hero-column">
           <h2 className="column-title">For Your Life</h2>
           <p className="column-description">
-            Meet Ghost — The AI That Lives With You.
+            Meet Ira — The AI That Lives With You.
           </p>
           <div className="hero-button-group">
             <motion.button 
@@ -68,14 +68,6 @@ const HeroSection = ({ onOpenChat, showDashboardButton, onDashboardClick, onOpen
               whileTap={{ scale: 0.98 }}
             >
               Join the Waitlist
-            </motion.button>
-            <motion.button 
-              className="hero-btn-secondary cursor-target"
-              onClick={() => window.location.href = '/personal-ai'}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              Learn More →
             </motion.button>
             <motion.button 
               className="hero-btn-download cursor-target"

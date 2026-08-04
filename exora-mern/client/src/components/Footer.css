@@ -1,0 +1,255 @@
+.exora-footer {
+  background-color: #0b0a1a;
+  color: #fff;
+  padding: 60px 0 30px 0;
+  font-family: inherit;
+  position: relative;
+  z-index: 10;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+.footer-main {
+  display: flex;
+  justify-content: space-between;
+  gap: 40px;
+  margin-bottom: 50px;
+}
+
+.footer-column {
+  flex: 1;
+}
+
+.brand-column {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.footer-logo,
+.footer-exora-brand {
+  font-family: 'Press Start 2P', cursive, monospace;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.footer-logo {
+  font-size: clamp(14px, 2vw, 18px);
+  margin: 0;
+  line-height: 1.8;
+  color: #fff;
+}
+
+.footer-exora-brand {
+  font-size: inherit;
+}
+
+.footer-tagline {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.4);
+  line-height: 1.6;
+  margin: 0;
+  max-width: 280px;
+}
+
+.footer-emails {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.footer-email {
+  color: #7c77dd;
+  text-decoration: none;
+  font-size: 15px;
+  transition: color 0.2s ease;
+}
+
+.email-separator {
+  color: rgba(255, 255, 255, 0.15);
+  font-size: 14px;
+}
+
+.footer-email:hover {
+  color: #9a95f0;
+}
+
+.footer-nav-group {
+  display: flex;
+  flex: 3;
+  justify-content: flex-end;
+}
+
+.footer-nav-group .footer-column {
+  border-left: 0.5px solid rgba(255, 255, 255, 0.1);
+  padding-left: 40px;
+  max-width: 180px;
+}
+
+.footer-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.3);
+  letter-spacing: 0.08em;
+  margin: 0 0 16px 0;
+  text-transform: uppercase;
+}
+
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.footer-links li a {
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: none;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+}
+
+.footer-links li a .link-icon {
+  color: #7c77dd;
+  opacity: 0.7;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.footer-links li a:hover {
+  color: #fff;
+}
+
+.footer-links li a:hover .link-icon {
+  transform: translate(2px, -2px);
+  opacity: 1;
+}
+
+.footer-bottom {
+  border-top: 0.5px solid rgba(255, 255, 255, 0.1);
+  padding-top: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.footer-copyright {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.2);
+  margin: 0;
+}
+
+.footer-site-link {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.2);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.footer-site-link:hover {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+@media (max-width: 1024px) {
+  .footer-main {
+    flex-direction: column;
+    gap: 64px;
+  }
+  
+  .footer-nav-group {
+    justify-content: space-between;
+    width: 100%;
+  }
+  
+  .footer-nav-group .footer-column {
+    border-left: none;
+    padding-left: 0;
+    max-width: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .exora-footer {
+    padding: 60px 0 40px 0;
+  }
+
+  .footer-container {
+    padding: 0 24px;
+  }
+
+  .footer-main {
+    gap: 48px;
+    text-align: left;
+    align-items: flex-start;
+  }
+
+  .brand-column {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .footer-nav-group {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    text-align: left;
+    width: 100%;
+  }
+
+  .footer-links li a {
+    justify-content: flex-start;
+    font-size: 14px;
+  }
+
+  .footer-column {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .footer-column:last-child {
+    grid-column: span 1;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .footer-column:last-child .footer-links li a {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-emails {
+    flex-wrap: wrap;
+    gap: 8px 12px;
+  }
+
+  .footer-nav-group {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+  }
+  
+  .footer-label {
+    font-size: 11px;
+  }
+  
+  .footer-links li a {
+    font-size: 13px;
+    gap: 6px;
+  }
+}

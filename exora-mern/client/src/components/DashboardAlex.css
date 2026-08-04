@@ -42,7 +42,7 @@
 }
 
 .alex-floating-trigger .trigger-avatar {
-  font-size: 24px;
+  font-size: 20px;
   width: 40px;
   height: 40px;
   background: rgba(255, 255, 255, 0.2);
@@ -50,6 +50,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  color: white;
 }
 
 .alex-floating-trigger .trigger-text {
@@ -58,6 +59,18 @@
   font-size: 16px;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
+
+.msg-icon {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 8px;
+  vertical-align: middle;
+  font-size: 1.1em;
+}
+
+.msg-icon-success { color: #22c55e; }
+.msg-icon-error { color: #ef4444; }
+.msg-icon-info { color: #3b82f6; }
 
 /* Overlay with backdrop */
 .dashboard-alex-overlay {
@@ -142,7 +155,7 @@
 }
 
 .dashboard-alex-avatar {
-  font-size: 32px;
+  font-size: 24px;
   background: rgba(255, 255, 255, 0.2);
   border-radius: 50%;
   width: 50px;
@@ -150,6 +163,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  color: white;
 }
 
 .dashboard-alex-title h3 {
@@ -443,7 +457,7 @@
 }
 
 .workflow-icon {
-  font-size: 24px;
+  font-size: 20px;
   width: 40px;
   height: 40px;
   display: flex;
@@ -451,6 +465,7 @@
   justify-content: center;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 8px;
+  color: white;
 }
 
 .workflow-status {

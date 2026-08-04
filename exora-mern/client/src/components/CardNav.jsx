@@ -1,12 +1,19 @@
 import { useLayoutEffect, useRef, useState, useEffect, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { gsap } from 'gsap'
 import { useAuth } from '../contexts/AuthContext'
+import ExoraLogo from './ExoraLogo'
 import './CardNav.css'
 
 const ArrowIcon = (props) => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
     <path d="M13 5h6v6h-2V8.414l-9.293 9.293-1.414-1.414L15.586 7H13V5z"></path>
+  </svg>
+)
+
+const BackIcon = (props) => (
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" {...props}>
+    <path d="M9 2L4 7l5 5" />
   </svg>
 )
 
@@ -16,44 +23,6 @@ const HomeIcon = (props) => (
   </svg>
 )
 
-const ExoraTypeInline = () => {
-  const FULL_TEXT = 'EXORA'
-  const [typed, setTyped] = useState('')
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [index, setIndex] = useState(0)
-
-  useEffect(() => {
-    let timeout
-    const full = FULL_TEXT
-    if (!isDeleting) {
-      if (index < full.length) {
-        timeout = setTimeout(() => {
-          setTyped(full.slice(0, index + 1))
-          setIndex(index + 1)
-        }, 120)
-      } else {
-        timeout = setTimeout(() => setIsDeleting(true), 900)
-      }
-    } else {
-      if (index > 0) {
-        timeout = setTimeout(() => {
-          setTyped(full.slice(0, index - 1))
-          setIndex(index - 1)
-        }, 80)
-      } else {
-        timeout = setTimeout(() => setIsDeleting(false), 500)
-      }
-    }
-    return () => clearTimeout(timeout)
-  }, [index, isDeleting])
-
-  return (
-    <div className="cardnav-type">
-      <span className="cardnav-type-text" aria-label={FULL_TEXT} data-full={FULL_TEXT}>{typed}</span>
-      <span className="cardnav-type-caret" />
-    </div>
-  )
-}
 
 const CardNav = ({
   logo,
@@ -73,6 +42,7 @@ const CardNav = ({
   const tlRef = useRef(null)
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
 
   const safeItems = useMemo(() => (items || []).slice(0, 3), [items])
 
@@ -133,7 +103,7 @@ const CardNav = ({
       tl?.kill()
       tlRef.current = null
     }
-  }, [ease, safeItems])
+  }, [ease, safeItems.length])
 
   useLayoutEffect(() => {
     const handleResize = () => {
@@ -185,38 +155,50 @@ const CardNav = ({
       <div className="card-nav-wrapper" style={{ borderRadius: 12 }}>
         <nav ref={navRef} className={`card-nav ${isExpanded ? 'open' : ''}`} style={{ backgroundColor: baseColor }}>
         <div className="card-nav-top">
-          <div
-            className={`hamburger-menu cursor-target ${isHamburgerOpen ? 'open' : ''}`}
-            onClick={toggleMenu}
-            role="button"
-            aria-label={isExpanded ? 'Close menu' : 'Open menu'}
-            tabIndex={0}
-            style={{ color: menuColor || '#fff' }}
-          >
-            <div className="hamburger-line" />
-            <div className="hamburger-line" />
-            <div className="hamburger-line" />
+          <div className="card-nav-left-group">
+            <div
+              className={`hamburger-menu cursor-target ${isHamburgerOpen ? 'open' : ''}`}
+              onClick={toggleMenu}
+              role="button"
+              aria-label={isExpanded ? 'Close menu' : 'Open menu'}
+              tabIndex={0}
+              style={{ color: menuColor || '#fff' }}
+            >
+              <div className="hamburger-line" />
+              <div className="hamburger-line" />
+              <div className="hamburger-line" />
+            </div>
+
+            {location.pathname !== '/' && (
+              <button
+                className="card-nav-back-button cursor-target"
+                onClick={() => navigate(-1)}
+                aria-label="Go back"
+              >
+                <BackIcon />
+                <span>Back</span>
+              </button>
+            )}
           </div>
 
           <div className="logo-container">
-            {logo ? <img src={logo} alt={logoAlt} className="logo" /> : <div className="logo-placeholder" />}
+            <ExoraLogo />
           </div>
 
-          <div className="center-typing">
-            <ExoraTypeInline />
-          </div>
 
           <div className="nav-buttons-group">
-            <button
-              type="button"
-              className="card-nav-home-button cursor-target"
-              style={{ backgroundColor: buttonBgColor, color: buttonTextColor }}
-              onClick={() => navigate('/')}
-              title="Go to Home"
-              aria-label="Go to Home"
-            >
-              <HomeIcon />
-            </button>
+            {location.pathname !== '/' && (
+              <button
+                type="button"
+                className="card-nav-home-button cursor-target"
+                onClick={() => navigate('/')}
+                title="Go to Home"
+                aria-label="Go to Home"
+              >
+                <HomeIcon />
+                <span className="home-btn-label">Home</span>
+              </button>
+            )}
 
             <button
               type="button"
@@ -266,15 +248,32 @@ const CardNav = ({
                       }
                     }}
                     aria-label={lnk.ariaLabel}
-                    style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}
                   >
-                    <ArrowIcon className="nav-card-link-icon" />
+                    <span className="cta-dot-pulsing" />
                     {lnk.label}
                   </button>
                 ))}
               </div>
             </div>
           ))}
+          <div className="card-nav-mobile-cta">
+            <button
+              type="button"
+              className="hamburger-cta-button cursor-target"
+              onClick={() => {
+                if (user) {
+                  logout()
+                } else {
+                  navigate('/auth')
+                }
+                setIsExpanded(false)
+                setIsHamburgerOpen(false)
+              }}
+            >
+              <span className="cta-dot-pulsing" />
+              {user ? `Logout (${user.firstName})` : 'Login/Signup'}
+            </button>
+          </div>
         </div>
       </nav>
       </div>

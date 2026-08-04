@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventory & Procurement Agent</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+      background-color: #0a0a0a;
+      color: #e5e5e5;
+    }
+
+    .hero {
+      width: 100%;
+      background-color: #0a0a0a;
+      padding: 80px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    /* Badge */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 16px;
+      border: 1px solid #333;
+      border-radius: 24px;
+      background-color: rgba(155, 111, 247, 0.1);
+      margin-bottom: 32px;
+    }
+
+    .badge-text {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      color: #e5e5e5;
+      text-transform: uppercase;
+    }
+
+    /* Heading */
+    .heading-container {
+      text-align: center;
+      margin-bottom: 24px;
+      max-width: 900px;
+    }
+
+    .heading {
+      font-size: 64px;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 16px;
+    }
+
+    .heading-white {
+      color: #ffffff;
+    }
+
+    .heading-purple {
+      color: #9b6ff7;
+    }
+
+    /* Subheading */
+    .subheading {
+      font-size: 18px;
+      line-height: 1.6;
+      color: #a0a0a0;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .subheading-line {
+      margin-bottom: 12px;
+    }
+
+    /* Features Grid */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      max-width: 1000px;
+      margin-top: 64px;
+      width: 100%;
+      margin-bottom: 40px;
+    }
+
+    .feature-card {
+      background-color: #1c1c1e;
+      border-radius: 16px;
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid #333;
+      transition: border-color 0.3s ease;
+    }
+
+    .feature-card:hover {
+      border-color: #9b6ff7;
+    }
+
+    .feature-icon-box {
+      width: 48px;
+      height: 48px;
+      background-color: rgba(155, 111, 247, 0.15);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .feature-icon {
+      width: 24px;
+      height: 24px;
+      color: #9b6ff7;
+    }
+
+    .feature-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 12px;
+    }
+
+    .feature-description {
+      font-size: 14px;
+      color: #808080;
+      line-height: 1.5;
+    }
+
+    /* Solves Bar */
+    .solves-bar {
+      width: 100%;
+      max-width: 1000px;
+      background-color: #1c1c1e;
+      border: 1px solid #333;
+      border-radius: 16px;
+      padding: 28px 32px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .solves-label {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: #9b6ff7;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .solves-divider {
+      width: 1px;
+      height: 30px;
+      background-color: #333;
+    }
+
+    .solves-content {
+      font-size: 16px;
+      line-height: 1.5;
+      color: #a0a0a0;
+    }
+
+    .solves-highlight {
+      color: #9b6ff7;
+      font-weight: 600;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero {
+        padding: 60px 16px;
+        min-height: auto;
+      }
+
+      .heading {
+        font-size: 44px;
+      }
+
+      .subheading {
+        font-size: 16px;
+      }
+
+      .features {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        margin-top: 48px;
+      }
+
+      .solves-bar {
+        flex-direction: column;
+        gap: 16px;
+        align-items: start;
+      }
+
+      .solves-divider {
+        display: none;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .heading {
+        font-size: 32px;
+      }
+
+      .subheading {
+        font-size: 14px;
+      }
+
+      .feature-card {
+        padding: 24px;
+      }
+
+      .solves-bar {
+        padding: 20px 16px;
+      }
+
+      .solves-content {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <section class="hero">
+    <!-- Badge -->
+    <div class="badge">
+      <span class="badge-text">AI Agent</span>
+    </div>
+
+    <!-- Heading -->
+    <div class="heading-container">
+      <h1 class="heading">
+        <span class="heading-white">Inventory & </span><span class="heading-purple">Procurement</span>
+      </h1>
+      <h1 class="heading">
+        <span class="heading-white">Agent</span>
+      </h1>
+    </div>
+
+    <!-- Subheading -->
+    <div class="subheading">
+      <div class="subheading-line">Stop losing revenue to stockouts. Stop wasting capital on overstock.</div>
+      <div class="subheading-line">One agent handles it all — automatically.</div>
+    </div>
+
+    <!-- Features -->
+    <div class="features">
+      <!-- Card 1: Live Stock Tracking -->
+      <div class="feature-card">
+        <div class="feature-icon-box">
+          <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 17"></polyline>
+            <polyline points="17 6 23 6 23 12"></polyline>
+          </svg>
+        </div>
+        <div class="feature-title">Live stock tracking</div>
+        <div class="feature-description">Monitor inventory levels in real time across all locations</div>
+      </div>
+
+      <!-- Card 2: Auto-Reordering -->
+      <div class="feature-card">
+        <div class="feature-icon-box">
+          <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </div>
+        <div class="feature-title">Auto-reordering</div>
+        <div class="feature-description">Triggers purchase orders the moment thresholds are crossed</div>
+      </div>
+
+      <!-- Card 3: Vendor Coordination -->
+      <div class="feature-card">
+        <div class="feature-icon-box">
+          <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+        </div>
+        <div class="feature-title">Vendor coordination</div>
+        <div class="feature-description">Communicates with suppliers and confirms delivery timelines</div>
+      </div>
+    </div>
+
+    <!-- Solves Bar -->
+    <div class="solves-bar">
+      <span class="solves-label">Solves</span>
+      <div class="solves-divider"></div>
+      <div class="solves-content">
+        Eliminates <span class="solves-highlight">stockouts and overstocking</span> — the two biggest drains on your supply chain
+      </div>
+    </div>
+  </section>
+</body>
+</html>

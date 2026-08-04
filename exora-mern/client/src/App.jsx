@@ -1,10 +1,11 @@
 import './App.css'
 import { useEffect, useState, useMemo } from 'react'
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom'
+import HeroAutopilotHeadline from './components/HeroAutopilotHeadline'
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { AuthProvider } from './contexts/AuthContext'
 import { ActivationProvider } from './contexts/ActivationContext'
-import Particles from './components/Particles'
+import AppBackgroundSwitcher from './components/AppBackgroundSwitcher'
 import CardNav from './components/CardNav'
 import TypewriterText from './components/TypewriterText'
 import ShinyText from './components/ShinyText'
@@ -12,7 +13,6 @@ import SplitText from './components/SplitText'
 import LiquidChrome from './components/LiquidChrome'
 import FlowingMenu from './components/FlowingMenu'
 import GlassIcons from './components/GlassIcons'
-import Orb from './components/Orb'
 import { FiLink2, FiCpu, FiZap, FiLayers, FiBox, FiPackage, FiHeadphones, FiSettings, FiFileText, FiShield, FiTrendingUp } from 'react-icons/fi'
 import { AGENTS_DATA } from './data/agents'
 import AuthPage from './pages/AuthPage'
@@ -25,8 +25,29 @@ import PersonalAI from './pages/PersonalAI'
 import About from './pages/About'
 import Products from './pages/Products'
 import Solutions from './pages/Solutions'
-import JoinUs from './pages/JoinUs'
+import Contact from './pages/Contact'
+import Careers from './pages/Careers'
 import AgentPage from './pages/AgentPage'
+import CustomerSupportAgent from './pages/CustomerSupportAgent'
+import InventoryProcurementAgent from './pages/InventoryProcurementAgent'
+import InternalOperationsAgent from './pages/InternalOperationsAgent'
+import OrchestrationAgent from './pages/OrchestrationAgent'
+import BusinessLogicAgent from './pages/BusinessLogicAgent'
+import OptimizationAgent from './pages/OptimizationAgent'
+import AuditComplianceAgent from './pages/AuditComplianceAgent'
+import Footer from './components/Footer'
+import Qlix from './pages/Qlix'
+import QlixTeaser from './components/QlixTeaser'
+
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+};
 
 function App() {
   // Better mobile detection - check synchronously first, then enhance with matchMedia
@@ -40,7 +61,7 @@ function App() {
     // Combine checks - if media query matches OR (width check AND touch capability)
     return mediaQuery.matches || (widthCheck && hasTouch) || widthCheck
   }
-  
+
   // Initialize with synchronous check to avoid flash
   const initialMobile = typeof window !== 'undefined' ? getIsMobile() : false
   const [isMobile, setIsMobile] = useState(initialMobile)
@@ -54,10 +75,10 @@ function App() {
       setIsMobile(mobile)
       setIsLoading(false)
     }
-    
+
     // Check immediately
     checkMobile()
-    
+
     // Use matchMedia listener for better performance and reliability
     const mediaQuery = window.matchMedia('(max-width: 768px)')
     const handleMediaChange = (e) => {
@@ -65,7 +86,7 @@ function App() {
       console.log('Media query changed - Is mobile:', mobile)
       setIsMobile(mobile)
     }
-    
+
     // Modern browsers support addEventListener on MediaQueryList
     if (mediaQuery.addEventListener) {
       mediaQuery.addEventListener('change', handleMediaChange)
@@ -73,10 +94,10 @@ function App() {
       // Fallback for older browsers
       mediaQuery.addListener(handleMediaChange)
     }
-    
+
     // Also listen to resize as fallback
     window.addEventListener('resize', checkMobile)
-    
+
     return () => {
       if (mediaQuery.removeEventListener) {
         mediaQuery.removeEventListener('change', handleMediaChange)
@@ -144,11 +165,11 @@ function App() {
   // Show loading state briefly to prevent flash
   if (isLoading) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh', 
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
         background: '#000',
         color: '#fff'
       }}>
@@ -161,23 +182,35 @@ function App() {
 
   return (
     <Router>
+      <AppBackgroundSwitcher />
+      <ScrollToTop />
       <AuthProvider>
         <ActivationProvider>
           <Routes>
-            <Route path="/auth" element={<AuthPage />} />
-            <Route path="/dashboard" element={<BusinessDashboard />} />
-            <Route path="/personal-dashboard" element={<PersonalDashboard />} />
-            <Route path="/workflow-activation" element={<WorkflowActivation />} />
-            <Route path="/oauth/callback" element={<OAuthCallback />} />
-            <Route path="/business-solutions" element={<BusinessSolutions />} />
-            <Route path="/personal-ai" element={<PersonalAI />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/products" element={<Products />} />
-            <Route path="/solutions" element={<Solutions />} />
-            <Route path="/join" element={<JoinUs />} />
-            <Route path="/agents/:slug" element={<AgentPage />} />
-            <Route path="/" element={<HomePage />} />
-          </Routes>
+              <Route path="/auth" element={<AuthPage />} />
+              <Route path="/dashboard" element={<BusinessDashboard />} />
+              <Route path="/personal-dashboard" element={<PersonalDashboard />} />
+              <Route path="/workflow-activation" element={<WorkflowActivation />} />
+              <Route path="/oauth/callback" element={<OAuthCallback />} />
+              <Route path="/business-solutions" element={<BusinessSolutions />} />
+              <Route path="/personal-ai" element={<PersonalAI />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/products" element={<Products />} />
+              <Route path="/solutions" element={<Solutions />} />
+              <Route path="/career" element={<Careers />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/agents/customer-support" element={<CustomerSupportAgent />} />
+              <Route path="/agents/inventory-procurement" element={<InventoryProcurementAgent />} />
+              <Route path="/agents/internal-operations" element={<InternalOperationsAgent />} />
+              <Route path="/agents/orchestration" element={<OrchestrationAgent />} />
+              <Route path="/agents/business-logic" element={<BusinessLogicAgent />} />
+              <Route path="/agents/optimization" element={<OptimizationAgent />} />
+              <Route path="/agents/audit-compliance" element={<AuditComplianceAgent />} />
+              <Route path="/qlix" element={<Qlix />} />
+              <Route path="/agents/:slug" element={<AgentPage />} />
+              <Route path="/" element={<HomePage />} />
+            </Routes>
+          <Footer />
         </ActivationProvider>
       </AuthProvider>
     </Router>
@@ -193,17 +226,17 @@ const WHY_US_GLASS_ITEMS = [
 ];
 
 const TERMINAL_STEPS = [
-  { step: 1, title: 'Infrastructure Mapping', desc: 'We map your processes, data, tools, and decision flows.' },
-  { step: 2, title: 'System Architecture', desc: 'We design a custom operating architecture for your business.' },
-  { step: 3, title: 'Core Infrastructure Build', desc: 'We build:', list: ['Data layer', 'Workflow engines', 'AI agent layer', 'Integration layer', 'Control & visibility layer'] },
-  { step: 4, title: 'Deployment & Migration', desc: 'Your business transitions from tools to infrastructure.' },
-  { step: 5, title: 'Continuous Evolution', desc: 'Your infrastructure grows as your company grows.' },
+  { title: 'Infrastructure Mapping', desc: 'We map your processes, data, tools, and decision flows.', filename: 'mapping.sh', prompt: './init_mapping' },
+  { title: 'System Architecture', desc: 'We design a custom operating architecture for your business.', filename: 'architect.sys', prompt: 'sudo run architecture_v2' },
+  { title: 'Core Infrastructure Build', desc: 'We build:', list: ['Data layer', 'Workflow engines', 'AI agent layer', 'Integration layer', 'Control & visibility layer'], filename: 'build_out.log', prompt: 'make -j8 infrastructure' },
+  { title: 'Deployment & Migration', desc: 'Your business transitions from tools to infrastructure.', filename: 'deploy.bin', prompt: './deploy --production' },
+  { title: 'Continuous Evolution', desc: 'Your infrastructure grows as your company grows.', filename: 'evolution.sh', prompt: './evolve' },
 ];
 
 function buildTerminalFullText(item) {
-  let s = `${item.step}\n\n${item.title}\n\n${item.desc}`;
+  let s = `${item.title}\n${item.desc}`;
   if (item.list && item.list.length) {
-    s += '\n\n' + item.list.map(l => `• ${l}`).join('\n');
+    s += '\n' + item.list.map(l => `• ${l}`).join('\n');
   }
   return s;
 }
@@ -248,7 +281,6 @@ function HomePage() {
 
   // Stable ref so LiquidChrome doesn't re-init WebGL every render (stops blinking)
   const liquidChromeBaseColor = useMemo(() => [0.35, 0.15, 0.5], []);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 768px)');
@@ -308,8 +340,8 @@ function HomePage() {
                 opacity: 1,
                 y: 0
               }}
-              transition={{ 
-                duration: 0.5, 
+              transition={{
+                duration: 0.5,
                 ease: [0.4, 0, 0.2, 1]
               }}
             />
@@ -317,47 +349,37 @@ function HomePage() {
         )}
       </AnimatePresence>
 
-      <Particles
-        particleColors={['#c084fc', '#a855f7', '#7c3aed']}
-        particleCount={300}
-        particleSpread={10}
-        speed={0.06}
-        particleBaseSize={90}
-        moveParticlesOnHover={true}
-        alphaParticles={false}
-        disableRotation={false}
-      />
       <CardNav
+        className=""
         items={[
-          { 
-            label: 'About', 
-            bgColor: '#0D0716', 
-            textColor: '#fff', 
-            links: [ 
-              { label: 'About', ariaLabel: 'About page', href: '/about' }, 
-              { label: 'Company', ariaLabel: 'Company info', href: '/about#company' } 
-            ] 
+          {
+            label: 'About',
+            bgColor: '#0D0716',
+            textColor: '#fff',
+            links: [
+              { label: 'About', ariaLabel: 'About page', href: '/about' },
+              { label: 'Career', ariaLabel: 'Career info', href: '/career' }
+            ]
           },
-          { 
-            label: 'Products', 
-            bgColor: '#170D27', 
-            textColor: '#fff', 
-            links: [ 
-              { label: 'Products', ariaLabel: 'Products page', href: '/products' }, 
-              { label: 'Solutions', ariaLabel: 'Solutions', href: '/solutions' } 
-            ] 
+          {
+            label: 'Products',
+            bgColor: '#170D27',
+            textColor: '#fff',
+            links: [
+              { label: 'Products', ariaLabel: 'Products page', href: '/products' },
+              { label: 'Solutions', ariaLabel: 'Solutions', href: '/solutions' }
+            ]
           },
-          { 
-            label: 'Join us', 
-            bgColor: '#271E37', 
-            textColor: '#fff', 
-            links: [ 
-              { label: 'Join', ariaLabel: 'Join page', href: '/join' }, 
-              { label: 'Contact', ariaLabel: 'Contact us', href: '/join#contact' } 
-            ] 
+          {
+            label: 'Contact',
+            bgColor: '#271E37',
+            textColor: '#fff',
+            links: [
+              { label: 'Contact', ariaLabel: 'Contact page', href: '/contact' }
+            ]
           }
         ]}
-        baseColor="rgba(255,255,255,0.08)"
+        baseColor="rgba(8, 8, 12, 0.9)"
         menuColor="#fff"
         buttonBgColor="rgba(17,17,17,0.75)"
         buttonTextColor="#fff"
@@ -366,67 +388,86 @@ function HomePage() {
 
       {/* HERO SECTION - Based on Image Layout */}
       {showContent && (
-        <motion.div
-          className="hero-section-new"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-        >
-          {/* Main Heading - 2-3 Lines */}
-          <div className="hero-main-heading">
-            <h1 className="hero-heading-line">Your Business. On Autopilot.</h1>
-            <div className="hero-heading-subtitle-wrapper">
-              <TypewriterText
-                text="AI agents that execute, optimize, and scale your operations 24/7."
-                speed={30}
-                isActive={startTypewriter}
-                className="hero-typewriter-subtitle"
-              />
+        isMobile ? (
+          <div className="editorial-mobile-wrapper">
+
+
+            <div className="editorial-hero">
+              <HeroAutopilotHeadline variant="mobile" />
+              <p className="editorial-desc hero-agent-tagline">
+                create and deploy any type of agents you want
+              </p>
             </div>
-            <div className="hero-cta-buttons">
-              <motion.button 
-                className="hero-cta-button hero-cta-primary"
-                onClick={() => window.location.href = '/join'}
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                Book a Free Automation Audit
-              </motion.button>
-              <motion.button 
-                className="hero-cta-button hero-cta-secondary"
-                onClick={() => window.location.href = '/personal-ai'}
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                See How Ghost Works
-              </motion.button>
+
+            <QlixTeaser />
+
+            <div className="editorial-list-section">
+              <div className="editorial-list-header">WHAT WE OFFER</div>
+              <div className="editorial-list-item">
+                <div className="editorial-item-num">01</div>
+                <div className="editorial-item-content"><h4>Business Automation</h4><p>Tailored AI workflows for lead gen, CRM, and pipeline operations</p></div>
+              </div>
+              <div className="editorial-list-item">
+                <div className="editorial-item-num">02</div>
+                <div className="editorial-item-content"><h4>Personal AI Agent</h4><p>AI agent embedded in your daily tools and systems</p></div>
+              </div>
+              <div className="editorial-list-item">
+                <div className="editorial-item-num">03</div>
+                <div className="editorial-item-content"><h4>Sector-Specific Solutions</h4><p>Industry-targeted automations across 10+ verticals</p></div>
+              </div>
+              <div className="editorial-list-item">
+                <div className="editorial-item-num">04</div>
+                <div className="editorial-item-content"><h4>Custom Integrations</h4><p>Plug into your existing stack — no rip and replace</p></div>
+              </div>
             </div>
+
+
           </div>
+        ) : (
+          <>
+            <motion.div
+              className="hero-section-new"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+            {/* Main Heading - 2-3 Lines */}
+            <div className="hero-main-heading">
+              <HeroAutopilotHeadline variant="desktop" />
 
-          {/* Two Column Section */}
-          <div className="hero-two-columns">
-            {/* Left Column - Business */}
-            <div className="hero-column hero-column-left">
-              <h2 className="hero-column-title">For Your Business</h2>
-              <p className="hero-column-text">End To End Tailored AI Employee that works 24/7</p>
+              <p className="hero-agent-tagline">
+                create and deploy any type of agents you want
+              </p>
             </div>
 
-            {/* Central Logo Separator */}
-            <div className="hero-central-icon">
-              <img 
-                src="/logo_solo.png" 
-                alt="EXORA Logo" 
-                className="hero-logo-separator"
-              />
-            </div>
+            {/* Two Column Section */}
+            <div className="hero-two-columns">
+              {/* Left Column - Business */}
+              <div className="hero-column hero-column-left">
+                <h2 className="hero-column-title">For Your Business</h2>
+                <p className="hero-column-text">End To End Tailored AI Employee that works 24/7</p>
+              </div>
 
-            {/* Right Column - Life */}
-            <div className="hero-column hero-column-right">
-              <h2 className="hero-column-title">For Your Life</h2>
-              <p className="hero-column-text">AI Agent For Your Daily Work. In Your System</p>
+              {/* Central Logo Separator */}
+              <div className="hero-central-icon">
+                <img
+                  src="/logo_solo.png"
+                  alt="EXORA Logo"
+                  className="hero-logo-separator"
+                />
+              </div>
+
+              {/* Right Column - Life */}
+              <div className="hero-column hero-column-right">
+                <h2 className="hero-column-title">For Your Life</h2>
+                <p className="hero-column-text">AI Agent For Your Daily Work. In Your System</p>
+              </div>
             </div>
-          </div>
-        </motion.div>
+            </motion.div>
+
+            <QlixTeaser />
+          </>
+        )
       )}
 
       {/* Shining Divider Line */}
@@ -488,9 +529,9 @@ function HomePage() {
                 textAlign="left"
               />
             </div>
-            
+
             <div className="why-us-content">
-              
+
               <SplitText
                 text="Most companies today run on a fragile mix of tools, people, spreadsheets, and manual coordination."
                 tag="p"
@@ -505,7 +546,7 @@ function HomePage() {
                 rootMargin="-50px"
                 textAlign="left"
               />
-              
+
               <SplitText
                 text="Exora replaces this with a unified, purpose-built software infrastructure that:"
                 tag="p"
@@ -520,11 +561,11 @@ function HomePage() {
                 rootMargin="-50px"
                 textAlign="left"
               />
-              
+
               <div className="why-us-glass-icons-wrapper">
                 <GlassIcons items={WHY_US_GLASS_ITEMS} className="why-us-glass-icons" colorful={false} />
               </div>
-              
+
               <div className="why-us-closing">
                 <SplitText
                   text="We don't sell features."
@@ -570,7 +611,9 @@ function HomePage() {
           transition={{ duration: 0.8, delay: 0.3 }}
         >
           <div className="how-we-work-inner">
-            <h2 className="how-we-work-section-title">How we work?</h2>
+            <h2 className="how-we-work-section-title">
+              How We <span className="neon-italic">Operate</span>
+            </h2>
             <div className="how-we-work-terminals-container">
               <div className="how-we-work-terminals-label">~bash</div>
               <div className="how-we-work-terminals-grid">
@@ -585,7 +628,7 @@ function HomePage() {
                   return (
                     <div
                       key={item.step}
-                      className="how-we-work-terminal"
+                      className={`how-we-work-terminal ${isActive ? 'active' : ''} ${isDone ? 'done' : ''}`}
                       style={{
                         gridColumn: col,
                         gridRow: isThird ? '1 / 3' : row,
@@ -597,19 +640,83 @@ function HomePage() {
                           <span className="how-we-work-terminal-dot how-we-work-terminal-dot-yellow" />
                           <span className="how-we-work-terminal-dot how-we-work-terminal-dot-green" />
                         </span>
+                        <span className="how-we-work-terminal-filename">{item.filename}</span>
                       </div>
                       <div className="how-we-work-terminal-body">
-                        <span className="how-we-work-terminal-sparkle how-we-work-terminal-sparkle-tl" aria-hidden>✦</span>
-                        <pre className="how-we-work-terminal-ruler" aria-hidden>{fullText}</pre>
-                        <pre className="how-we-work-terminal-typing">
-                          {visibleText}
-                          {isActive && <span className="how-we-work-terminal-cursor" aria-hidden>▌</span>}
-                        </pre>
-                        <span className="how-we-work-terminal-sparkle how-we-work-terminal-sparkle-br" aria-hidden>✦</span>
+                        {/* Neon Arch Content (Desktop & Mobile) */}
+                        <div className="neon-mobile-content">
+                          <div className="neon-mobile-typing-body">
+                            {visibleText}
+                            {isActive && <span className="how-we-work-terminal-cursor" aria-hidden>▌</span>}
+                          </div>
+                          
+                          {/* Step 1: Scanning block */}
+                          {i === 0 && (
+                            <div className="neon-code-box">
+                              <code>[SCANNING] subnet 10.0.0.0/24...</code><br/>
+                              <code>[FOUND] 14 orphaned containers</code><br/>
+                              <code>[ALERT] high latency detected in region-us-east-1</code>
+                            </div>
+                          )}
+
+                          {/* Step 2: Hub Diagram */}
+                          {i === 1 && (
+                            <div className="neon-diagram">
+                              <div className="neon-diagram-item">
+                                <span className="material-symbols-outlined neon-icon">hub</span>
+                                <span>Core</span>
+                              </div>
+                              <div className="neon-diagram-line">
+                                <span className="neon-line-dot"></span>
+                              </div>
+                              <div className="neon-diagram-item">
+                                <span className="material-symbols-outlined neon-icon">cloud</span>
+                                <span>Edge</span>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Step 3: Progress Bar */}
+                          {i === 2 && (
+                            <div className="neon-progress-wrap">
+                              <div className="neon-progress-labels">
+                                <span>Provisioning Resources</span>
+                                <span className="neon-progress-text">
+                                  {isDone ? '100% COMPLETE' : (isActive ? 'PROCESSING...' : '0%')}
+                                </span>
+                              </div>
+                              <div className="neon-progress-bar">
+                                <div className="neon-progress-fill" style={{ width: isDone ? '100%' : (isActive ? '100%' : '0%') }}></div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Step 4: Rocket Launch */}
+                          {i === 3 && (
+                            <div className="neon-rocket-wrap">
+                              <div className="neon-rocket-box">
+                                <span className="material-symbols-outlined neon-rocket-icon">rocket_launch</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );
                 })}
+
+                {/* Neon Arch: Live Operations Feed (Mobile Only) */}
+                <div className="neon-live-feed-container">
+                  <div className="neon-live-feed-header">
+                    <span className="neon-live-feed-dot animate-ping"></span>
+                    <span className="neon-live-feed-label">Live Operations Feed</span>
+                  </div>
+                  <div className="neon-live-feed-body">
+                    <div>[14:02:11] <span className="text-primary">INFO</span>: Load balancer balancing 1.2M requests/sec</div>
+                    <div>[14:02:45] <span className="text-secondary">TRACE</span>: Handshake established with Node_Alpha_TX</div>
+                    <div>[14:03:02] <span className="text-primary">INFO</span>: Encrypted tunnel confirmed for user ID: 8829-X</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -671,14 +778,8 @@ function HomePage() {
           transition={{ duration: 0.8, delay: 0.2 }}
         >
           <div className="flowing-menu-container">
-            <div className={`flowing-menu-wrapper ${isMobile ? 'flowing-menu-wrapper--mobile-glass' : ''}`}>
-              {isMobile ? (
-                <div className="agents-glass-wrapper">
-                  <GlassIcons items={AGENTS_GLASS_ITEMS} className="agents-glass-icons" colorful={true} />
-                </div>
-              ) : (
-                <FlowingMenu items={FLOWING_MENU_ITEMS} />
-              )}
+            <div className="flowing-menu-wrapper">
+              <FlowingMenu items={FLOWING_MENU_ITEMS} />
             </div>
             <p className="flowing-menu-shiny-wrap">
               <ShinyText
@@ -697,38 +798,6 @@ function HomePage() {
         </motion.section>
       )}
 
-      {/* Meet GHOST EXORA section */}
-      {showContent && (
-        <motion.section
-          className="meet-ghost-section"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="meet-ghost-inner">
-            <p className="meet-ghost-meet">Meet</p>
-            <p className="meet-ghost-ghost">GHOST</p>
-            <div className="meet-ghost-orb-wrap">
-              <Orb
-                onClick={() => navigate('/personal-ai')}
-                className="meet-ghost-orb"
-                aria-label="Go to Ghost"
-              />
-              <span className="meet-ghost-orb-hint">press me</span>
-            </div>
-            <motion.p
-              className="meet-ghost-exora"
-              initial={{ opacity: 0, y: 80 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "0px" }}
-              transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-            >
-              EXORA
-            </motion.p>
-          </div>
-        </motion.section>
-      )}
     </div>
   )
 }

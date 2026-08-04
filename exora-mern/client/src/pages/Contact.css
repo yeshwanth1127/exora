@@ -1,11 +1,11 @@
-.join-page {
+.contact-page {
   min-height: 100vh;
   background: #000000;
   position: relative;
   overflow-x: hidden;
 }
 
-.join-container {
+.contact-container {
   max-width: 900px;
   margin: 0 auto;
   padding: 120px 24px 80px;
@@ -13,12 +13,12 @@
   z-index: 10;
 }
 
-.join-hero {
+.contact-hero {
   text-align: center;
   margin-bottom: 60px;
 }
 
-.join-title {
+.contact-title {
   font-size: clamp(40px, 6vw, 72px);
   font-weight: 800;
   background: linear-gradient(135deg, #ff00ff 0%, #c084fc 40%, #a855f7 100%);
@@ -30,7 +30,7 @@
   filter: brightness(1.2);
 }
 
-.join-subtitle {
+.contact-subtitle {
   font-size: clamp(18px, 2vw, 24px);
   color: rgba(255, 255, 255, 0.7);
   max-width: 700px;
@@ -65,13 +65,115 @@
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
-  margin-bottom: 12px;
+  margin-bottom: 0;
+  line-height: 1.1;
 }
 
 .form-description {
   font-size: 16px;
   color: rgba(255, 255, 255, 0.7);
+  margin-top: 4px;
+  margin-bottom: 0;
+  line-height: 1.5;
+}
+
+.bot-header-container {
   margin-bottom: 32px;
+}
+
+.form-text-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding-top: 10px;
+}
+
+.bot-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.ira-bot-small-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 0;
+  background: none;
+  backdrop-filter: none;
+  border: none;
+  box-shadow: none;
+  position: relative;
+}
+
+/* Simulated Mouth Animation */
+.ira-bot-small-wrapper::after {
+  content: '';
+  position: absolute;
+  top: 62%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 2px;
+  background: #a855f7;
+  border-radius: 2px;
+  box-shadow: 0 0 10px #a855f7;
+  animation: ira-mouth 0.4s ease-in-out infinite alternate;
+  z-index: 5;
+}
+
+@keyframes ira-mouth {
+  0% { width: 12px; height: 1px; opacity: 0.5; }
+  100% { width: 16px; height: 3px; opacity: 1; }
+}
+
+.ira-bot-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: #a855f7;
+  letter-spacing: 0.1em;
+}
+
+/* Simulated Waving Hand */
+.ira-bot-small-wrapper::before {
+  content: '👋';
+  position: absolute;
+  top: 55%;
+  left: 20%;
+  font-size: 24px;
+  filter: sepia(1) saturate(5) hue-rotate(240deg); /* Make it purple-ish */
+  animation: ira-wave 1s ease-in-out infinite alternate;
+  z-index: 6;
+  opacity: 0.8;
+}
+
+@keyframes ira-wave {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(20deg); }
+}
+
+.ira-bot-img {
+  width: 160px;
+  height: auto;
+  filter: drop-shadow(0 0 25px rgba(168, 85, 247, 0.8));
+  animation: ira-float-complex 4s ease-in-out infinite;
+  position: relative;
+}
+
+@keyframes ira-float-complex {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-5px) rotate(2deg); }
+  50% { transform: translateY(-2px) rotate(-1deg); }
+  75% { transform: translateY(-7px) rotate(3deg); }
+}
+
+@keyframes ira-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
 }
 
 .contact-form {
@@ -125,22 +227,28 @@
 }
 
 .submit-button {
-  background: linear-gradient(135deg, #a855f7, #7c3aed);
-  color: #ffffff;
-  font-size: 18px;
+  background: #EEEdFE !important;
+  color: #3C3489 !important;
+  font-size: 16px;
   font-weight: 600;
-  padding: 16px 32px;
-  border: none;
-  border-radius: 12px;
+  padding: 14px 32px;
+  border: 1.5px solid #AFA9EC !important;
+  border-radius: 999px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 20px rgba(168, 85, 247, 0.4);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
   margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: fit-content;
 }
 
 .submit-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(168, 85, 247, 0.6);
+  background: #ffffff !important;
+  box-shadow: 0 8px 25px rgba(168, 85, 247, 0.2);
 }
 
 .success-message {
@@ -340,26 +448,31 @@
 }
 
 .trial-button {
-  background: linear-gradient(135deg, #a855f7, #7c3aed);
-  color: #ffffff;
-  font-size: 18px;
+  background: #EEEdFE !important;
+  color: #3C3489 !important;
+  font-size: 16px;
   font-weight: 600;
-  padding: 16px 40px;
-  border: none;
-  border-radius: 12px;
+  padding: 14px 40px;
+  border: 1.5px solid #AFA9EC !important;
+  border-radius: 999px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 20px rgba(168, 85, 247, 0.4);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 
 .trial-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(168, 85, 247, 0.6);
+  background: #ffffff !important;
+  box-shadow: 0 8px 25px rgba(168, 85, 247, 0.2);
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .join-container {
+  .contact-container {
     padding: 100px 16px 60px;
   }
 
@@ -382,9 +495,21 @@
   }
 }
 
-@media (max-width: 480px) {
-  .join-hero {
+ @media (max-width: 480px) {
+  .contact-hero {
     margin-bottom: 40px;
+  }
+
+  .bot-header-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 16px;
+  }
+
+  .ira-bot-small-wrapper {
+    transform: none;
+    order: -1;
   }
 
   .form-card {

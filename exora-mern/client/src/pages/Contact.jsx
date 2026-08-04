@@ -1,11 +1,18 @@
-import { motion } from 'framer-motion';
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import './JoinUs.css';
-import Particles from '../components/Particles';
+import { Mail, MessageSquare, Phone, Check } from 'lucide-react';
+import { FiInstagram, FiLinkedin } from 'react-icons/fi';
+import './Contact.css';
 import CardNav from '../components/CardNav';
+import SeeHowItWorksButton from '../components/SeeHowItWorksButton';
+const CARD_NAV_ITEMS = [
+  { label: 'About', bgColor: '#0D0716', textColor: '#fff', links: [{ label: 'About', ariaLabel: 'About page', href: '/about' }, { label: 'Career', ariaLabel: 'Career info', href: '/career' }] },
+  { label: 'Products', bgColor: '#170D27', textColor: '#fff', links: [{ label: 'Products', ariaLabel: 'Products page', href: '/products' }, { label: 'Solutions', ariaLabel: 'Solutions', href: '/solutions' }] },
+  { label: 'Contact', bgColor: '#271E37', textColor: '#fff', links: [{ label: 'Contact', ariaLabel: 'Contact us', href: '/contact#contact' }] },
+];
 
-const JoinUs = () => {
+const Contact = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
@@ -65,72 +72,34 @@ const JoinUs = () => {
 
   return (
     <div className="join-page">
-      <Particles
-        particleColors={['#c084fc', '#a855f7', '#7c3aed']}
-        particleCount={150}
-        particleSpread={8}
-        speed={0.04}
-        particleBaseSize={60}
-      />
+      <CardNav items={CARD_NAV_ITEMS} baseColor="rgba(255,255,255,0.08)" menuColor="#fff" buttonBgColor="rgba(17,17,17,0.75)" buttonTextColor="#fff" ease="power3.out" />
 
-      <CardNav
-        items={[
-          { 
-            label: 'About', 
-            bgColor: '#0D0716', 
-            textColor: '#fff', 
-            links: [
-              { label: 'About', ariaLabel: 'About page', href: '/about' },
-              { label: 'Company', ariaLabel: 'Company info', href: '/about#company' }
-            ]
-          },
-          { 
-            label: 'Products', 
-            bgColor: '#170D27', 
-            textColor: '#fff', 
-            links: [
-              { label: 'Products', ariaLabel: 'Products page', href: '/products' },
-              { label: 'Solutions', ariaLabel: 'Solutions', href: '/solutions' }
-            ]
-          },
-          { 
-            label: 'Join us', 
-            bgColor: '#271E37', 
-            textColor: '#fff', 
-            links: [
-              { label: 'Join', ariaLabel: 'Join page', href: '/join' },
-              { label: 'Contact', ariaLabel: 'Contact us', href: '/join#contact' }
-            ]
-          }
-        ]}
-      />
-
-      <div className="join-container">
+      <div className="contact-container">
         <motion.div
-          className="join-hero"
+          className="contact-hero"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
         >
           <motion.h1 
-            className="join-title"
+            className="contact-title"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            Join the AI Revolution
+            Get in Touch
           </motion.h1>
           <motion.p 
-            className="join-subtitle"
+            className="contact-subtitle"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            Get in touch with our team to start your automation journey.
+            Have questions? Our team is here to help you transform your business with AI.
           </motion.p>
+          <SeeHowItWorksButton />
         </motion.div>
 
-        {/* Contact Form Section */}
         <motion.div
           className="contact-form-section"
           initial={{ opacity: 0, y: 50 }}
@@ -148,12 +117,22 @@ const JoinUs = () => {
               boxShadow: '0 20px 60px rgba(168, 85, 247, 0.15)'
             }}
           >
-            <motion.h2 className="form-title" variants={itemVariants}>
-              Get Started Today
-            </motion.h2>
-            <motion.p className="form-description" variants={itemVariants}>
-              Fill out the form below and our team will reach out within 24 hours.
-            </motion.p>
+            <motion.div className="bot-header-container" variants={itemVariants}>
+              <div className="bot-header-content">
+                <div className="form-text-column">
+                  <motion.h2 className="form-title">
+                    Get Started Today
+                  </motion.h2>
+                  <motion.p className="form-description">
+                    Fill out the form below and our team will reach out within 24 hours.
+                  </motion.p>
+                </div>
+                <div className="ira-bot-small-wrapper">
+                  <span className="ira-bot-name">IRA</span>
+                  <img src="/ira-bot.png" alt="IRA Bot" className="ira-bot-img" />
+                </div>
+              </div>
+            </motion.div>
 
             {submitted ? (
               <motion.div 
@@ -168,7 +147,7 @@ const JoinUs = () => {
                   animate={{ scale: 1 }}
                   transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
                 >
-                  ✓
+                  <Check size={24} color="#fff" />
                 </motion.div>
                 <motion.h3
                   initial={{ opacity: 0 }}
@@ -245,6 +224,7 @@ const JoinUs = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
+                  <span className="cta-dot-pulsing" />
                   Send Message
                 </motion.button>
               </form>
@@ -260,149 +240,107 @@ const JoinUs = () => {
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.3 }}
         >
-          <motion.div 
-            className="info-card"
-            whileHover={{ 
-              borderColor: 'rgba(168, 85, 247, 0.4)',
-              boxShadow: '0 20px 60px rgba(168, 85, 247, 0.15)'
-            }}
-          >
-            <motion.h2 
-              className="info-title"
-              initial={{ opacity: 0, y: -10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
-              Other Ways to Connect
-            </motion.h2>
+          <div id="contact" style={{ background: '#0e0d1a', borderRadius: '16px', padding: '2rem 2rem', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+            <h2 style={{ color: '#fff', fontSize: '22px', fontWeight: '500', textAlign: 'center', margin: '0 0 2rem' }}>Other ways to connect</h2>
 
-            <div className="contact-methods-grid">
-              <motion.div 
-                className="contact-method"
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-                whileHover={{ scale: 1.02 }}
-              >
-                <motion.div 
-                  className="method-icon"
-                  variants={iconVariants}
-                  whileHover="hover"
-                >
-                  📧
-                </motion.div>
-                <div className="method-content">
-                  <h3>Email Us</h3>
-                  <p>hello@exora.ai</p>
-                  <p>support@exora.ai</p>
-                </div>
-              </motion.div>
+            <div style={{ borderTop: '0.5px solid rgba(255,255,255,0.1)' }}>
 
-              <motion.div 
-                className="contact-method"
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                whileHover={{ scale: 1.02 }}
+              {/* Email */}
+              <div 
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.1rem 0', borderBottom: '0.5px solid rgba(255,255,255,0.1)', cursor: 'pointer', transition: 'background 0.2s' }} 
+                onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'} 
+                onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+                onClick={() => window.location.href = 'mailto:support@exora.solutions'}
               >
-                <motion.div 
-                  className="method-icon"
-                  variants={iconVariants}
-                  whileHover="hover"
-                >
-                  💬
-                </motion.div>
-                <div className="method-content">
-                  <h3>Live Chat</h3>
-                  <p>Available Mon-Fri, 9AM-6PM EST</p>
-                  <motion.button 
-                    className="chat-button" 
-                    onClick={() => navigate('/')}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    Start Chat
-                  </motion.button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', border: '0.5px solid rgba(127,119,221,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Mail size={16} color="#7F77DD" strokeWidth={1.8} />
+                  </div>
+                  <div>
+                    <p style={{ margin: 0, fontSize: '15px', fontWeight: '500', color: '#fff' }}>Email us</p>
+                    <p style={{ margin: 0, fontSize: '13px', color: 'rgba(255,255,255,0.45)' }}>support@exora.solutions</p>
+                  </div>
                 </div>
-              </motion.div>
+                <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '18px' }}>›</span>
+              </div>
 
-              <motion.div 
-                className="contact-method"
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-                whileHover={{ scale: 1.02 }}
+              {/* Live Chat */}
+              <div 
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.1rem 0', borderBottom: '0.5px solid rgba(255,255,255,0.1)', cursor: 'pointer', transition: 'background 0.2s' }} 
+                onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'} 
+                onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+                onClick={() => navigate('/')}
               >
-                <motion.div 
-                  className="method-icon"
-                  variants={iconVariants}
-                  whileHover="hover"
-                >
-                  📞
-                </motion.div>
-                <div className="method-content">
-                  <h3>Schedule a Call</h3>
-                  <p>Book a 30-minute consultation</p>
-                  <motion.button 
-                    className="schedule-button" 
-                    onClick={() => navigate('/auth')}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    Book Now
-                  </motion.button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', border: '0.5px solid rgba(127,119,221,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <MessageSquare size={16} color="#7F77DD" strokeWidth={1.8} />
+                  </div>
+                  <div>
+                    <p style={{ margin: 0, fontSize: '15px', fontWeight: '500', color: '#fff' }}>Live chat</p>
+                    <p style={{ margin: 0, fontSize: '13px', color: 'rgba(255,255,255,0.45)' }}>Mon–Fri, 9AM–6PM EST</p>
+                  </div>
                 </div>
-              </motion.div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '12px', background: 'rgba(29,158,117,0.15)', color: '#5DCAA5', padding: '4px 12px', borderRadius: '999px' }}>Online now</span>
+                  <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '18px' }}>›</span>
+                </div>
+              </div>
+
+              {/* Schedule */}
+              <div 
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.1rem 0', cursor: 'pointer', transition: 'background 0.2s' }} 
+                onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'} 
+                onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+                onClick={() => navigate('/auth')}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', border: '0.5px solid rgba(127,119,221,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Phone size={16} color="#7F77DD" strokeWidth={1.8} />
+                  </div>
+                  <div>
+                    <p style={{ margin: 0, fontSize: '15px', fontWeight: '500', color: '#fff' }}>Schedule a call</p>
+                    <p style={{ margin: 0, fontSize: '13px', color: 'rgba(255,255,255,0.45)' }}>Book a 30-minute consultation</p>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '12px', background: 'rgba(127,119,221,0.15)', color: '#AFA9EC', padding: '4px 12px', borderRadius: '999px' }}>30 min</span>
+                  <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '18px' }}>›</span>
+                </div>
+              </div>
             </div>
 
-            <div className="social-links">
+            <div className="social-links" style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '0.5px solid rgba(255,255,255,0.1)' }}>
               <motion.h3 
                 className="social-title"
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
+                style={{ color: 'rgba(255,255,255,0.45)', fontSize: '14px', fontWeight: '500', marginBottom: '1rem', textAlign: 'center' }}
               >
                 Follow Us
               </motion.h3>
-              <div className="social-icons">
+              <div className="social-icons" style={{ display: 'flex', justifyContent: 'center', gap: '20px' }}>
                 <motion.a 
-                  href="https://twitter.com" 
+                  href="https://www.instagram.com/exora.autopilot?igsh=NThjYXB5OGQ5ZHRv" 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="social-icon"
                   whileHover={{ scale: 1.1, rotate: 5 }}
                   whileTap={{ scale: 0.9 }}
                 >
-                  𝕏
+                  <FiInstagram size={20} color="rgba(255,255,255,0.6)" />
                 </motion.a>
                 <motion.a 
-                  href="https://linkedin.com" 
+                  href="https://www.linkedin.com/company/exora_solutions/" 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="social-icon"
                   whileHover={{ scale: 1.1, rotate: -5 }}
                   whileTap={{ scale: 0.9 }}
                 >
-                  in
-                </motion.a>
-                <motion.a 
-                  href="https://github.com" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="social-icon"
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  gh
+                  <FiLinkedin size={20} color="rgba(255,255,255,0.6)" />
                 </motion.a>
               </div>
             </div>
-          </motion.div>
+          </div>
+
 
           <motion.div 
             className="quick-start-card"
@@ -425,6 +363,7 @@ const JoinUs = () => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
+              <span className="cta-dot-pulsing" />
               Start Free Trial
             </motion.button>
           </motion.div>
@@ -434,4 +373,4 @@ const JoinUs = () => {
   );
 };
 
-export default JoinUs;
+export default Contact;

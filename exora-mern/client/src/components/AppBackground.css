@@ -1,0 +1,16 @@
+.app-background {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  background: #000000;
+}
+
+.app-background .bg-radials {
+  z-index: 0;
+}
+
+.app-background .noise-overlay {
+  z-index: 1;
+}

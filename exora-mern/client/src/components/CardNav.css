@@ -7,6 +7,7 @@
   z-index: 99;
   box-sizing: border-box;
   animation: none;
+  pointer-events: auto;
 }
 
 @keyframes navbarFloat {
@@ -42,8 +43,8 @@
   display: block;
   height: 60px;
   padding: 0;
-  background: rgba(168, 85, 247, 0.12);
-  border: 1px solid rgba(168, 85, 247, 0.35);
+  background: rgba(10, 10, 15, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 12px;
   position: relative;
   overflow: hidden;
@@ -98,36 +99,11 @@
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  pointer-events: none;
+  pointer-events: auto;
 }
 
 .logo { height: 24px; opacity: 0.95; }
-.logo-placeholder { width: 80px; height: 20px; }
 
-.center-typing {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-}
-
-.cardnav-type-text {
-  font-family: 'Press Start 2P', 'VT323', monospace;
-  font-size: 14px;
-  letter-spacing: 0.18em;
-  color: #e9d5ff;
-  text-shadow: 0 0 6px rgba(167, 139, 250, 0.55), 0 0 18px rgba(124, 58, 237, 0.35);
-}
-.cardnav-type-caret {
-  width: 8px;
-  height: 1.1em;
-  background: #e9d5ff;
-  display: inline-block;
-  animation: caret-blink 1s steps(1) infinite;
-}
-
-@keyframes caret-blink { 0%,49%{opacity:1} 50%,100%{opacity:0} }
 
 .nav-buttons-group {
   display: flex;
@@ -137,37 +113,60 @@
 }
 
 .card-nav-home-button {
-  background: rgba(168, 85, 247, 0.15);
+  background: rgba(168, 85, 247, 0.2) !important;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(168, 85, 247, 0.3);
+  border: 1px solid rgba(168, 85, 247, 0.5) !important;
   color: #ffffff !important;
   border-radius: 8px;
-  width: 42px;
   height: 36px;
   min-width: 42px;
-  min-height: 36px;
+  padding: 0 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.25rem;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  letter-spacing: 0.02em;
   cursor: pointer;
   transition: all 0.3s ease;
   flex-shrink: 0;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.25);
 }
 
 .card-nav-home-button svg {
-  width: 20px;
-  height: 20px;
-  fill: #ffffff !important;
-  color: #ffffff !important;
+  width: 16px;
+  height: 16px;
+  fill: #e9d5ff !important;
+  color: #e9d5ff !important;
+  flex-shrink: 0;
+}
+
+.card-nav-home-button .home-btn-label {
+  color: #e9d5ff;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
 }
 
 .card-nav-home-button:hover {
-  background: rgba(168, 85, 247, 0.25);
-  border-color: rgba(168, 85, 247, 0.5);
+  background: rgba(168, 85, 247, 0.38) !important;
+  border-color: rgba(192, 132, 252, 0.8) !important;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.5);
+  box-shadow: 0 4px 16px rgba(168, 85, 247, 0.55);
+}
+
+@media (max-width: 480px) {
+  .card-nav-home-button .home-btn-label {
+    display: none;
+  }
+  .card-nav-home-button {
+    width: 36px;
+    min-width: 36px;
+    padding: 0;
+  }
 }
 
 .card-nav-cta-button {
@@ -197,22 +196,71 @@
   pointer-events: none;
   z-index: 1;
 }
+
+.card-nav-mobile-cta {
+  display: none;
+  width: 100%;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 4px;
+}
+
+.hamburger-cta-button {
+  background: #EEEdFE !important;
+  color: #3C3489 !important;
+  border: 1.5px solid #AFA9EC !important;
+  border-radius: 999px;
+  padding: 12px 28px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 280px;
+  margin: 0 auto;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.hamburger-cta-button:active {
+  transform: scale(0.98);
+}
+
+.cta-dot-pulsing {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #7B6FE8;
+  display: inline-block;
+  animation: cta-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes cta-pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.4); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}
 .card-nav.open .card-nav-content { visibility: visible; pointer-events: auto; }
 
 /* Mobile: all three sections fit inside nav box, no scrolling; labels only, no subsections */
 @media (max-width: 768px) {
   .card-nav.open {
     min-height: 280px !important;
-    max-height: calc(100vh - 24px) !important;
+    max-height: calc(100vh - 40px) !important;
     height: auto !important;
-    overflow: hidden !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
     transition: min-height 0.35s ease-out, height 0.35s ease-out;
+    padding-bottom: 20px;
   }
   .card-nav.open .card-nav-content {
     visibility: visible !important;
     pointer-events: auto !important;
-    overflow: hidden !important;
-    padding: 0.75rem 0.75rem 1rem 0.75rem;
+    overflow: visible !important;
+    padding: 0.75rem 0.75rem 1.5rem 0.75rem;
   }
   .card-nav.open .nav-card {
     opacity: 1 !important;
@@ -224,7 +272,13 @@
     padding: 12px 14px;
   }
   .card-nav.open .nav-card-links {
-    display: none !important;
+    display: flex !important;
+    margin-top: 4px !important;
+    gap: 4px !important;
+  }
+  .card-nav-mobile-cta {
+    display: flex !important;
+    justify-content: center;
   }
 }
 
@@ -244,24 +298,27 @@
 }
 
 .nav-card-label { font-weight: 500; font-size: 18px; letter-spacing: -0.25px; }
-.nav-card-links { margin-top: auto; display: flex; flex-direction: column; gap: 2px; }
+.nav-card-links { margin-top: auto; display: flex; flex-direction: column; gap: 4px; }
 .nav-card-link { 
   font-size: 14px; 
+  font-weight: 500;
   cursor: pointer; 
   text-decoration: none; 
   transition: opacity 0.3s ease; 
   display: inline-flex; 
   align-items: center; 
-  gap: 6px; 
+  gap: 8px; 
   background: transparent !important;
   border: none;
-  padding: 4px 0;
-  color: inherit;
+  padding: 6px 0;
+  color: #fff !important;
   font-family: inherit;
   text-align: left;
   width: fit-content;
 }
-.nav-card-link:hover { opacity: 0.8; }
+.nav-card-link:hover { 
+  opacity: 0.7; 
+}
 
 /* Mobile styles */
 @media (max-width: 768px) {
@@ -323,9 +380,6 @@
     height: 2px;
   }
   
-  .cardnav-type-text {
-    font-size: 12px;
-  }
   
   .card-nav-content {
     padding: 0.75rem 0.4rem 0.4rem 0.4rem;
@@ -401,9 +455,6 @@
     width: 20px;
   }
   
-  .cardnav-type-text {
-    font-size: 10px;
-  }
   
   .nav-card {
     padding: 8px 10px;
@@ -419,3 +470,49 @@
 }
 
 
+
+/* Left group for Hamburger + Back */
+.card-nav-left-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 100%;
+}
+
+.card-nav-back-button {
+  background: transparent !important;
+  border: none !important;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.2s;
+  opacity: 0.7;
+}
+
+.card-nav-back-button:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.card-nav-back-button svg {
+  stroke: #ffffff;
+}
+
+@media (max-width: 480px) {
+  .card-nav-back-button span {
+    display: none;
+  }
+  .card-nav-left-group {
+    gap: 8px;
+    max-width: 85px;
+  }
+  .nav-buttons-group {
+    max-width: 85px;
+  }
+}

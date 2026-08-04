@@ -1,8 +1,13 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import './Solutions.css';
-import Particles from '../components/Particles';
 import CardNav from '../components/CardNav';
+
+const CARD_NAV_ITEMS = [
+  { label: 'About', bgColor: '#0D0716', textColor: '#fff', links: [{ label: 'About', ariaLabel: 'About page', href: '/about' }, { label: 'Career', ariaLabel: 'Career info', href: '/career' }] },
+  { label: 'Products', bgColor: '#170D27', textColor: '#fff', links: [{ label: 'Products', ariaLabel: 'Products page', href: '/products' }, { label: 'Solutions', ariaLabel: 'Solutions', href: '/solutions' }] },
+  { label: 'Contact', bgColor: '#271E37', textColor: '#fff', links: [{ label: 'Contact', ariaLabel: 'Contact us', href: '/contact#contact' }] },
+];
 
 const Solutions = () => {
   const navigate = useNavigate();
@@ -10,45 +15,42 @@ const Solutions = () => {
   const solutions = [
     {
       id: 1,
-      icon: '🤖',
       name: 'Customer Service Agents',
-      tagline: 'Your 24/7 Support Team',
-      description: 'AI agents that handle customer inquiries, resolve issues, and escalate complex cases—all while maintaining your brand voice.',
+      tagline: 'Your 24/7 support team',
+      description: 'AI agents that handle customer inquiries, resolve issues, and escalate complex cases — all while maintaining your brand voice.',
       features: [
         'Multi-channel support (email, chat, phone)',
         'Sentiment analysis & smart escalation',
         'Automatic ticket categorization',
         'Response in 50+ languages'
       ],
-      metrics: {
-        efficiency: '95% automation rate',
-        speed: '< 30s avg response time',
-        satisfaction: '4.8/5 CSAT score'
-      }
+      stats: [
+        { num: '80%', desc: 'Automation rate', label: 'Efficiency' },
+        { num: '<60s', desc: 'Avg response time', label: 'Speed' },
+        { num: '4.6/5', desc: 'CSAT score', label: 'Results' }
+      ]
     },
     {
       id: 2,
-      icon: '📊',
       name: 'Sales Automation Agents',
-      tagline: 'Never Miss a Lead',
-      description: 'Qualify prospects, schedule meetings, send personalized follow-ups, and update your CRM—automatically.',
+      tagline: 'Never miss a lead',
+      description: 'Qualify prospects, schedule meetings, send personalized follow-ups, and update your CRM — automatically.',
       features: [
         'Lead qualification & scoring',
         'Automated email sequences',
         'Meeting scheduling & reminders',
         'CRM auto-sync (Salesforce, HubSpot, etc.)'
       ],
-      metrics: {
-        efficiency: '70% time saved',
-        speed: 'Instant lead response',
-        satisfaction: '3x more meetings booked'
-      }
+      stats: [
+        { num: '55%', desc: 'Time saved', label: 'Efficiency' },
+        { num: '<1min', desc: 'Lead response', label: 'Speed' },
+        { num: '2x', desc: 'More meetings booked', label: 'Results' }
+      ]
     },
     {
       id: 3,
-      icon: '💼',
-      name: 'Operations Management Agents',
-      tagline: 'Run Your Business on Autopilot',
+      name: 'Operations Management',
+      tagline: 'Run your business on autopilot',
       description: 'Coordinate tasks, allocate resources, predict bottlenecks, and optimize workflows across your entire operation.',
       features: [
         'Task assignment & tracking',
@@ -56,35 +58,33 @@ const Solutions = () => {
         'Bottleneck prediction',
         'Performance analytics'
       ],
-      metrics: {
-        efficiency: '60% cost reduction',
-        speed: '40% faster execution',
-        satisfaction: '99.5% uptime'
-      }
+      stats: [
+        { num: '45%', desc: 'Cost reduction', label: 'Efficiency' },
+        { num: '35%', desc: 'Faster execution', label: 'Speed' },
+        { num: '93%', desc: 'Uptime', label: 'Results' }
+      ]
     },
     {
       id: 4,
-      icon: '📈',
-      name: 'Data Intelligence Agents',
-      tagline: 'Turn Data into Decisions',
-      description: 'Analyze data, spot trends, generate reports, and surface actionable insights—without a data team.',
+      name: 'Data Intelligence',
+      tagline: 'Turn data into decisions',
+      description: 'Analyze data, spot trends, generate reports, and surface actionable insights — without a data team.',
       features: [
         'Automated report generation',
         'Anomaly detection',
         'Predictive analytics',
         'Natural language queries'
       ],
-      metrics: {
-        efficiency: '10x faster analysis',
-        speed: 'Real-time insights',
-        satisfaction: '92% forecast accuracy'
-      }
+      stats: [
+        { num: '6x', desc: 'Faster analysis', label: 'Efficiency' },
+        { num: 'Live', desc: 'Real-time insights', label: 'Speed' },
+        { num: '88%', desc: 'Forecast accuracy', label: 'Results' }
+      ]
     },
     {
       id: 5,
-      icon: '🔄',
-      name: 'Workflow Automation Agents',
-      tagline: 'Connect Everything, Automate Anything',
+      name: 'Workflow Automation',
+      tagline: 'Connect everything, automate anything',
       description: 'Build complex workflows that span multiple tools and systems. Our agents handle the heavy lifting.',
       features: [
         '1000+ app integrations',
@@ -92,17 +92,16 @@ const Solutions = () => {
         'Error handling & retry logic',
         'Audit logs & compliance'
       ],
-      metrics: {
-        efficiency: '85% manual work eliminated',
-        speed: '24/7 execution',
-        satisfaction: 'ROI in < 2 months'
-      }
+      stats: [
+        { num: '70%', desc: 'Manual work cut', label: 'Efficiency' },
+        { num: '24/7', desc: 'Execution', label: 'Speed' },
+        { num: '<4mo', desc: 'ROI', label: 'Results' }
+      ]
     },
     {
       id: 6,
-      icon: '🔐',
       name: 'Enterprise AI Platform',
-      tagline: 'Built for Scale, Security & Compliance',
+      tagline: 'Built for scale, security & compliance',
       description: 'Full-featured platform with private deployments, custom models, and enterprise-grade security.',
       features: [
         'Private cloud deployment',
@@ -110,55 +109,17 @@ const Solutions = () => {
         'SSO & role-based access',
         'SOC 2 & GDPR compliant'
       ],
-      metrics: {
-        efficiency: 'Unlimited agents',
-        speed: 'Dedicated support',
-        satisfaction: '99.99% SLA'
-      }
+      stats: [
+        { num: '∞', desc: 'Unlimited agents', label: 'Scale' },
+        { num: '24/7', desc: 'Dedicated support', label: 'Speed' },
+        { num: '93%', desc: 'SLA', label: 'Results' }
+      ]
     }
   ];
 
   return (
     <div className="solutions-page">
-      <Particles
-        particleColors={['#c084fc', '#a855f7', '#7c3aed']}
-        particleCount={150}
-        particleSpread={8}
-        speed={0.04}
-        particleBaseSize={60}
-      />
-
-      <CardNav
-        items={[
-          { 
-            label: 'About', 
-            bgColor: '#0D0716', 
-            textColor: '#fff', 
-            links: [
-              { label: 'About', ariaLabel: 'About page', href: '/about' },
-              { label: 'Company', ariaLabel: 'Company info', href: '/about#company' }
-            ]
-          },
-          { 
-            label: 'Products', 
-            bgColor: '#170D27', 
-            textColor: '#fff', 
-            links: [
-              { label: 'Products', ariaLabel: 'Products page', href: '/products' },
-              { label: 'Solutions', ariaLabel: 'Solutions', href: '/solutions' }
-            ]
-          },
-          { 
-            label: 'Join us', 
-            bgColor: '#271E37', 
-            textColor: '#fff', 
-            links: [
-              { label: 'Join', ariaLabel: 'Join page', href: '/join' },
-              { label: 'Contact', ariaLabel: 'Contact us', href: '/join#contact' }
-            ]
-          }
-        ]}
-      />
+      <CardNav items={CARD_NAV_ITEMS} baseColor="rgba(255,255,255,0.08)" menuColor="#fff" buttonBgColor="rgba(17,17,17,0.75)" buttonTextColor="#fff" ease="power3.out" />
 
       <div className="solutions-container">
         <motion.div
@@ -173,47 +134,42 @@ const Solutions = () => {
           </p>
         </motion.div>
 
-        <div className="solutions-grid">
+        <div className="solutions-grid-new">
           {solutions.map((solution, index) => (
             <motion.div
               key={solution.id}
-              className="solution-card"
-              initial={{ opacity: 0, y: 50, scale: 0.95 }}
-              whileInView={{ opacity: 1, y: 0, scale: 1 }}
+              className={`card card-${index + 1}`}
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
-              whileHover={{ y: -8, transition: { duration: 0.3 } }}
             >
-              <div className="solution-icon">{solution.icon}</div>
-              <h2 className="solution-name">{solution.name}</h2>
-              <p className="solution-tagline">{solution.tagline}</p>
-              <p className="solution-description">{solution.description}</p>
-
-              <div className="solution-features">
-                <h3 className="features-title">Key Features:</h3>
-                <ul className="features-list">
-                  {solution.features.map((feature, i) => (
-                    <li key={i} className="feature-item">
-                      <span className="feature-bullet">✓</span>
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
+              <div className="accent-bar"></div>
+              <div className="card-num">{`0${index + 1}`}</div>
+              <div className="card-head">
+                <div className="dot-head"></div>
+                <div className="card-title">{solution.name}</div>
+              </div>
+              <div className="card-tagline">{solution.tagline}</div>
+              <div className="card-desc">{solution.description}</div>
+              
+              <div className="feats">
+                {solution.features.map((feature, i) => (
+                  <div key={i} className="feat">
+                    <div className="feat-dot"></div>
+                    <div className="feat-text">{feature}</div>
+                  </div>
+                ))}
               </div>
 
-              <div className="solution-metrics">
-                <div className="metric">
-                  <div className="metric-value">{solution.metrics.efficiency}</div>
-                  <div className="metric-label">Efficiency</div>
-                </div>
-                <div className="metric">
-                  <div className="metric-value">{solution.metrics.speed}</div>
-                  <div className="metric-label">Speed</div>
-                </div>
-                <div className="metric">
-                  <div className="metric-value">{solution.metrics.satisfaction}</div>
-                  <div className="metric-label">Results</div>
-                </div>
+              <div className="stats">
+                {solution.stats.map((stat, i) => (
+                  <div key={i} className="stat">
+                    <div className="stat-num">{stat.num}</div>
+                    <div className="stat-desc">{stat.desc}</div>
+                    <div className="stat-label">{stat.label}</div>
+                  </div>
+                ))}
               </div>
             </motion.div>
           ))}
@@ -233,9 +189,11 @@ const Solutions = () => {
             </p>
             <div className="cta-buttons">
               <button className="cta-button primary" onClick={() => navigate('/auth')}>
+                <span className="cta-dot-pulsing" />
                 Start Free Trial
               </button>
-              <button className="cta-button secondary" onClick={() => navigate('/join')}>
+              <button className="cta-button secondary" onClick={() => navigate('/contact')}>
+                <span className="cta-dot-pulsing" />
                 Talk to Sales
               </button>
             </div>

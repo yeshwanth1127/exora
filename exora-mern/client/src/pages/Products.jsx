@@ -1,133 +1,163 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import {
+  FiBriefcase,
+  FiLink,
+  FiShield,
+  FiBarChart2,
+  FiSettings,
+  FiUsers,
+  FiLayers,
+  FiLock,
+} from 'react-icons/fi';
 import './Products.css';
-import Particles from '../components/Particles';
 import CardNav from '../components/CardNav';
+
+const CircularProgress = ({ value }) => {
+  const [count, setCount] = useState(0);
+  
+  useEffect(() => {
+    let start = 0;
+    const end = parseInt(value);
+    if (start === end) return;
+    
+    let timer = setInterval(() => {
+      start += 1;
+      setCount(start);
+      if (start === end) clearInterval(timer);
+    }, 20);
+    
+    return () => clearInterval(timer);
+  }, [value]);
+
+  return (
+    <div className="circular-progress-container">
+      <svg viewBox="0 0 100 100" className="circular-progress-svg">
+        <circle className="circle-bg" cx="50" cy="50" r="45" />
+        <motion.circle 
+          className="circle-fill" 
+          cx="50" cy="50" r="45"
+          initial={{ pathLength: 0 }}
+          whileInView={{ pathLength: value / 100 }}
+          transition={{ duration: 1.5, ease: "easeOut" }}
+        />
+      </svg>
+      <div className="progress-text">{count}%</div>
+    </div>
+  );
+};
+
+const SpeedLines = () => (
+  <div className="speed-lines-container">
+    {[1, 2, 3].map((i) => (
+      <motion.div
+        key={i}
+        className={`speed-line line-${i}`}
+        animate={{ x: ['100%', '-200%'] }}
+        transition={{ 
+          duration: 0.8 + (i * 0.2), 
+          repeat: Infinity, 
+          ease: "linear",
+          delay: i * 0.1
+        }}
+      />
+    ))}
+  </div>
+);
+
+const CARD_NAV_ITEMS = [
+  { label: 'About', bgColor: '#0D0716', textColor: '#fff', links: [{ label: 'About', ariaLabel: 'About page', href: '/about' }, { label: 'Career', ariaLabel: 'Career info', href: '/career' }] },
+  { label: 'Products', bgColor: '#170D27', textColor: '#fff', links: [{ label: 'Products', ariaLabel: 'Products page', href: '/products' }, { label: 'Solutions', ariaLabel: 'Solutions', href: '/solutions' }] },
+  { label: 'Contact', bgColor: '#271E37', textColor: '#fff', links: [{ label: 'Contact', ariaLabel: 'Contact us', href: '/contact#contact' }] },
+];
 
 const Products = () => {
   const navigate = useNavigate();
 
   const b2bFeatures = [
     {
-      icon: '🏢',
+      icon: <FiBriefcase />,
       title: 'Enterprise Scale',
       description: 'Deploy hundreds of agents across your organization with centralized management.'
     },
     {
-      icon: '🔗',
+      icon: <FiLink />,
       title: 'Seamless Integration',
       description: 'Connect with 1000+ tools—Salesforce, HubSpot, Slack, Microsoft 365, and more.'
     },
     {
-      icon: '🛡️',
+      icon: <FiShield />,
       title: 'Enterprise Security',
       description: 'SOC 2, GDPR, HIPAA compliant. Private cloud deployments available.'
     },
     {
-      icon: '📊',
+      icon: <FiBarChart2 />,
       title: 'Advanced Analytics',
       description: 'Real-time dashboards, ROI tracking, and performance monitoring.'
     },
     {
-      icon: '⚙️',
+      icon: <FiSettings />,
       title: 'Custom Workflows',
       description: 'Build complex, multi-step automations tailored to your business processes.'
     },
     {
-      icon: '👥',
+      icon: <FiUsers />,
       title: 'Team Collaboration',
       description: 'Role-based access, team workspaces, and collaborative agent development.'
     }
   ];
 
-  const ghostFeatures = [
+  const b2bBenefits = [
+    { stat: '85%', label: 'Cost Reduction' },
+    { stat: '10x', label: 'Faster Deployment' },
+    { stat: '24/7', label: 'Always On' },
+    { stat: '93%', label: 'Uptime SLA' }
+  ];
+
+  const qlixFeatures = [
     {
-      icon: '🧠',
-      title: 'Context-Aware Intelligence',
-      description: 'Understands your workflow and adapts to your unique patterns.'
+      icon: <FiShield />,
+      title: 'Human-verified owners',
+      description: 'Every agent links to a verified human — device binding, passkeys, and identity you can trust.'
     },
     {
-      icon: '⚡',
-      title: 'Real-Time Action',
-      description: 'Executes tasks instantly when you need them, without delays.'
+      icon: <FiSettings />,
+      title: 'Scoped permissions',
+      description: 'Fine-grained capability controls. Define exactly what each agent can and cannot do.'
     },
     {
-      icon: '🪶',
-      title: 'Seamless System Integration',
-      description: 'Native integration with your OS, apps, and files.'
+      icon: <FiLock />,
+      title: 'JIT approvals',
+      description: 'Just-in-time human oversight for high-risk actions with role-based governance.'
     },
     {
-      icon: '🧭',
-      title: 'Proactive Assistance',
-      description: 'Anticipates your needs and acts before you ask.'
+      icon: <FiLayers />,
+      title: 'AI Brain coordination',
+      description: 'Orchestrate multi-agent workflows, route tasks, and learn from outcomes at scale.'
     },
     {
-      icon: '🔒',
-      title: 'Private by Design',
-      description: 'All data stays on your device. No cloud required.'
+      icon: <FiBarChart2 />,
+      title: 'Audit & proof',
+      description: 'Tamper-proof ledger with cryptographic proof of every agent action.'
     },
     {
-      icon: '🎯',
-      title: 'Focused Productivity',
-      description: 'Simplifies your digital life by handling routine tasks automatically.'
+      icon: <FiUsers />,
+      title: 'Agent ecosystem',
+      description: 'Create, register, and govern AI agents across your organization from one control plane.'
     }
   ];
 
-  const b2bBenefits = [
-    { stat: '90%', label: 'Cost Reduction' },
-    { stat: '10x', label: 'Faster Deployment' },
-    { stat: '24/7', label: 'Always On' },
-    { stat: '99.9%', label: 'Uptime SLA' }
-  ];
-
-  const ghostBenefits = [
-    { stat: '100%', label: 'Private & Local' },
-    { stat: '0', label: 'Cloud Dependency' },
-    { stat: '<1s', label: 'Response Time' },
-    { stat: '∞', label: 'Customizable' }
+  const qlixBenefits = [
+    { stat: '100%', label: 'Verified humans' },
+    { stat: '6', label: 'Control layers' },
+    { stat: '24/7', label: 'Always governed' },
+    { stat: '∞', label: 'Agents at scale' }
   ];
 
   return (
     <div className="products-page">
-      <Particles
-        particleColors={['#c084fc', '#a855f7', '#7c3aed']}
-        particleCount={150}
-        particleSpread={8}
-        speed={0.04}
-        particleBaseSize={60}
-      />
-
-      <CardNav
-        items={[
-          { 
-            label: 'About', 
-            bgColor: '#0D0716', 
-            textColor: '#fff', 
-            links: [
-              { label: 'About', ariaLabel: 'About page', href: '/about' },
-              { label: 'Company', ariaLabel: 'Company info', href: '/about#company' }
-            ]
-          },
-          { 
-            label: 'Products', 
-            bgColor: '#170D27', 
-            textColor: '#fff', 
-            links: [
-              { label: 'Products', ariaLabel: 'Products page', href: '/products' },
-              { label: 'Solutions', ariaLabel: 'Solutions', href: '/solutions' }
-            ]
-          },
-          { 
-            label: 'Join us', 
-            bgColor: '#271E37', 
-            textColor: '#fff', 
-            links: [
-              { label: 'Join', ariaLabel: 'Join page', href: '/join' },
-              { label: 'Contact', ariaLabel: 'Contact us', href: '/join#contact' }
-            ]
-          }
-        ]}
-      />
+      <CardNav items={CARD_NAV_ITEMS} baseColor="rgba(255,255,255,0.08)" menuColor="#fff" buttonBgColor="rgba(17,17,17,0.75)" buttonTextColor="#fff" ease="power3.out" />
 
       <div className="products-container">
         <motion.div
@@ -165,14 +195,49 @@ const Products = () => {
               {b2bBenefits.map((benefit, index) => (
                 <motion.div
                   key={index}
-                  className="benefit-card"
+                  className={`benefit-card ${benefit.label === 'Faster Deployment' || benefit.label === 'Uptime SLA' ? 'has-line' : ''}`}
                   initial={{ opacity: 0, scale: 0.9 }}
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
-                  <div className="benefit-stat">{benefit.stat}</div>
+                  <div className="benefit-stat">
+                    {benefit.label === 'Always On' ? (
+                      <div className="animated-clock-container">
+                        <div className="clock-outer">
+                          <motion.div 
+                            className="clock-hand hour"
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+                          />
+                          <motion.div 
+                            className="clock-hand minute"
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                          />
+                        </div>
+                        <span className="always-on-text">{benefit.stat}</span>
+                      </div>
+                    ) : benefit.label === 'Cost Reduction' ? (
+                      <CircularProgress value={85} />
+                    ) : benefit.label === 'Faster Deployment' ? (
+                      <div className="stat-with-speed">
+                        <span className="speed-stat-number">{benefit.stat}</span>
+                        <SpeedLines />
+                      </div>
+                    ) : benefit.stat}
+                  </div>
                   <div className="benefit-label">{benefit.label}</div>
+                  {(benefit.label === 'Faster Deployment' || benefit.label === 'Uptime SLA') && (
+                    <div className="stat-line-wrapper">
+                      <motion.div 
+                        className="stat-line"
+                        initial={{ scaleX: 0 }}
+                        whileInView={{ scaleX: 1 }}
+                        transition={{ duration: 1.5, ease: "easeOut" }}
+                      />
+                    </div>
+                  )}
                 </motion.div>
               ))}
             </div>
@@ -197,6 +262,7 @@ const Products = () => {
 
             <div className="category-cta">
               <button className="cta-button primary" onClick={() => navigate('/solutions')}>
+                <span className="cta-dot-pulsing" />
                 Explore Business Solutions
               </button>
             </div>
@@ -215,7 +281,7 @@ const Products = () => {
             <div className="divider-line"></div>
           </motion.div>
 
-          {/* Ghost Section */}
+          {/* Qlix Section (Personal) */}
           <motion.section
             className="product-category"
             initial={{ opacity: 0, y: 50 }}
@@ -225,34 +291,64 @@ const Products = () => {
           >
           <div className="category-header">
             <div className="category-badge ghost-badge">Personal</div>
-            <h2 className="category-title">Ghost — Your Sixth Sense</h2>
+            <h2 className="category-title">Qlix — Agent Ecosystem</h2>
             <p className="category-subtitle">
-              A local, context-aware AI that lives within your system. 
-              It learns your habits, acts where you need it, and stays invisible when you don't.
+              Create AI agents, link each one to a verified human, and coordinate them with the AI Brain
+              while Qlix enforces permissions, approvals, and audit trails.
             </p>
             <p className="category-highlight">
-              Private. Intelligent. Effortless.
+              Governed. Verifiable. Built to scale.
             </p>
           </div>
 
           <div className="benefits-grid">
-            {ghostBenefits.map((benefit, index) => (
+            {qlixBenefits.map((benefit, index) => (
               <motion.div
                 key={index}
-                className="benefit-card ghost-benefit"
+                className={`benefit-card ghost-benefit ${benefit.label === 'Always governed' ? 'has-line' : ''}`}
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
               >
-                <div className="benefit-stat">{benefit.stat}</div>
+                <div className="benefit-stat">
+                  {benefit.label === 'Always governed' ? (
+                    <div className="animated-clock-container">
+                      <div className="clock-outer">
+                        <motion.div
+                          className="clock-hand hour"
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 12, repeat: Infinity, ease: 'linear' }}
+                        />
+                        <motion.div
+                          className="clock-hand minute"
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                        />
+                      </div>
+                      <span className="always-on-text">{benefit.stat}</span>
+                    </div>
+                  ) : (
+                    benefit.stat
+                  )}
+                </div>
                 <div className="benefit-label">{benefit.label}</div>
+                {benefit.label === 'Always governed' && (
+                  <div className="stat-line-wrapper">
+                    <motion.div
+                      className="stat-line"
+                      initial={{ scaleX: 0 }}
+                      whileInView={{ scaleX: 1 }}
+                      transition={{ duration: 1.5, ease: 'easeOut' }}
+                    />
+                  </div>
+                )}
               </motion.div>
             ))}
           </div>
 
           <div className="features-grid">
-            {ghostFeatures.map((feature, index) => (
+            {qlixFeatures.map((feature, index) => (
               <motion.div
                 key={index}
                 className="feature-card ghost-feature"
@@ -270,8 +366,9 @@ const Products = () => {
           </div>
 
           <div className="category-cta">
-            <button className="cta-button ghost-cta" onClick={() => navigate('/personal-ai')}>
-              Explore Ghost
+            <button className="cta-button ghost-cta" onClick={() => navigate('/qlix')}>
+              <span className="cta-dot-pulsing" />
+              Explore Qlix
             </button>
           </div>
         </motion.section>
@@ -292,9 +389,11 @@ const Products = () => {
             </p>
             <div className="cta-buttons">
               <button className="cta-button primary" onClick={() => navigate('/auth')}>
+                <span className="cta-dot-pulsing" />
                 Start Free Trial
               </button>
-              <button className="cta-button secondary" onClick={() => navigate('/join')}>
+              <button className="cta-button secondary" onClick={() => navigate('/contact')}>
+                <span className="cta-dot-pulsing" />
                 Talk to Sales
               </button>
             </div>

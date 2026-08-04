@@ -1,7 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import './AgentPage.css';
-import Particles from '../components/Particles';
 import CardNav from '../components/CardNav';
 import { getAgentBySlug } from '../data/agents';
 
@@ -13,18 +12,34 @@ const AgentPage = () => {
   if (!agent) {
     return (
       <div className="agent-page">
-        <Particles
-          particleColors={['#c084fc', '#a855f7', '#7c3aed']}
-          particleCount={150}
-          particleSpread={8}
-          speed={0.04}
-          particleBaseSize={60}
-        />
         <CardNav
           items={[
-            { label: 'About', bgColor: '#0D0716', textColor: '#fff', links: [{ label: 'About', ariaLabel: 'About', href: '/about' }, { label: 'Company', ariaLabel: 'Company', href: '/about#company' }] },
-            { label: 'Products', bgColor: '#170D27', textColor: '#fff', links: [{ label: 'Products', ariaLabel: 'Products', href: '/products' }, { label: 'Solutions', ariaLabel: 'Solutions', href: '/solutions' }] },
-            { label: 'Join us', bgColor: '#271E37', textColor: '#fff', links: [{ label: 'Join', ariaLabel: 'Join', href: '/join' }, { label: 'Contact', ariaLabel: 'Contact', href: '/join#contact' }] },
+            { 
+              label: 'About', 
+              bgColor: '#0D0716', 
+              textColor: '#fff', 
+              links: [
+                { label: 'About', ariaLabel: 'About page', href: '/about' },
+                { label: 'Career', ariaLabel: 'Career info', href: '/career' }
+              ]
+            },
+            { 
+              label: 'Products', 
+              bgColor: '#170D27', 
+              textColor: '#fff', 
+              links: [
+                { label: 'Products', ariaLabel: 'Products page', href: '/products' },
+                { label: 'Solutions', ariaLabel: 'Solutions', href: '/solutions' }
+              ]
+            },
+            { 
+              label: 'Contact', 
+              bgColor: '#271E37', 
+              textColor: '#fff', 
+              links: [
+                { label: 'Contact', ariaLabel: 'Contact page', href: '/contact' }
+              ]
+            },
           ]}
           baseColor="rgba(255,255,255,0.08)"
           menuColor="#fff"
@@ -34,7 +49,7 @@ const AgentPage = () => {
         />
         <div className="agent-container">
           <p className="agent-not-found">Agent not found.</p>
-          <button type="button" className="agent-back" onClick={() => navigate('/')}>Back to home</button>
+
         </div>
       </div>
     );
@@ -46,18 +61,11 @@ const AgentPage = () => {
 
   return (
     <div className="agent-page">
-      <Particles
-        particleColors={['#c084fc', '#a855f7', '#7c3aed']}
-        particleCount={150}
-        particleSpread={8}
-        speed={0.04}
-        particleBaseSize={60}
-      />
       <CardNav
         items={[
-          { label: 'About', bgColor: '#0D0716', textColor: '#fff', links: [{ label: 'About', ariaLabel: 'About', href: '/about' }, { label: 'Company', ariaLabel: 'Company', href: '/about#company' }] },
+          { label: 'About', bgColor: '#0D0716', textColor: '#fff', links: [{ label: 'About', ariaLabel: 'About', href: '/about' }, { label: 'Career', ariaLabel: 'Company', href: '/contact' }] },
           { label: 'Products', bgColor: '#170D27', textColor: '#fff', links: [{ label: 'Products', ariaLabel: 'Products', href: '/products' }, { label: 'Solutions', ariaLabel: 'Solutions', href: '/solutions' }] },
-          { label: 'Join us', bgColor: '#271E37', textColor: '#fff', links: [{ label: 'Join', ariaLabel: 'Join', href: '/join' }, { label: 'Contact', ariaLabel: 'Contact', href: '/join#contact' }] },
+          { label: 'Contact', bgColor: '#271E37', textColor: '#fff', links: [{ label: 'Contact', ariaLabel: 'Contact page', href: '/contact' }] },
         ]}
         baseColor="rgba(255,255,255,0.08)"
         menuColor="#fff"
@@ -72,9 +80,7 @@ const AgentPage = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <button type="button" className="agent-back" onClick={() => navigate(-1)}>
-            ← Back
-          </button>
+
           <h1 className="agent-title">{agent.title}</h1>
           {subtitle && <p className="agent-subtitle">{subtitle}</p>}
           {agent.features && agent.features.length > 0 && (

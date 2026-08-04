@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import './ExoraLogo.css'
 
 const FULL_TEXT = 'EXORA'
@@ -7,6 +8,7 @@ const ExoraLogo = () => {
   const [typed, setTyped] = useState('')
   const [isDeleting, setIsDeleting] = useState(false)
   const [index, setIndex] = useState(0)
+  const navigate = useNavigate()
 
   useEffect(() => {
     let timeout
@@ -39,10 +41,19 @@ const ExoraLogo = () => {
     return () => clearTimeout(timeout)
   }, [index, isDeleting])
 
+  const renderTypedText = () => {
+    return typed.split('').map((char, i) => {
+      if (char.toUpperCase() === 'O') {
+        return <span key={i}>{char}</span>
+      }
+      return char
+    })
+  }
+
   return (
-    <div className="exora-logo">
+    <div className="exora-logo" onClick={() => navigate('/')}>
       <span className="exora-type" aria-label={FULL_TEXT} data-full={FULL_TEXT}>
-        {typed}
+        {renderTypedText()}
       </span>
       <span className="exora-caret" />
     </div>

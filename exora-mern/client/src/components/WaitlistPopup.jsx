@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { API_BASE_URL } from '../config/api';
 import './WaitlistPopup.css';
 
 const WaitlistPopup = ({ isOpen, onClose }) => {
@@ -43,7 +44,7 @@ const WaitlistPopup = ({ isOpen, onClose }) => {
     setMessage({ type: '', text: '' });
 
     try {
-      const response = await fetch('http://localhost:5000/api/waitlist/join', {
+      const response = await fetch(`${API_BASE_URL}/waitlist/contact`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

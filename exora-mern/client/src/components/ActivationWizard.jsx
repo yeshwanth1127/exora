@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import './ActivationWizard.css';
 import ProviderConnectionCard from './ProviderConnectionCard';
 import { useActivation } from '../contexts/ActivationContext';
+import { FiZap, FiCheck, FiCpu, FiAward, FiLink, FiGlobe, FiStar, FiLock, FiBarChart2, FiActivity } from 'react-icons/fi';
 
 /**
  * Activation Wizard Component
@@ -70,7 +71,7 @@ function ActivationWizard({ isOpen, onClose, workflowName }) {
         <div className="wizard-header">
           <div>
             <h2 className="wizard-title">
-              {currentStep === 3 ? '🎉 Activation Complete!' : '🚀 Activate Workflow'}
+              {currentStep === 3 ? <><FiAward className="wizard-title-icon" /> Activation Complete!</> : <><FiActivity className="wizard-title-icon" /> Activate Workflow</>}
             </h2>
             <p className="wizard-subtitle">
               {workflowName || 'Unnamed Workflow'}
@@ -98,7 +99,7 @@ function ActivationWizard({ isOpen, onClose, workflowName }) {
           {/* Step 1: Overview */}
           {currentStep === 1 && (
             <div className="step-content overview-step">
-              <div className="step-icon">🔌</div>
+              <div className="step-icon"><FiLink /></div>
               <h3>Connect Your Accounts</h3>
               <p className="step-description">
                 This workflow requires access to {providers.length} service{providers.length !== 1 ? 's' : ''}.
@@ -109,7 +110,7 @@ function ActivationWizard({ isOpen, onClose, workflowName }) {
                 {providers.map(provider => (
                   <div key={provider.credentialType} className="provider-chip">
                     <span className="provider-chip-icon">
-                      {provider.provider === 'google' ? '🔵' : '🔌'}
+                      {provider.provider === 'google' ? <FiGlobe /> : <FiLink />}
                     </span>
                     <span>{provider.credentialType}</span>
                   </div>
@@ -145,7 +146,7 @@ function ActivationWizard({ isOpen, onClose, workflowName }) {
                 <div className="step-footer">
                   <div className="connection-info">
                     <p className="info-text">
-                      ✨ <strong>One-Click Connection:</strong> Grant access to all {providers.length} service{providers.length !== 1 ? 's' : ''} with a single OAuth flow
+                      <FiStar className="info-icon" /> <strong>One-Click Connection:</strong> Grant access to all {providers.length} service{providers.length !== 1 ? 's' : ''} with a single OAuth flow
                     </p>
                   </div>
                   
@@ -169,7 +170,7 @@ function ActivationWizard({ isOpen, onClose, workflowName }) {
                     }}
                     disabled={!providers.some(p => p.type === 'oauth2' && p.authorizationUrl)}
                   >
-                    🔐 Connect All Google Services
+                    <FiLock /> Connect All Google Services
                   </button>
                 </div>
               )}
@@ -181,7 +182,7 @@ function ActivationWizard({ isOpen, onClose, workflowName }) {
             <div className="step-content success-step">
               <div className="success-animation">
                 <div className="checkmark-circle">
-                  <div className="checkmark">✓</div>
+                  <div className="checkmark"><FiCheck /></div>
                 </div>
               </div>
               
@@ -193,7 +194,7 @@ function ActivationWizard({ isOpen, onClose, workflowName }) {
 
               <div className="success-details">
                 <div className="detail-item">
-                  <span className="detail-icon">📊</span>
+                  <span className="detail-icon"><FiBarChart2 /></span>
                   <div>
                     <div className="detail-label">Workflow</div>
                     <div className="detail-value">{workflowName}</div>
@@ -201,7 +202,7 @@ function ActivationWizard({ isOpen, onClose, workflowName }) {
                 </div>
                 
                 <div className="detail-item">
-                  <span className="detail-icon">🔌</span>
+                  <span className="detail-icon"><FiLink /></span>
                   <div>
                     <div className="detail-label">Providers Connected</div>
                     <div className="detail-value">{providersCompleted.length}</div>
@@ -209,7 +210,7 @@ function ActivationWizard({ isOpen, onClose, workflowName }) {
                 </div>
 
                 <div className="detail-item">
-                  <span className="detail-icon">⚡</span>
+                  <span className="detail-icon"><FiZap /></span>
                   <div>
                     <div className="detail-label">Status</div>
                     <div className="detail-value">Active</div>

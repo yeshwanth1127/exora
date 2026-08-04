@@ -1,0 +1,695 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+
+/* Qlix Teaser Section — full viewport width */
+.qlix-teaser-section {
+  position: relative;
+  z-index: 10;
+  width: 100vw;
+  max-width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  padding: 64px 0 80px;
+  background: transparent;
+  border-top: 1px solid rgba(168, 85, 247, 0.12);
+  border-bottom: 1px solid rgba(99, 102, 241, 0.12);
+  box-sizing: border-box;
+}
+
+.qlix-teaser-magic {
+  position: relative;
+  width: 100%;
+  max-width: none;
+  height: clamp(300px, 36vw, 440px);
+  margin: 0;
+  cursor: pointer;
+  border-radius: 0;
+  overflow: hidden;
+}
+
+.qlix-teaser-magic:focus-visible {
+  outline: 2px solid rgba(168, 85, 247, 0.8);
+  outline-offset: 4px;
+}
+
+.qlix-teaser-magic-canvas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.qlix-teaser-magic-label {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  pointer-events: none;
+  text-align: center;
+  padding: 24px;
+}
+
+.qlix-teaser-magic-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.qlix-teaser-magic-line {
+  display: block;
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+  color: #ffffff;
+  text-shadow: 0 0 40px rgba(168, 85, 247, 0.6);
+  line-height: 1.05;
+}
+
+.qlix-teaser-magic-line--brand {
+  font-family: 'Outfit', sans-serif;
+  font-size: clamp(34px, 5vw, 52px);
+  font-weight: 200;
+  font-style: normal;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+.qlix-teaser-magic-by {
+  font-family: 'Helvetica Now Display', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: clamp(11px, 1.2vw, 13px);
+  font-weight: 300;
+  letter-spacing: 0.14em;
+  text-transform: lowercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.qlix-teaser-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 48px;
+  align-items: center;
+}
+
+.qlix-teaser-badge {
+  display: inline-block;
+  background: rgba(102, 126, 234, 0.15);
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  color: #667eea;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 16px;
+}
+
+.qlix-teaser-heading {
+  font-size: clamp(28px, 3.5vw, 40px);
+  color: #fff;
+  margin: 0 0 16px 0;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.qlix-teaser-desc {
+  font-size: 16px;
+  color: rgba(220, 236, 248, 0.85);
+  line-height: 1.6;
+  margin: 0 0 28px 0;
+  max-width: 600px;
+}
+
+.qlix-teaser-cta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.qlix-teaser-btn-primary,
+.qlix-teaser-btn-secondary {
+  padding: 12px 24px;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.qlix-teaser-btn-primary {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+}
+
+.qlix-teaser-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(102, 126, 234, 0.4);
+}
+
+.qlix-teaser-btn-secondary {
+  background: transparent;
+  color: #e7f3ff;
+  border: 1.5px solid rgba(102, 126, 234, 0.4);
+}
+
+.qlix-teaser-btn-secondary:hover {
+  border-color: rgba(118, 75, 162, 0.6);
+  color: #fff;
+}
+
+.qlix-teaser-visual {
+  display: flex;
+  justify-content: center;
+}
+
+.qlix-teaser-card {
+  background: linear-gradient(165deg, rgba(12, 20, 28, 0.8), rgba(6, 10, 16, 0.8));
+  border: 1.5px solid rgba(102, 126, 234, 0.2);
+  border-radius: 16px;
+  padding: 32px 28px;
+  max-width: 340px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(12px);
+}
+
+.qlix-teaser-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.qlix-teaser-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #667eea;
+  letter-spacing: 0.1em;
+}
+
+.qlix-teaser-card-items {
+  display: grid;
+  gap: 14px;
+}
+
+.qlix-teaser-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: rgba(220, 236, 248, 0.8);
+  line-height: 1.5;
+}
+
+.qlix-teaser-dot {
+  color: #667eea;
+  font-weight: bold;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+/* Teaser Responsive */
+@media (max-width: 900px) {
+  .qlix-teaser-container {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .qlix-teaser-visual {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .qlix-teaser-section {
+    padding: 48px 0 64px;
+  }
+
+  .qlix-teaser-magic {
+    height: clamp(260px, 56vw, 360px);
+  }
+
+  .qlix-teaser-container {
+    gap: 32px;
+  }
+
+  .qlix-teaser-heading {
+    font-size: 28px;
+  }
+
+  .qlix-teaser-cta {
+    flex-direction: column;
+  }
+
+  .qlix-teaser-btn-primary,
+  .qlix-teaser-btn-secondary {
+    width: 100%;
+  }
+}
+
+/* Qlix Product Page */
+.qlix-page {
+  background: #050709;
+  color: #e7f3ff;
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.qlix-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Hero Section */
+.qlix-section-hero {
+  padding: 120px 24px 80px;
+  text-align: center;
+  background: linear-gradient(180deg, rgba(5, 7, 9, 1), rgba(8, 12, 18, 0.95));
+}
+
+.qlix-section-hero h1 {
+  font-size: clamp(32px, 5vw, 56px);
+  margin: 0 0 20px 0;
+  color: #fff;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.qlix-section-hero p {
+  font-size: 18px;
+  color: rgba(220, 236, 248, 0.88);
+  margin: 0 auto 32px;
+  max-width: 700px;
+  line-height: 1.6;
+}
+
+/* Layers Section */
+.qlix-section-layers {
+  padding: 80px 24px;
+  background: #05070b;
+  border-top: 1px solid rgba(102, 126, 234, 0.1);
+}
+
+.qlix-layers-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.qlix-layer {
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  gap: 28px;
+  align-items: start;
+  padding: 32px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+  border: 1px solid rgba(102, 126, 234, 0.15);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.qlix-layer:hover {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.08));
+  border-color: rgba(102, 126, 234, 0.3);
+  transform: translateX(4px);
+  box-shadow: 0 12px 32px rgba(102, 126, 234, 0.15);
+}
+
+.qlix-layer-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  font-weight: 700;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.qlix-layer-content h3 {
+  margin: 0 0 8px 0;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.qlix-layer-content p {
+  margin: 0;
+  color: rgba(220, 236, 248, 0.8);
+  line-height: 1.6;
+  font-size: 15px;
+}
+
+/* Features Section */
+.qlix-section-features {
+  padding: 80px 24px;
+  background: #05070b;
+  border-top: 1px solid rgba(102, 126, 234, 0.1);
+}
+
+.qlix-section-features h2 {
+  font-size: clamp(28px, 4vw, 40px);
+  margin: 0 0 50px 0;
+  color: #fff;
+  text-align: center;
+}
+
+.qlix-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 32px;
+}
+
+.qlix-feature-card {
+  background: rgba(12, 20, 28, 0.5);
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  border-radius: 12px;
+  padding: 32px 24px;
+  transition: all 0.3s ease;
+}
+
+.qlix-feature-card:hover {
+  border-color: rgba(118, 75, 162, 0.4);
+  transform: translateY(-4px);
+}
+
+.qlix-feature-icon {
+  font-size: 28px;
+  color: #667eea;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.qlix-feature-card h3 {
+  margin: 0 0 12px 0;
+  color: #fff;
+  font-size: 18px;
+}
+
+.qlix-feature-card p {
+  color: rgba(220, 236, 248, 0.78);
+  line-height: 1.6;
+  margin: 0;
+  font-size: 15px;
+}
+
+/* Workflow Section */
+.qlix-section-workflow {
+  padding: 80px 24px;
+  background: rgba(9, 14, 20, 0.8);
+  border-top: 1px solid rgba(102, 126, 234, 0.1);
+}
+
+.qlix-section-workflow h2 {
+  font-size: clamp(28px, 4vw, 40px);
+  margin: 0 0 50px 0;
+  color: #fff;
+  text-align: center;
+}
+
+.qlix-workflow-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 40px;
+}
+
+.qlix-step {
+  text-align: left;
+}
+
+.qlix-step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  font-weight: 700;
+  margin-bottom: 16px;
+  font-size: 18px;
+}
+
+.qlix-step h3 {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+  color: #fff;
+}
+
+.qlix-step p {
+  color: rgba(220, 236, 248, 0.8);
+  line-height: 1.6;
+  margin: 0;
+  font-size: 15px;
+}
+
+/* Pricing Section */
+.qlix-section-pricing {
+  padding: 80px 24px;
+  background: #05070b;
+  border-top: 1px solid rgba(102, 126, 234, 0.1);
+}
+
+.qlix-section-pricing h2 {
+  font-size: clamp(28px, 4vw, 40px);
+  margin: 0 0 50px 0;
+  color: #fff;
+  text-align: center;
+}
+
+.qlix-pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 28px;
+}
+
+.qlix-pricing-card {
+  background: rgba(12, 20, 28, 0.6);
+  border: 1px solid rgba(102, 126, 234, 0.18);
+  border-radius: 12px;
+  padding: 36px 28px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.qlix-pricing-card:hover {
+  border-color: rgba(118, 75, 162, 0.3);
+  transform: translateY(-4px);
+}
+
+.qlix-pricing-featured {
+  border-color: rgba(118, 75, 162, 0.4);
+  background: rgba(15, 24, 32, 0.9);
+  transform: scale(1.02);
+}
+
+.qlix-pricing-featured:hover {
+  transform: scale(1.02) translateY(-4px);
+}
+
+.qlix-pricing-card h3 {
+  font-size: 20px;
+  margin: 0 0 12px 0;
+  color: #fff;
+}
+
+.qlix-pricing-desc {
+  color: rgba(220, 236, 248, 0.75);
+  font-size: 14px;
+  margin: 0 0 16px 0;
+}
+
+.qlix-pricing-features {
+  color: rgba(220, 236, 248, 0.65);
+  font-size: 13px;
+  margin: 0;
+}
+
+.qlix-pricing-list {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0 0;
+  text-align: left;
+}
+
+.qlix-pricing-list li {
+  color: rgba(220, 236, 248, 0.72);
+  font-size: 14px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(102, 126, 234, 0.1);
+}
+
+.qlix-pricing-list li:last-child {
+  border-bottom: none;
+}
+
+/* Use Cases Section */
+.qlix-section-usecases {
+  padding: 80px 24px;
+  background: rgba(9, 14, 20, 0.8);
+}
+
+.qlix-section-usecases h2 {
+  font-size: clamp(28px, 4vw, 40px);
+  margin: 0 0 50px 0;
+  color: #fff;
+  text-align: center;
+}
+
+.qlix-usecase-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 28px;
+}
+
+.qlix-usecase {
+  background: rgba(9, 14, 20, 0.6);
+  border-left: 3px solid #667eea;
+  border-radius: 6px;
+  padding: 28px 24px;
+}
+
+.qlix-usecase h3 {
+  margin: 0 0 10px 0;
+  color: #fff;
+  font-size: 16px;
+}
+
+.qlix-usecase p {
+  color: rgba(220, 236, 248, 0.8);
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Footer CTA Section */
+.qlix-section-footer-cta {
+  padding: 100px 24px 60px;
+  text-align: center;
+  border-top: 1px solid rgba(102, 126, 234, 0.1);
+  background: #05070b;
+}
+
+.qlix-section-footer-cta h2 {
+  font-size: clamp(28px, 4vw, 40px);
+  margin: 0 0 12px 0;
+  color: #fff;
+}
+
+.qlix-section-footer-cta p {
+  color: rgba(220, 236, 248, 0.8);
+  font-size: 16px;
+  margin: 0 0 32px 0;
+}
+
+/* CTA Buttons */
+.qlix-cta-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.qlix-cta {
+  padding: 12px 24px;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.qlix-cta-primary {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+}
+
+.qlix-cta-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(102, 126, 234, 0.4);
+}
+
+.qlix-cta-secondary {
+  background: transparent;
+  color: #e7f3ff;
+  border: 1.5px solid rgba(102, 126, 234, 0.4);
+}
+
+.qlix-cta-secondary:hover {
+  border-color: rgba(118, 75, 162, 0.6);
+  color: #fff;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .qlix-section-hero {
+    padding: 80px 20px 60px;
+  }
+
+  .qlix-section-layers,
+  .qlix-section-features,
+  .qlix-section-workflow,
+  .qlix-section-pricing,
+  .qlix-section-usecases {
+    padding: 60px 20px;
+  }
+
+  .qlix-section-footer-cta {
+    padding: 60px 20px 40px;
+  }
+
+  .qlix-layer {
+    grid-template-columns: 48px 1fr;
+    gap: 20px;
+    padding: 24px;
+  }
+
+  .qlix-layer-num {
+    width: 48px;
+    height: 48px;
+    font-size: 18px;
+  }
+
+  .qlix-layer-content h3 {
+    font-size: 16px;
+  }
+
+  .qlix-feature-grid,
+  .qlix-workflow-steps,
+  .qlix-pricing-grid,
+  .qlix-usecase-list {
+    grid-template-columns: 1fr;
+  }
+
+  .qlix-pricing-featured {
+    transform: scale(1);
+  }
+
+  .qlix-cta-row {
+    flex-direction: column;
+  }
+
+  .qlix-cta {
+    width: 100%;
+  }
+}
+
+

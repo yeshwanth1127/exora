@@ -32,6 +32,7 @@
   height: 100%;
   position: relative;
   cursor: pointer;
+  font-family: 'Syne', sans-serif;
   text-transform: uppercase;
   text-decoration: none;
   white-space: nowrap;
@@ -79,6 +80,7 @@
 }
 
 .marquee span {
+  font-family: 'Syne', sans-serif;
   color: #0b0614;
   white-space: nowrap;
   font-weight: 400;
@@ -100,16 +102,19 @@
 /* Mobile styles */
 @media (max-width: 768px) {
   .menu__item {
-    min-height: 70px;
+    min-height: 80px;
   }
   
   .menu__item-link {
-    font-size: clamp(18px, 4.5vw, 28px);
-    padding: 8px 12px;
+    font-size: clamp(15px, 4.2vw, 22px);
+    padding: 10px 20px;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.2;
   }
   
   .marquee span {
-    font-size: clamp(16px, 3.8vw, 22px);
+    font-size: clamp(14px, 3.5vw, 18px);
     padding: 0.5vh 1.5vw 0;
   }
   

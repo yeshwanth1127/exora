@@ -1,252 +1,309 @@
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import {
+  FiLink2,
+  FiCpu,
+  FiZap,
+  FiLayers,
+  FiBox,
+  FiShield,
+  FiUsers,
+  FiArrowRight,
+} from 'react-icons/fi';
 import './About.css';
-import Particles from '../components/Particles';
 import CardNav from '../components/CardNav';
 
-const About = () => {
-  const navigate = useNavigate();
+const CARD_NAV_ITEMS = [
+  {
+    label: 'About',
+    bgColor: '#0D0716',
+    textColor: '#fff',
+    links: [
+      { label: 'About', ariaLabel: 'About page', href: '/about' },
+      { label: 'Career', ariaLabel: 'Career info', href: '/career' },
+    ],
+  },
+  {
+    label: 'Products',
+    bgColor: '#170D27',
+    textColor: '#fff',
+    links: [
+      { label: 'Products', ariaLabel: 'Products page', href: '/products' },
+      { label: 'Solutions', ariaLabel: 'Solutions', href: '/solutions' },
+    ],
+  },
+  {
+    label: 'Contact',
+    bgColor: '#271E37',
+    textColor: '#fff',
+    links: [{ label: 'Contact', ariaLabel: 'Contact us', href: '/contact#contact' }],
+  },
+];
 
+const PILLARS = [
+  {
+    icon: FiLink2,
+    title: 'Connect everything',
+    text: 'Your CRM, ERP, inboxes, spreadsheets, and custom tools — wired into one coherent system.',
+  },
+  {
+    icon: FiCpu,
+    title: 'Encode how you work',
+    text: 'Your approvals, exceptions, and decision logic become software — not tribal knowledge.',
+  },
+  {
+    icon: FiZap,
+    title: 'Run without friction',
+    text: 'Workflows execute continuously. Tasks move forward while your team focuses on judgment and growth.',
+  },
+  {
+    icon: FiLayers,
+    title: 'Orchestrate agents',
+    text: 'Specialized AI agents operate as persistent operators inside your stack — not one-off chat sessions.',
+  },
+  {
+    icon: FiBox,
+    title: 'Own the operating layer',
+    text: 'Exora becomes the core infrastructure your company runs on — the layer above tools, below strategy.',
+  },
+];
+
+const BUILD_STEPS = [
+  {
+    num: '01',
+    title: 'Infrastructure mapping',
+    text: 'We map your processes, data flows, tools, and decision points — how work actually moves today.',
+  },
+  {
+    num: '02',
+    title: 'System architecture',
+    text: 'We design a purpose-built operating architecture for your business — not a generic template.',
+  },
+  {
+    num: '03',
+    title: 'Core build',
+    text: 'Data layer, workflow engines, agent layer, integrations, and control surfaces — built together.',
+  },
+  {
+    num: '04',
+    title: 'Deploy & migrate',
+    text: 'You transition from scattered tools to a unified infrastructure — with continuity, not disruption.',
+  },
+  {
+    num: '05',
+    title: 'Continuous evolution',
+    text: 'Your infrastructure grows as your company grows. New agents, workflows, and rules — without starting over.',
+  },
+];
+
+const OFFERINGS = [
+  {
+    tag: 'For business',
+    title: 'AI employees & agents',
+    text: 'End-to-end tailored agents for support, operations, inventory, compliance, and more — embedded in how you run.',
+    href: '/products',
+    cta: 'View products',
+  },
+  {
+    tag: 'For you',
+    title: 'IRA — personal AI',
+    text: 'An AI agent inside your daily tools and systems. Assistance that follows your work — not the other way around.',
+    href: '/personal-ai',
+    cta: 'Meet IRA',
+  },
+  {
+    tag: 'For control',
+    title: 'Qlix — agent ecosystem',
+    text: 'Create agents, link verified humans, enforce permissions, approvals, and audit trails — at scale.',
+    href: '/qlix',
+    cta: 'Explore Qlix',
+  },
+];
+
+const PRINCIPLES = [
+  {
+    icon: FiUsers,
+    title: 'Humans stay in command',
+    text: 'AI amplifies execution. Judgment, relationships, and creativity stay with your people.',
+  },
+  {
+    icon: FiLayers,
+    title: 'Operators, not chatbots',
+    text: 'Our agents are persistent software operators running 24/7 inside your infrastructure — not disposable prompts.',
+  },
+  {
+    icon: FiShield,
+    title: 'Governed by design',
+    text: 'Scoped permissions, just-in-time approvals, and audit proof — especially through Qlix for multi-agent environments.',
+  },
+  {
+    icon: FiZap,
+    title: 'Built to evolve',
+    text: 'Infrastructure is never finished. Exora is designed to extend as your operations and ambitions expand.',
+  },
+];
+
+const fadeUp = {
+  initial: { opacity: 0, y: 24 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, margin: '-60px' },
+  transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
+};
+
+const About = () => {
   return (
     <div className="about-page">
-      <Particles
-        particleColors={['#c084fc', '#a855f7', '#7c3aed']}
-        particleCount={150}
-        particleSpread={8}
-        speed={0.04}
-        particleBaseSize={60}
-      />
-
       <CardNav
-        items={[
-          { 
-            label: 'About', 
-            bgColor: '#0D0716', 
-            textColor: '#fff', 
-            links: [
-              { label: 'About', ariaLabel: 'About page', href: '/about' },
-              { label: 'Company', ariaLabel: 'Company info', href: '/about#company' }
-            ]
-          },
-          { 
-            label: 'Products', 
-            bgColor: '#170D27', 
-            textColor: '#fff', 
-            links: [
-              { label: 'Products', ariaLabel: 'Products page', href: '/products' },
-              { label: 'Solutions', ariaLabel: 'Solutions', href: '/solutions' }
-            ]
-          },
-          { 
-            label: 'Join us', 
-            bgColor: '#271E37', 
-            textColor: '#fff', 
-            links: [
-              { label: 'Join', ariaLabel: 'Join page', href: '/join' },
-              { label: 'Contact', ariaLabel: 'Contact us', href: '/join#contact' }
-            ]
-          }
-        ]}
+        items={CARD_NAV_ITEMS}
+        baseColor="rgba(255,255,255,0.08)"
+        menuColor="#fff"
+        buttonBgColor="rgba(17,17,17,0.75)"
+        buttonTextColor="#fff"
+        ease="power3.out"
       />
 
-      <div className="about-container">
-        {/* Hero Section */}
-        <motion.div
-          className="about-hero"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-        >
-          <div className="hero-visual" aria-hidden="true">
-            <div className="hero-core"></div>
-            <div className="hero-ring ring-1"></div>
-            <div className="hero-ring ring-2"></div>
-            <div className="hero-ring ring-3"></div>
-          </div>
-          <h1 className="about-title">Shaping the Future of Human–AI Collaboration</h1>
-          <p className="about-subtitle">
-            At Exora, we’re building tools that think, act, and create — so you can move faster.
+      <main className="about-container">
+        <motion.header className="about-hero" {...fadeUp}>
+          <p className="about-eyebrow">About Exora</p>
+          <h1 className="about-title">
+            Your business runs on <span className="about-title-accent">infrastructure</span> — not on tools.
+          </h1>
+          <p className="about-lead">
+            Exora is an automation and assistance hub. We replace the fragile mix of apps, spreadsheets,
+            and manual handoffs with a unified software layer — AI agents, workflows, and control built
+            for how your company actually operates.
           </p>
-          <button
-            className="about-hero-button"
-            onClick={() => {
-              const el = document.querySelector('#our-vision');
-              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }}
-          >
-            Discover Our Mission
-          </button>
-        </motion.div>
+        </motion.header>
 
-        {/* Our Vision - split layout */}
-        <motion.section
-          id="our-vision"
-          className="about-section vision-section"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="vision-wrapper">
-            <div className="vision-text">
-              <h2 className="section-title">Our Vision</h2>
-              <p className="section-text">
-                We believe in an intelligent world — one where every repetitive task disappears,
-                and humans focus on creation.
-              </p>
-              <p className="section-text">
-                Agentic AI unlocks a new era of productivity: adaptive, context-aware, and truly collaborative.
+        <motion.blockquote className="about-manifesto" {...fadeUp}>
+          <p>We don&apos;t sell features. We install digital infrastructure.</p>
+        </motion.blockquote>
+
+        <motion.section className="about-block" {...fadeUp}>
+          <div className="about-block-head">
+            <span className="about-index">01</span>
+            <h2 className="about-heading">The problem we solve</h2>
+          </div>
+          <div className="about-split">
+            <div className="about-panel about-panel--dim">
+              <h3>Today</h3>
+              <p>
+                Most companies run on disconnected tools, overloaded teams, and coordination held
+                together by spreadsheets and memory. Automation is bolted on. Agents are experiments.
+                Nothing talks to everything else.
               </p>
             </div>
-            <div className="vision-visual" aria-hidden="true">
-              <div className="globe"></div>
-              <div className="globe-orbit orbit-1"></div>
-              <div className="globe-orbit orbit-2"></div>
-              <div className="globe-orbit orbit-3"></div>
+            <div className="about-panel about-panel--accent">
+              <h3>With Exora</h3>
+              <p>
+                One purpose-built operating layer: systems connected, logic encoded, execution
+                automated, agents orchestrated. Your business moves on autopilot — with humans still
+                in control.
+              </p>
             </div>
           </div>
         </motion.section>
 
-        {/* The Technology - interactive cards */}
-        <motion.section
-          className="about-section tech-section"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-        >
-          <div className="content-card transparent-card">
-            <h2 className="section-title">The Technology</h2>
-            <div className="tech-grid">
-              <div className="tech-card">
-                <div className="tech-icon">🧩</div>
-                <h3>AI Understanding</h3>
-                <p>Natural language meets precision logic.</p>
-              </div>
-              <div className="tech-card">
-                <div className="tech-icon">🧭</div>
-                <h3>Context Engine</h3>
-                <p>Understands your intent beyond words.</p>
-              </div>
-              <div className="tech-card">
-                <div className="tech-icon">⚙️</div>
-                <h3>Automation Core</h3>
-                <p>Executes with real‑world awareness.</p>
-              </div>
-            </div>
-          </div>
-        </motion.section>
-
-        {/* Our Journey - timeline */}
-        <motion.section
-          className="about-section journey-section"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          <div className="content-card transparent-card">
-            <h2 className="section-title">Our Journey</h2>
-            <div className="timeline">
-              <div className="milestone">
-                <div className="dot"></div>
-                <div className="year">2022</div>
-                <p className="milestone-text">Founding year — agentic prototypes in the lab.</p>
-              </div>
-              <div className="milestone">
-                <div className="dot"></div>
-                <div className="year">2023</div>
-                <p className="milestone-text">First enterprise deployments across ops and support.</p>
-              </div>
-              <div className="milestone">
-                <div className="dot"></div>
-                <div className="year">2024</div>
-                <p className="milestone-text">Context Engine v2 — real‑time reasoning at scale.</p>
-              </div>
-              <div className="milestone future">
-                <div className="dot"></div>
-                <div className="year">Future</div>
-                <p className="milestone-text">Ambient AI — assistants that feel invisible but helpful.</p>
-              </div>
-            </div>
-          </div>
-        </motion.section>
-
-        {/* Our Ecosystem */}
-        <motion.section
-          className="about-section ecosystem-section"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-        >
-          <div className="content-card transparent-card">
-            <h2 className="section-title">Our Ecosystem</h2>
-            <p className="section-text" style={{ marginTop: '-8px' }}>
-              An interconnected AI ecosystem built for the future.
+        <motion.section className="about-block" {...fadeUp}>
+          <div className="about-block-head">
+            <span className="about-index">02</span>
+            <h2 className="about-heading">What we install</h2>
+            <p className="about-block-desc">
+              Software infrastructure that connects, encodes, automates, orchestrates, and becomes
+              the core layer of your company.
             </p>
-
-            <div className="ecosystem-map">
-              {/* SVG links */}
-              <svg className="eco-links" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-                <g stroke="#a855f7" strokeWidth="0.6" strokeLinecap="round" opacity="0.6">
-                  {/* core (50,50) connections */}
-                  <line x1="50" y1="50" x2="20" y2="30" />
-                  <line x1="50" y1="50" x2="80" y2="28" />
-                  <line x1="50" y1="50" x2="18" y2="70" />
-                  <line x1="50" y1="50" x2="82" y2="72" />
-                  <line x1="50" y1="50" x2="50" y2="12" />
-                </g>
-              </svg>
-
-              {/* Nodes */}
-              <div className="eco-node core" title="Assistant">Assistant</div>
-              <div className="eco-node automation" title="Automation Core">Automation Core</div>
-              <div className="eco-node speech" title="Speech Engine">Speech Engine</div>
-              <div className="eco-node workspace" title="AI Workspace">AI Workspace</div>
-              <div className="eco-node context" title="Context AI">Context AI</div>
-              <div className="eco-node sdks" title="SDKs & APIs">SDKs & APIs</div>
-            </div>
           </div>
+          <ul className="about-pillars">
+            {PILLARS.map(({ icon: Icon, title, text }) => (
+              <li key={title} className="about-pillar">
+                <span className="about-pillar-icon" aria-hidden="true">
+                  <Icon size={22} />
+                </span>
+                <div>
+                  <h3>{title}</h3>
+                  <p>{text}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
         </motion.section>
 
-        {/* Philosophy */}
-        <motion.section
-          className="about-section philosophy-section"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-        >
-          <div className="philosophy-card">
-            <p className="philosophy-quote">“AI is not replacing you — it’s redefining how you create.”</p>
-            <div className="ambient-particles" aria-hidden="true"></div>
-          </div>
-        </motion.section>
-
-        {/* CTA */}
-        <motion.section
-          className="about-cta-section"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-        >
-          <div className="cta-card">
-            <h2 className="cta-title">Join the future — today.</h2>
-            <p className="cta-text">
-              Explore the platform and see what agentic AI can unlock.
+        <motion.section className="about-block" {...fadeUp}>
+          <div className="about-block-head">
+            <span className="about-index">03</span>
+            <h2 className="about-heading">How we build it</h2>
+            <p className="about-block-desc">
+              Every engagement follows the same discipline — from discovery to infrastructure that
+              keeps evolving.
             </p>
-            <button className="cta-button" onClick={() => navigate('/products')}>
-              Explore the Platform
-            </button>
+          </div>
+          <ol className="about-steps">
+            {BUILD_STEPS.map((step) => (
+              <li key={step.num} className="about-step">
+                <span className="about-step-num">{step.num}</span>
+                <div>
+                  <h3>{step.title}</h3>
+                  <p>{step.text}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </motion.section>
+
+        <motion.section className="about-block" {...fadeUp}>
+          <div className="about-block-head">
+            <span className="about-index">04</span>
+            <h2 className="about-heading">What runs on Exora</h2>
+          </div>
+          <div className="about-offerings">
+            {OFFERINGS.map((item) => (
+              <article key={item.title} className="about-offering">
+                <span className="about-offering-tag">{item.tag}</span>
+                <h3>{item.title}</h3>
+                <p>{item.text}</p>
+                <Link to={item.href} className="about-offering-link">
+                  {item.cta}
+                  <FiArrowRight size={16} aria-hidden="true" />
+                </Link>
+              </article>
+            ))}
           </div>
         </motion.section>
-      </div>
+
+        <motion.section className="about-block" {...fadeUp}>
+          <div className="about-block-head">
+            <span className="about-index">05</span>
+            <h2 className="about-heading">What we believe</h2>
+          </div>
+          <div className="about-principles">
+            {PRINCIPLES.map(({ icon: Icon, title, text }) => (
+              <div key={title} className="about-principle">
+                <Icon size={20} className="about-principle-icon" aria-hidden="true" />
+                <h3>{title}</h3>
+                <p>{text}</p>
+              </div>
+            ))}
+          </div>
+        </motion.section>
+
+        <motion.section className="about-cta" {...fadeUp}>
+          <h2>Ready to move off tools — onto infrastructure?</h2>
+          <p>
+            Start with a free automation audit. We&apos;ll map where you are and what an Exora layer
+            could look like for your business.
+          </p>
+          <div className="about-cta-actions">
+            <Link to="/contact" className="about-btn about-btn--primary">
+              Book a free audit
+            </Link>
+            <Link to="/solutions" className="about-btn about-btn--ghost">
+              See solutions
+            </Link>
+          </div>
+        </motion.section>
+      </main>
     </div>
   );
 };
 
 export default About;
-
-

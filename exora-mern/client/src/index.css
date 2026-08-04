@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -18,7 +20,6 @@ html {
   width: 100%;
   min-height: 100%;
   overflow-x: hidden;
-  overflow-y: auto;
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -28,8 +29,7 @@ body {
   background: #000000;
   width: 100%;
   min-height: 100%;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: visible;
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -39,7 +39,7 @@ body {
   background: #000000;
   width: 100%;
   min-height: 100%;
-  overflow: hidden;
+  overflow: visible;
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -1302,11 +1302,7 @@ a:hover {
   color: #535bf2;
 }
 
-body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
-}
+/* Duplicate body rule removed */
 
 h1 {
   font-size: 3.2em;
