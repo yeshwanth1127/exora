@@ -1,8 +1,8 @@
 import BlurText from './BlurText';
 
 const LINES = {
-  desktop: ['YOUR', 'BUSINESS.', 'ON AUTOPILOT.'],
-  mobile: ['YOUR', 'BUSINESS', 'ON AUTO-', 'PILOT.'],
+  desktop: ['PUT AI AGENTS', 'TO WORK.', 'STAY IN CONTROL.'],
+  mobile: ['PUT AI AGENTS', 'TO WORK.', 'STAY IN', 'CONTROL.'],
 };
 
 export default function HeroAutopilotHeadline({ variant = 'desktop' }) {

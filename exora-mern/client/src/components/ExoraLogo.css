@@ -6,6 +6,26 @@
   cursor: pointer;
 }
 
+.exora-logo-static {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.exora-logo-static img {
+  display: block;
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+
+.exora-logo-static span {
+  color: #fff;
+  font-size: .9rem;
+  font-weight: 750;
+  letter-spacing: .18em;
+}
+
 /* Pixel/gaming feel requested by user */
 .exora-type {
   font-family: 'Press Start 2P', 'VT323', monospace;
@@ -34,5 +54,3 @@
   0%, 49% { opacity: 1; }
   50%, 100% { opacity: 0; }
 }
-
-

@@ -19,7 +19,7 @@ const STEPS = [
   },
   {
     t: 'Smart task routing',
-    d: 'Based on team capacity, expertise, and SLA targets, the task is assigned to the right person or queue instantly — no manual triage needed.',
+    d: 'Based on configured capacity, expertise, and service targets, the task is routed to the designated person or queue.',
   },
   {
     t: 'Approval workflows',
@@ -143,7 +143,7 @@ const InternalOperationsAgent = () => {
             <div className="w-full">
               <div className="bg-[#09090b] border border-white/10 rounded-[20px] md:rounded-[24px] p-5 md:p-8 shadow-[0_0_30px_rgba(168,85,247,0.1)] hover:shadow-[0_0_50px_rgba(168,85,247,0.2)] transition-all duration-500 w-full text-left font-sans">
                 <div className="flex items-center justify-between mb-6 md:mb-8">
-                  <h3 className="text-[17px] md:text-[18px] font-bold text-white tracking-tight">Operations Flow</h3>
+                  <h3 className="text-[17px] md:text-[18px] font-bold text-white tracking-tight">Operations Flow · Illustrative</h3>
                   <div className="flex gap-1.5 md:gap-2">
                     <div className="w-2.5 md:w-3 h-2.5 md:h-3 rounded-full bg-[#E56A5B]"></div>
                     <div className="w-2.5 md:w-3 h-2.5 md:h-3 rounded-full bg-[#E3B052]"></div>
@@ -167,7 +167,7 @@ const InternalOperationsAgent = () => {
                 </div>
 
                 <div className="mt-8 pt-8 border-t border-white/5 text-center">
-                  <div className="text-[11px] text-[#71718A] font-bold mb-6 tracking-[0.2em] uppercase text-center">Process Efficiency Index</div>
+                  <div className="text-[11px] text-[#71718A] font-bold mb-6 tracking-[0.2em] uppercase text-center">Illustrative process index</div>
                   <div className="flex items-end gap-3 h-[80px] w-full px-2">
                     {[50, 70, 40, 85, 60, 90, 55].map((h, i) => (
                       <div 
@@ -204,7 +204,7 @@ const InternalOperationsAgent = () => {
             <div className="ip-cap-card">
               <div className="ip-cap-icon"><IconDeptNodes /></div>
               <div className="ip-cap-title">Inter-department coordination</div>
-              <div className="ip-cap-desc">Bridges communication gaps between teams — syncing updates, handoffs, and deliverables across the org in real time.</div>
+              <div className="ip-cap-desc">Bridges communication gaps by syncing configured updates, handoffs, and deliverables across teams.</div>
             </div>
           </div>
         </motion.section>
@@ -225,7 +225,7 @@ const InternalOperationsAgent = () => {
             <div className="ip-problem-icon" aria-hidden="true"><IconAlert /></div>
             <div>
               <div className="ip-problem-title">Slow internal execution</div>
-              <p className="ip-problem-desc">Tasks sit idle waiting for the right person. Approvals bounce between inboxes for days. This agent eliminates the drag — routing, escalating, and closing loops automatically so your team can focus on actual work.</p>
+              <p className="ip-problem-desc">Tasks can sit idle waiting for the right person, while approvals move between inboxes. This agent routes, escalates, and tracks configured workflows so teams can focus on higher-value work.</p>
             </div>
           </div>
         </motion.section>

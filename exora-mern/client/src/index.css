@@ -694,27 +694,6 @@ body {
   line-height: 1.6;
 }
 
-.waitlist-button {
-  background: linear-gradient(135deg, #7c3aed, #a855f7);
-  border: none;
-  border-radius: 12px;
-  padding: 16px 32px;
-  font-size: 18px;
-  font-weight: 600;
-  color: white;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 8px 32px rgba(124, 58, 237, 0.3);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.waitlist-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 40px rgba(124, 58, 237, 0.4);
-  background: linear-gradient(135deg, #8b5cf6, #c084fc);
-}
-
 /* Animation styles for text split effect */
 .large.centered.row {
   display: flex;
@@ -1659,12 +1638,6 @@ button:focus-visible {
   }
   
   .section-header p {
-    font-size: 16px;
-  }
-  
-  .waitlist-button {
-    width: 100%;
-    padding: 14px 24px;
     font-size: 16px;
   }
   

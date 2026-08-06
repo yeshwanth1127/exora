@@ -18,7 +18,7 @@ const STEPS = [
   },
   {
     t: 'Purchase order triggered',
-    d: 'A purchase order is auto-generated the moment the threshold is breached. Quantity is calculated based on lead time, demand forecast, and storage capacity.',
+    d: 'A purchase order can be generated when a configured threshold is breached. Quantity can account for lead time, demand forecasts, and storage capacity.',
   },
   {
     t: 'Vendor matching',
@@ -30,11 +30,11 @@ const STEPS = [
   },
   {
     t: 'Shipment & dispatch',
-    d: 'The vendor ships and the agent tracks the delivery in real time, sending alerts for any delays and flagging if an expedited option is needed.',
+    d: 'The agent tracks available shipment updates, surfaces delays, and flags when an expedited option may be needed.',
   },
   {
     t: 'Restocked & updated',
-    d: 'On arrival, inventory counts are updated automatically. The agent logs the cycle, refines its demand model, and resets thresholds for the next reorder window.',
+    d: 'After a configured receipt confirmation, connected inventory counts can be updated. The agent logs the cycle and prepares the next reorder window.',
   },
 ];
 
@@ -185,7 +185,7 @@ const InventoryProcurementAgent = () => {
                 Inventory &amp; Procurement<br />Agent
               </h1>
               <p className="ip-hero-sub">
-                Eliminate stockouts and overstocking with an AI agent that watches your inventory 24/7 and coordinates vendors automatically.
+                Help reduce stockouts and overstocking with an AI agent that monitors configured inventory feeds and coordinates purchasing workflows.
               </p>
               <div className="flex gap-4 mt-10 flex-wrap justify-center lg:justify-start">
                 <SeeHowItWorksButton />
@@ -197,8 +197,8 @@ const InventoryProcurementAgent = () => {
                 {/* Header */}
                 <div className="flex items-center justify-between mb-6 md:mb-8">
                   <div className="flex flex-col">
-                    <h3 className="text-[18px] md:text-[20px] font-bold text-white tracking-tight">Inventory Dashboard</h3>
-                    <p className="text-[10px] md:text-[12px] text-gray-500 mt-0.5 md:mt-1">Live Agent Monitoring</p>
+                    <h3 className="text-[18px] md:text-[20px] font-bold text-white tracking-tight">Inventory Dashboard · Illustrative</h3>
+                    <p className="text-[10px] md:text-[12px] text-gray-500 mt-0.5 md:mt-1">Configured agent monitoring</p>
                   </div>
                   <div className="flex gap-1.5 md:gap-2">
                     <div className="w-2 md:w-2.5 h-2 md:h-2.5 rounded-full bg-red-500/50"></div>
@@ -257,12 +257,12 @@ const InventoryProcurementAgent = () => {
             <div className="ip-cap-card">
               <div className="ip-cap-icon"><IconArrowRight /></div>
               <div className="ip-cap-title">Auto-reorder materials</div>
-              <div className="ip-cap-desc">Triggers purchase orders the moment stock hits your threshold — zero lag.</div>
+              <div className="ip-cap-desc">Creates or routes purchase orders when stock reaches a configured threshold.</div>
             </div>
             <div className="ip-cap-card">
               <div className="ip-cap-icon"><IconVendor /></div>
               <div className="ip-cap-title">Vendor coordination</div>
-              <div className="ip-cap-desc">Reaches out to vendors, compares quotes, and selects the best option automatically.</div>
+              <div className="ip-cap-desc">Coordinates vendor outreach and quote comparison, with selection governed by configured rules and approvals.</div>
             </div>
           </div>
         </motion.section>
@@ -300,7 +300,7 @@ const InventoryProcurementAgent = () => {
             <div>
               <div className="ip-problem-title">Stockouts and overstocking</div>
               <p className="ip-problem-desc">
-                Running out of materials halts production. Overstocking ties up capital and wastes space. This agent keeps you permanently in the sweet spot — automatically.
+                Running out of materials halts production, while overstocking ties up capital and space. This agent helps teams maintain inventory within configured operating ranges.
               </p>
             </div>
           </div>

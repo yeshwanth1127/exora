@@ -2,12 +2,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import './Solutions.css';
 import CardNav from '../components/CardNav';
-
-const CARD_NAV_ITEMS = [
-  { label: 'About', bgColor: '#0D0716', textColor: '#fff', links: [{ label: 'About', ariaLabel: 'About page', href: '/about' }, { label: 'Career', ariaLabel: 'Career info', href: '/career' }] },
-  { label: 'Products', bgColor: '#170D27', textColor: '#fff', links: [{ label: 'Products', ariaLabel: 'Products page', href: '/products' }, { label: 'Solutions', ariaLabel: 'Solutions', href: '/solutions' }] },
-  { label: 'Contact', bgColor: '#271E37', textColor: '#fff', links: [{ label: 'Contact', ariaLabel: 'Contact us', href: '/contact#contact' }] },
-];
+import { SITE_NAV_ITEMS } from '../data/siteNavigation';
 
 const Solutions = () => {
   const navigate = useNavigate();
@@ -16,7 +11,7 @@ const Solutions = () => {
     {
       id: 1,
       name: 'Customer Service Agents',
-      tagline: 'Your 24/7 support team',
+      tagline: 'Support across configured channels',
       description: 'AI agents that handle customer inquiries, resolve issues, and escalate complex cases — all while maintaining your brand voice.',
       features: [
         'Multi-channel support (email, chat, phone)',
@@ -25,16 +20,16 @@ const Solutions = () => {
         'Response in 50+ languages'
       ],
       stats: [
-        { num: '80%', desc: 'Automation rate', label: 'Efficiency' },
-        { num: '<60s', desc: 'Avg response time', label: 'Speed' },
-        { num: '4.6/5', desc: 'CSAT score', label: 'Results' }
+        { num: 'Less', desc: 'Manual triage', label: 'Efficiency' },
+        { num: 'Clear', desc: 'Escalation paths', label: 'Control' },
+        { num: 'Visible', desc: 'Case history', label: 'Review' }
       ]
     },
     {
       id: 2,
       name: 'Sales Automation Agents',
       tagline: 'Never miss a lead',
-      description: 'Qualify prospects, schedule meetings, send personalized follow-ups, and update your CRM — automatically.',
+      description: 'Qualify prospects, schedule meetings, send personalized follow-ups, and update your CRM through configured workflows.',
       features: [
         'Lead qualification & scoring',
         'Automated email sequences',
@@ -42,15 +37,15 @@ const Solutions = () => {
         'CRM auto-sync (Salesforce, HubSpot, etc.)'
       ],
       stats: [
-        { num: '55%', desc: 'Time saved', label: 'Efficiency' },
-        { num: '<1min', desc: 'Lead response', label: 'Speed' },
-        { num: '2x', desc: 'More meetings booked', label: 'Results' }
+        { num: 'Defined', desc: 'Lead criteria', label: 'Control' },
+        { num: 'Faster', desc: 'Lead routing', label: 'Speed' },
+        { num: 'Synced', desc: 'CRM activity', label: 'Review' }
       ]
     },
     {
       id: 3,
       name: 'Operations Management',
-      tagline: 'Run your business on autopilot',
+      tagline: 'Coordinate operational work',
       description: 'Coordinate tasks, allocate resources, predict bottlenecks, and optimize workflows across your entire operation.',
       features: [
         'Task assignment & tracking',
@@ -59,9 +54,9 @@ const Solutions = () => {
         'Performance analytics'
       ],
       stats: [
-        { num: '45%', desc: 'Cost reduction', label: 'Efficiency' },
-        { num: '35%', desc: 'Faster execution', label: 'Speed' },
-        { num: '93%', desc: 'Uptime', label: 'Results' }
+        { num: 'Less', desc: 'Manual coordination', label: 'Efficiency' },
+        { num: 'Visible', desc: 'Workflow state', label: 'Control' },
+        { num: 'Clear', desc: 'Task ownership', label: 'Review' }
       ]
     },
     {
@@ -76,9 +71,9 @@ const Solutions = () => {
         'Natural language queries'
       ],
       stats: [
-        { num: '6x', desc: 'Faster analysis', label: 'Efficiency' },
-        { num: 'Live', desc: 'Real-time insights', label: 'Speed' },
-        { num: '88%', desc: 'Forecast accuracy', label: 'Results' }
+        { num: 'Unified', desc: 'Data context', label: 'Efficiency' },
+        { num: 'Current', desc: 'Operational signals', label: 'Speed' },
+        { num: 'Traceable', desc: 'Insight sources', label: 'Review' }
       ]
     },
     {
@@ -87,39 +82,39 @@ const Solutions = () => {
       tagline: 'Connect everything, automate anything',
       description: 'Build complex workflows that span multiple tools and systems. Our agents handle the heavy lifting.',
       features: [
-        '1000+ app integrations',
+        'Business system integrations',
         'Custom workflow builder',
         'Error handling & retry logic',
         'Audit logs & compliance'
       ],
       stats: [
-        { num: '70%', desc: 'Manual work cut', label: 'Efficiency' },
-        { num: '24/7', desc: 'Execution', label: 'Speed' },
-        { num: '<4mo', desc: 'ROI', label: 'Results' }
+        { num: 'Connected', desc: 'Business systems', label: 'Efficiency' },
+        { num: 'Scoped', desc: 'Workflow actions', label: 'Control' },
+        { num: 'Logged', desc: 'Execution history', label: 'Review' }
       ]
     },
     {
       id: 6,
-      name: 'Enterprise AI Platform',
-      tagline: 'Built for scale, security & compliance',
-      description: 'Full-featured platform with private deployments, custom models, and enterprise-grade security.',
+      name: 'Qlix Governance',
+      tagline: 'Keep people accountable and in control',
+      description: 'Apply ownership, access boundaries, approval requirements, and operational visibility across Qlix agent workflows.',
       features: [
-        'Private cloud deployment',
-        'Custom model training',
-        'SSO & role-based access',
-        'SOC 2 & GDPR compliant'
+        'Clear agent ownership',
+        'Scoped access boundaries',
+        'Human approval checkpoints',
+        'Activity and outcome review'
       ],
       stats: [
-        { num: '∞', desc: 'Unlimited agents', label: 'Scale' },
-        { num: '24/7', desc: 'Dedicated support', label: 'Speed' },
-        { num: '93%', desc: 'SLA', label: 'Results' }
+        { num: 'Clear', desc: 'Accountability', label: 'Ownership' },
+        { num: 'Scoped', desc: 'Agent boundaries', label: 'Control' },
+        { num: 'Visible', desc: 'Operational history', label: 'Review' }
       ]
     }
   ];
 
   return (
     <div className="solutions-page">
-      <CardNav items={CARD_NAV_ITEMS} baseColor="rgba(255,255,255,0.08)" menuColor="#fff" buttonBgColor="rgba(17,17,17,0.75)" buttonTextColor="#fff" ease="power3.out" />
+      <CardNav items={SITE_NAV_ITEMS} baseColor="rgba(255,255,255,0.08)" menuColor="#fff" buttonBgColor="rgba(17,17,17,0.75)" buttonTextColor="#fff" ease="power3.out" />
 
       <div className="solutions-container">
         <motion.div
@@ -128,10 +123,11 @@ const Solutions = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          <h1 className="solutions-title">Our AI Agent Solutions</h1>
+          <h1 className="solutions-title">Qlix Agent Capabilities</h1>
           <p className="solutions-subtitle">
-            Purpose-built agents for every business function. Deploy in minutes, scale instantly.
+            Practical ways businesses can deploy agents through Qlix—with ownership, boundaries, approvals, and review built into the operating model.
           </p>
+          <p className="solutions-subtitle">Illustrative capabilities; availability depends on configured workflows and integrations.</p>
         </motion.div>
 
         <div className="solutions-grid-new">
@@ -183,18 +179,18 @@ const Solutions = () => {
           transition={{ duration: 0.6 }}
         >
           <div className="cta-card">
-            <h2 className="cta-title">Ready to Get Started?</h2>
+            <h2 className="cta-title">Explore what Qlix can support</h2>
             <p className="cta-text">
-              Choose your agent, customize to your needs, and deploy in minutes.
+              Start with the workflow that matters most, then define the controls your team needs.
             </p>
             <div className="cta-buttons">
-              <button className="cta-button primary" onClick={() => navigate('/auth')}>
+              <button className="cta-button primary" onClick={() => navigate('/contact')}>
                 <span className="cta-dot-pulsing" />
-                Start Free Trial
+                Request a Demo
               </button>
               <button className="cta-button secondary" onClick={() => navigate('/contact')}>
                 <span className="cta-dot-pulsing" />
-                Talk to Sales
+                Contact Exora
               </button>
             </div>
           </div>
@@ -205,4 +201,3 @@ const Solutions = () => {
 };
 
 export default Solutions;
-

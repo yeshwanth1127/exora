@@ -18,11 +18,11 @@ const STEPS = [
   },
   {
     t: 'Live monitoring',
-    d: 'As agents execute their tasks, the orchestrator tracks status in real time — maintaining a dependency graph and ensuring upstream outputs are ready before downstream steps begin.',
+    d: 'As agents execute their tasks, the orchestrator tracks configured workflow state and dependencies before downstream steps begin.',
   },
   {
     t: 'Error recovery',
-    d: 'If an agent fails, times out, or returns an unexpected result, the orchestrator automatically retries, reroutes to a fallback agent, or escalates to a human with full context.',
+    d: 'If an agent fails, times out, or returns an unexpected result, the orchestrator can retry, reroute, or escalate according to configured recovery rules.',
   },
   {
     t: 'Output sequencing',
@@ -144,7 +144,7 @@ const OrchestrationAgent = () => {
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-32 items-center w-full">
             <div className="flex flex-col items-center lg:items-start text-center lg:text-left max-w-[850px]">
               <h1 className="ip-hero-title">Orchestration<br />Agent</h1>
-              <p className="ip-hero-sub">The central brain of your Exora setup — coordinates every agent and workflow so your entire operation runs in sync, without you lifting a finger.</p>
+              <p className="ip-hero-sub">The coordination layer for your Exora setup — it connects configured agents and workflows while preserving ownership, recovery rules, and human escalation.</p>
               <div className="flex gap-4 mt-10 flex-wrap justify-center lg:justify-start">
                 <SeeHowItWorksButton />
               </div>
@@ -154,7 +154,7 @@ const OrchestrationAgent = () => {
             <div className="w-full">
               <div className="bg-[#09090b] border border-white/10 rounded-[20px] md:rounded-[24px] p-5 md:p-8 shadow-[0_0_30px_rgba(168,85,247,0.1)] hover:shadow-[0_0_50px_rgba(168,85,247,0.2)] transition-all duration-500 w-full text-left font-sans relative overflow-hidden">
                 <div className="flex items-center justify-between mb-6 md:mb-8">
-                  <h3 className="text-[17px] md:text-[18px] font-bold text-white tracking-tight">Workflow Orchestration</h3>
+                  <h3 className="text-[17px] md:text-[18px] font-bold text-white tracking-tight">Workflow Orchestration · Illustrative</h3>
                   <div className="flex gap-1.5 md:gap-2">
                     <div className="w-2.5 md:w-3 h-2.5 md:h-3 rounded-full bg-[#E56A5B]"></div>
                     <div className="w-2.5 md:w-3 h-2.5 md:h-3 rounded-full bg-[#E3B052]"></div>
@@ -223,7 +223,7 @@ const OrchestrationAgent = () => {
             <div className="ip-cap-card">
               <div className="ip-cap-icon"><IconRefresh /></div>
               <div className="ip-cap-title">Error recovery</div>
-              <div className="ip-cap-desc">When an agent fails or stalls, the orchestrator retries, reroutes, or escalates — automatically keeping the workflow on track.</div>
+              <div className="ip-cap-desc">When an agent fails or stalls, the orchestrator follows configured retry, rerouting, or escalation rules.</div>
             </div>
             <div className="ip-cap-card">
               <div className="ip-cap-icon"><IconCalendar /></div>

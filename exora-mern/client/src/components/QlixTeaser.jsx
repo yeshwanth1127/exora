@@ -1,11 +1,8 @@
-import { useNavigate } from 'react-router-dom';
 import MagicRings from './MagicRings';
 import './Qlix.css';
 
 const QlixTeaser = () => {
-  const navigate = useNavigate();
-
-  const goToQlix = () => navigate('/qlix');
+  const goToQlix = () => window.location.assign('https://qlix.exora.solutions');
 
   return (
     <section className="qlix-teaser-section" aria-label="Qlix teaser">
@@ -19,6 +16,7 @@ const QlixTeaser = () => {
           }
         }}
         role="link"
+        aria-label="Explore Qlix at qlix.exora.solutions"
         tabIndex={0}
       >
         <div className="qlix-teaser-magic-canvas" aria-hidden="true">

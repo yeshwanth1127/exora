@@ -4,6 +4,7 @@ import { gsap } from 'gsap'
 import { useAuth } from '../contexts/AuthContext'
 import ExoraLogo from './ExoraLogo'
 import './CardNav.css'
+import { SITE_NAV_ITEMS } from '../data/siteNavigation'
 
 const ArrowIcon = (props) => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
@@ -27,7 +28,6 @@ const HomeIcon = (props) => (
 const CardNav = ({
   logo,
   logoAlt = 'Logo',
-  items,
   className = '',
   ease = 'power3.out',
   baseColor = 'rgba(168, 85, 247, 0.14)',
@@ -44,7 +44,9 @@ const CardNav = ({
   const navigate = useNavigate()
   const location = useLocation()
 
-  const safeItems = useMemo(() => (items || []).slice(0, 3), [items])
+  // Keep the public product hierarchy consistent across every page, including
+  // older capability pages that still provide legacy navigation data.
+  const safeItems = useMemo(() => SITE_NAV_ITEMS.slice(0, 3), [])
 
   const calculateHeight = () => {
     const navEl = navRef.current
@@ -208,11 +210,11 @@ const CardNav = ({
                 if (user) {
                   logout()
                 } else {
-                  navigate('/auth')
+                  navigate('/contact')
                 }
               }}
             >
-              {user ? `Logout (${user.firstName})` : 'Login/Signup'}
+              {user ? `Logout (${user.firstName})` : 'Request a Demo'}
             </button>
           </div>
         </div>
@@ -264,14 +266,14 @@ const CardNav = ({
                 if (user) {
                   logout()
                 } else {
-                  navigate('/auth')
+                  navigate('/contact')
                 }
                 setIsExpanded(false)
                 setIsHamburgerOpen(false)
               }}
             >
               <span className="cta-dot-pulsing" />
-              {user ? `Logout (${user.firstName})` : 'Login/Signup'}
+              {user ? `Logout (${user.firstName})` : 'Request a Demo'}
             </button>
           </div>
         </div>
@@ -282,10 +284,6 @@ const CardNav = ({
 }
 
 export default CardNav
-
-
-
-
 
 
 

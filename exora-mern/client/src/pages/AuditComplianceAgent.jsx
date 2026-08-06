@@ -8,12 +8,12 @@ import './InventoryProcurementAgent.css';
 
 /* ─── Workflow step data ─── */
 const STEPS = [
-  { t: 'Event capture', d: 'Every action across every integrated system is captured in real time — user logins, data access, approvals, deletions, and configuration changes — nothing is missed.' },
-  { t: 'Immutable logging', d: 'Each event is hashed, signed, and written to an append-only log. Retroactive modification is cryptographically impossible — giving you an auditor-grade chain of custody.' },
+  { t: 'Event capture', d: 'Configured agent and workflow events are captured with their relevant context, including access, approvals, and configuration changes.' },
+  { t: 'Immutable logging', d: 'Each recorded event is hashed, signed, and written to Qlix\'s append-only audit record. Once recorded, an audit entry is cryptographically impossible to modify.' },
   { t: 'Policy check', d: 'The event is evaluated against your active compliance policies. Pass results are logged silently; violations trigger an immediate alert with full event context.' },
   { t: 'Anomaly flagging', d: 'Behavioural models detect unusual patterns — access outside working hours, sudden privilege escalations, abnormal data volumes — and surface them before they become incidents.' },
   { t: 'Report generation', d: 'Compliance reports are assembled automatically on a schedule or on demand. Every report includes signed log references so findings can be traced back to raw events.' },
-  { t: 'Certification ready', d: 'Evidence packages are structured to meet external auditor requirements out of the box. Upload once; the agent keeps them current for every subsequent audit cycle.' },
+  { t: 'Evidence preparation', d: 'Evidence packages can be structured for external review from configured records. Framework requirements remain specific to each organisation and deployment.' },
 ];
 
 /* ─── Capability icons ─── */
@@ -66,12 +66,12 @@ const WF_NODES = [
 const WF_LABELS = ['Capture', 'Log & Sign', 'Check Policy', 'Flag Anomaly', 'Report', 'Certify'];
 
 const CAPS = [
-  { Icon: IconImmutable, title: 'Immutable audit logs', desc: 'Every action is written to a tamper-evident, append-only log with cryptographic signatures.' },
-  { Icon: IconTrace, title: 'Access traceability', desc: 'Tracks who accessed what, when, and from where with full session context.' },
-  { Icon: IconReport, title: 'Automated reporting', desc: 'Generates structured compliance reports for any framework in seconds.' },
-  { Icon: IconAnomaly, title: 'Anomaly flagging', desc: 'Detects unusual patterns like bulk exports or privilege escalations in real time.' },
-  { Icon: IconRetention, title: 'Data retention', desc: 'Enforces automated retention and deletion schedules in line with data laws.' },
-  { Icon: IconEvidence, title: 'Evidence packages', desc: 'Assembles auditor-ready evidence collections with zero manual preparation.' },
+  { Icon: IconImmutable, title: 'Immutable audit logs', desc: 'Recorded Qlix audit entries are hashed, signed, and cryptographically impossible to alter after they are written.' },
+  { Icon: IconTrace, title: 'Access traceability', desc: 'Tracks configured access events with identity, timing, and available session context.' },
+  { Icon: IconReport, title: 'Structured reporting', desc: 'Generates structured reports from recorded events and configured policies.' },
+  { Icon: IconAnomaly, title: 'Anomaly flagging', desc: 'Surfaces unusual recorded patterns such as bulk exports or privilege escalations.' },
+  { Icon: IconRetention, title: 'Data retention', desc: 'Applies configured retention and deletion schedules; legal requirements remain deployment-specific.' },
+  { Icon: IconEvidence, title: 'Evidence packages', desc: 'Organises selected evidence for human and auditor review.' },
 ];
 
 const LOG_ROWS = [
@@ -130,7 +130,7 @@ const AuditComplianceAgent = () => {
                 Audit &amp; Compliance<br />Agent
               </h1>
               <p className="ip-hero-sub">
-                Maintains tamper-proof logs, generates compliance reports on demand, and ensures every action in your organisation is traceable — so audits become a formality, not a fire drill.
+                Creates cryptographically immutable audit records for configured events, supports on-demand reporting, and improves operational traceability.
               </p>
               <div className="flex gap-4 flex-wrap pb-10">
                 <SeeHowItWorksButton />
@@ -147,7 +147,7 @@ const AuditComplianceAgent = () => {
                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2"><path d="M4 19.5v-15A2.5 2.5 0 016.5 2H20v20H6.5a2.5 2.5 0 01-2.5-2.5z"/></svg>
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold text-white leading-none mb-1">Live Audit Trail</h3>
+                      <h3 className="text-lg font-bold text-white leading-none mb-1">Audit Trail · Illustrative</h3>
                       <div className="flex items-center gap-1.5">
                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
                          <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Live Security Stream</span>

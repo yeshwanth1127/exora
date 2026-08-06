@@ -96,84 +96,33 @@
   gap: 20px;
 }
 
-.ira-bot-small-wrapper {
+.qlix-contact-mark {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 0;
-  background: none;
-  backdrop-filter: none;
-  border: none;
-  box-shadow: none;
-  position: relative;
+  justify-content: center;
+  min-width: 150px;
+  min-height: 112px;
+  padding: 20px;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(168, 85, 247, 0.14), rgba(99, 102, 241, 0.06));
+  box-shadow: 0 16px 45px rgba(76, 29, 149, 0.18);
 }
 
-/* Simulated Mouth Animation */
-.ira-bot-small-wrapper::after {
-  content: '';
-  position: absolute;
-  top: 62%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 12px;
-  height: 2px;
-  background: #a855f7;
-  border-radius: 2px;
-  box-shadow: 0 0 10px #a855f7;
-  animation: ira-mouth 0.4s ease-in-out infinite alternate;
-  z-index: 5;
-}
-
-@keyframes ira-mouth {
-  0% { width: 12px; height: 1px; opacity: 0.5; }
-  100% { width: 16px; height: 3px; opacity: 1; }
-}
-
-.ira-bot-name {
+.qlix-contact-mark-name {
   font-family: 'Syne', sans-serif;
-  font-size: 22px;
-  font-weight: 800;
-  color: #a855f7;
-  letter-spacing: 0.1em;
-}
-
-/* Simulated Waving Hand */
-.ira-bot-small-wrapper::before {
-  content: '👋';
-  position: absolute;
-  top: 55%;
-  left: 20%;
   font-size: 24px;
-  filter: sepia(1) saturate(5) hue-rotate(240deg); /* Make it purple-ish */
-  animation: ira-wave 1s ease-in-out infinite alternate;
-  z-index: 6;
-  opacity: 0.8;
+  font-weight: 800;
+  color: #c4b5fd;
+  letter-spacing: 0.16em;
 }
 
-@keyframes ira-wave {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(20deg); }
-}
-
-.ira-bot-img {
-  width: 160px;
-  height: auto;
-  filter: drop-shadow(0 0 25px rgba(168, 85, 247, 0.8));
-  animation: ira-float-complex 4s ease-in-out infinite;
-  position: relative;
-}
-
-@keyframes ira-float-complex {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  25% { transform: translateY(-5px) rotate(2deg); }
-  50% { transform: translateY(-2px) rotate(-1deg); }
-  75% { transform: translateY(-7px) rotate(3deg); }
-}
-
-@keyframes ira-float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-3px); }
+.qlix-contact-mark-by {
+  margin-top: 6px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 12px;
+  letter-spacing: 0.08em;
 }
 
 .contact-form {
@@ -507,7 +456,7 @@
     gap: 16px;
   }
 
-  .ira-bot-small-wrapper {
+  .qlix-contact-mark {
     transform: none;
     order: -1;
   }

@@ -12,33 +12,7 @@ import {
 } from 'react-icons/fi';
 import './About.css';
 import CardNav from '../components/CardNav';
-
-const CARD_NAV_ITEMS = [
-  {
-    label: 'About',
-    bgColor: '#0D0716',
-    textColor: '#fff',
-    links: [
-      { label: 'About', ariaLabel: 'About page', href: '/about' },
-      { label: 'Career', ariaLabel: 'Career info', href: '/career' },
-    ],
-  },
-  {
-    label: 'Products',
-    bgColor: '#170D27',
-    textColor: '#fff',
-    links: [
-      { label: 'Products', ariaLabel: 'Products page', href: '/products' },
-      { label: 'Solutions', ariaLabel: 'Solutions', href: '/solutions' },
-    ],
-  },
-  {
-    label: 'Contact',
-    bgColor: '#271E37',
-    textColor: '#fff',
-    links: [{ label: 'Contact', ariaLabel: 'Contact us', href: '/contact#contact' }],
-  },
-];
+import { SITE_NAV_ITEMS } from '../data/siteNavigation';
 
 const PILLARS = [
   {
@@ -98,25 +72,25 @@ const BUILD_STEPS = [
 
 const OFFERINGS = [
   {
-    tag: 'For business',
-    title: 'AI employees & agents',
-    text: 'End-to-end tailored agents for support, operations, inventory, compliance, and more — embedded in how you run.',
-    href: '/products',
-    cta: 'View products',
-  },
-  {
-    tag: 'For you',
-    title: 'IRA — personal AI',
-    text: 'An AI agent inside your daily tools and systems. Assistance that follows your work — not the other way around.',
-    href: '/personal-ai',
-    cta: 'Meet IRA',
-  },
-  {
-    tag: 'For control',
-    title: 'Qlix — agent ecosystem',
-    text: 'Create agents, link verified humans, enforce permissions, approvals, and audit trails — at scale.',
+    tag: 'Flagship product',
+    title: 'Qlix — governed AI agents',
+    text: 'Deploy, coordinate, and control business agents with clear ownership, boundaries, approvals, and operational visibility.',
     href: '/qlix',
     cta: 'Explore Qlix',
+  },
+  {
+    tag: 'Capabilities',
+    title: 'Qlix agent solutions',
+    text: 'Apply Qlix to customer support, operations, procurement, policy enforcement, audit workflows, and more.',
+    href: '/solutions',
+    cta: 'View capabilities',
+  },
+  {
+    tag: 'Implementation support',
+    title: 'Qlix deployment services',
+    text: 'Exora can help map workflows, configure integrations, and introduce Qlix into your operating environment.',
+    href: '/contact',
+    cta: 'Talk to Exora',
   },
 ];
 
@@ -129,12 +103,12 @@ const PRINCIPLES = [
   {
     icon: FiLayers,
     title: 'Operators, not chatbots',
-    text: 'Our agents are persistent software operators running 24/7 inside your infrastructure — not disposable prompts.',
+    text: 'Our agents are persistent software operators that execute according to configured schedules and triggers — not disposable prompts.',
   },
   {
     icon: FiShield,
     title: 'Governed by design',
-    text: 'Scoped permissions, just-in-time approvals, and audit proof — especially through Qlix for multi-agent environments.',
+    text: 'Scoped permissions, just-in-time approvals, and cryptographically immutable Qlix audit entries for recorded events.',
   },
   {
     icon: FiZap,
@@ -154,7 +128,7 @@ const About = () => {
   return (
     <div className="about-page">
       <CardNav
-        items={CARD_NAV_ITEMS}
+        items={SITE_NAV_ITEMS}
         baseColor="rgba(255,255,255,0.08)"
         menuColor="#fff"
         buttonBgColor="rgba(17,17,17,0.75)"
@@ -166,17 +140,16 @@ const About = () => {
         <motion.header className="about-hero" {...fadeUp}>
           <p className="about-eyebrow">About Exora</p>
           <h1 className="about-title">
-            Your business runs on <span className="about-title-accent">infrastructure</span> — not on tools.
+            Exora builds <span className="about-title-accent">Qlix</span> for governed AI operations.
           </h1>
           <p className="about-lead">
-            Exora is an automation and assistance hub. We replace the fragile mix of apps, spreadsheets,
-            and manual handoffs with a unified software layer — AI agents, workflows, and control built
-            for how your company actually operates.
+            Qlix helps businesses deploy and coordinate AI agents while keeping ownership, boundaries,
+            approvals, and operational visibility in the hands of their teams.
           </p>
         </motion.header>
 
         <motion.blockquote className="about-manifesto" {...fadeUp}>
-          <p>We don&apos;t sell features. We install digital infrastructure.</p>
+          <p>Exora is the company. Qlix is the product.</p>
         </motion.blockquote>
 
         <motion.section className="about-block" {...fadeUp}>
@@ -197,7 +170,7 @@ const About = () => {
               <h3>With Exora</h3>
               <p>
                 One purpose-built operating layer: systems connected, logic encoded, execution
-                automated, agents orchestrated. Your business moves on autopilot — with humans still
+                automated, agents orchestrated. Defined workflows move forward while humans remain
                 in control.
               </p>
             </div>

@@ -1,13 +1,12 @@
 import './App.css'
 import { useEffect, useState, useMemo } from 'react'
 import HeroAutopilotHeadline from './components/HeroAutopilotHeadline'
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { AuthProvider } from './contexts/AuthContext'
 import { ActivationProvider } from './contexts/ActivationContext'
 import AppBackgroundSwitcher from './components/AppBackgroundSwitcher'
 import CardNav from './components/CardNav'
-import TypewriterText from './components/TypewriterText'
 import ShinyText from './components/ShinyText'
 import SplitText from './components/SplitText'
 import LiquidChrome from './components/LiquidChrome'
@@ -17,13 +16,9 @@ import { FiLink2, FiCpu, FiZap, FiLayers, FiBox, FiPackage, FiHeadphones, FiSett
 import { AGENTS_DATA } from './data/agents'
 import AuthPage from './pages/AuthPage'
 import BusinessDashboard from './pages/BusinessDashboard'
-import PersonalDashboard from './pages/PersonalDashboard'
 import WorkflowActivation from './pages/WorkflowActivation'
 import OAuthCallback from './pages/OAuthCallback'
-import BusinessSolutions from './pages/BusinessSolutions'
-import PersonalAI from './pages/PersonalAI'
 import About from './pages/About'
-import Products from './pages/Products'
 import Solutions from './pages/Solutions'
 import Contact from './pages/Contact'
 import Careers from './pages/Careers'
@@ -38,13 +33,22 @@ import AuditComplianceAgent from './pages/AuditComplianceAgent'
 import Footer from './components/Footer'
 import Qlix from './pages/Qlix'
 import QlixTeaser from './components/QlixTeaser'
+import { SITE_NAV_ITEMS } from './data/siteNavigation'
+import PublicLayout from './marketing/PublicLayout'
+import { HomePage, QlixPage, SolutionsPage, AboutPage, CareersPage, ContactPage, AgentPage as MarketingAgentPage } from './marketing/PublicPages'
 
 const ScrollToTop = () => {
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
 
   useEffect(() => {
+    if (hash) {
+      requestAnimationFrame(() => {
+        document.querySelector(hash)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      return;
+    }
     window.scrollTo(0, 0);
-  }, [pathname]);
+  }, [pathname, hash]);
 
   return null;
 };
@@ -189,28 +193,22 @@ function App() {
           <Routes>
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/dashboard" element={<BusinessDashboard />} />
-              <Route path="/personal-dashboard" element={<PersonalDashboard />} />
+              <Route path="/personal-dashboard" element={<Navigate to="/qlix" replace />} />
               <Route path="/workflow-activation" element={<WorkflowActivation />} />
               <Route path="/oauth/callback" element={<OAuthCallback />} />
-              <Route path="/business-solutions" element={<BusinessSolutions />} />
-              <Route path="/personal-ai" element={<PersonalAI />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/products" element={<Products />} />
-              <Route path="/solutions" element={<Solutions />} />
-              <Route path="/career" element={<Careers />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/agents/customer-support" element={<CustomerSupportAgent />} />
-              <Route path="/agents/inventory-procurement" element={<InventoryProcurementAgent />} />
-              <Route path="/agents/internal-operations" element={<InternalOperationsAgent />} />
-              <Route path="/agents/orchestration" element={<OrchestrationAgent />} />
-              <Route path="/agents/business-logic" element={<BusinessLogicAgent />} />
-              <Route path="/agents/optimization" element={<OptimizationAgent />} />
-              <Route path="/agents/audit-compliance" element={<AuditComplianceAgent />} />
-              <Route path="/qlix" element={<Qlix />} />
-              <Route path="/agents/:slug" element={<AgentPage />} />
-              <Route path="/" element={<HomePage />} />
+              <Route path="/business-solutions" element={<Navigate to="/solutions" replace />} />
+              <Route path="/personal-ai" element={<Navigate to="/qlix" replace />} />
+              <Route element={<PublicLayout />}>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/products" element={<Navigate to="/qlix" replace />} />
+                <Route path="/solutions" element={<SolutionsPage />} />
+                <Route path="/career" element={<CareersPage />} />
+                <Route path="/contact" element={<ContactPage />} />
+                <Route path="/qlix" element={<QlixPage />} />
+                <Route path="/agents/:slug" element={<MarketingAgentPage />} />
+              </Route>
             </Routes>
-          <Footer />
         </ActivationProvider>
       </AuthProvider>
     </Router>
@@ -218,11 +216,11 @@ function App() {
 }
 
 const WHY_US_GLASS_ITEMS = [
-  { icon: <FiLink2 />, color: 'blue', label: 'Connects all your systems' },
-  { icon: <FiCpu />, color: 'purple', label: 'Encodes your business logic' },
-  { icon: <FiZap />, color: 'orange', label: 'Automates execution' },
-  { icon: <FiLayers />, color: 'indigo', label: 'Orchestrates AI agents' },
-  { icon: <FiBox />, color: 'green', label: 'Becomes the core operating layer of your company' },
+  { icon: <FiLink2 />, color: 'blue', label: 'Connect agents to business workflows' },
+  { icon: <FiCpu />, color: 'purple', label: 'Assign clear human ownership' },
+  { icon: <FiZap />, color: 'orange', label: 'Control sensitive actions with approvals' },
+  { icon: <FiLayers />, color: 'indigo', label: 'Coordinate agents from one platform' },
+  { icon: <FiBox />, color: 'green', label: 'Review activity and outcomes' },
 ];
 
 const TERMINAL_STEPS = [
@@ -271,7 +269,7 @@ function buildAgentsGlassItems(agents) {
 
 const AGENTS_GLASS_ITEMS = buildAgentsGlassItems(AGENTS_DATA);
 
-function HomePage() {
+function LegacyHomePage() {
   const [showLogo, setShowLogo] = useState(true);
   const [showContent, setShowContent] = useState(false);
   const [startTypewriter, setStartTypewriter] = useState(false);
@@ -351,34 +349,7 @@ function HomePage() {
 
       <CardNav
         className=""
-        items={[
-          {
-            label: 'About',
-            bgColor: '#0D0716',
-            textColor: '#fff',
-            links: [
-              { label: 'About', ariaLabel: 'About page', href: '/about' },
-              { label: 'Career', ariaLabel: 'Career info', href: '/career' }
-            ]
-          },
-          {
-            label: 'Products',
-            bgColor: '#170D27',
-            textColor: '#fff',
-            links: [
-              { label: 'Products', ariaLabel: 'Products page', href: '/products' },
-              { label: 'Solutions', ariaLabel: 'Solutions', href: '/solutions' }
-            ]
-          },
-          {
-            label: 'Contact',
-            bgColor: '#271E37',
-            textColor: '#fff',
-            links: [
-              { label: 'Contact', ariaLabel: 'Contact page', href: '/contact' }
-            ]
-          }
-        ]}
+        items={SITE_NAV_ITEMS}
         baseColor="rgba(8, 8, 12, 0.9)"
         menuColor="#fff"
         buttonBgColor="rgba(17,17,17,0.75)"
@@ -395,29 +366,33 @@ function HomePage() {
             <div className="editorial-hero">
               <HeroAutopilotHeadline variant="mobile" />
               <p className="editorial-desc hero-agent-tagline">
-                create and deploy any type of agents you want
+                Qlix gives businesses one governed platform to deploy, coordinate, and control AI agents.
               </p>
+              <div className="editorial-cta-row">
+                <a className="hero-cta-button hero-cta-primary" href="/contact">Request a Demo</a>
+                <a className="hero-cta-button hero-cta-secondary" href="https://qlix.exora.solutions">Explore Qlix</a>
+              </div>
             </div>
 
             <QlixTeaser />
 
             <div className="editorial-list-section">
-              <div className="editorial-list-header">WHAT WE OFFER</div>
+              <div className="editorial-list-header">WHAT QLIX ENABLES</div>
               <div className="editorial-list-item">
                 <div className="editorial-item-num">01</div>
-                <div className="editorial-item-content"><h4>Business Automation</h4><p>Tailored AI workflows for lead gen, CRM, and pipeline operations</p></div>
+                <div className="editorial-item-content"><h4>Create and deploy</h4><p>Configure agents for clear business responsibilities.</p></div>
               </div>
               <div className="editorial-list-item">
                 <div className="editorial-item-num">02</div>
-                <div className="editorial-item-content"><h4>Personal AI Agent</h4><p>AI agent embedded in your daily tools and systems</p></div>
+                <div className="editorial-item-content"><h4>Coordinate</h4><p>Connect agents into controlled business workflows.</p></div>
               </div>
               <div className="editorial-list-item">
                 <div className="editorial-item-num">03</div>
-                <div className="editorial-item-content"><h4>Sector-Specific Solutions</h4><p>Industry-targeted automations across 10+ verticals</p></div>
+                <div className="editorial-item-content"><h4>Govern</h4><p>Set ownership, permissions, and human approval requirements.</p></div>
               </div>
               <div className="editorial-list-item">
                 <div className="editorial-item-num">04</div>
-                <div className="editorial-item-content"><h4>Custom Integrations</h4><p>Plug into your existing stack — no rip and replace</p></div>
+                <div className="editorial-item-content"><h4>Observe</h4><p>Review agent activity, outcomes, and audit history.</p></div>
               </div>
             </div>
 
@@ -436,16 +411,19 @@ function HomePage() {
               <HeroAutopilotHeadline variant="desktop" />
 
               <p className="hero-agent-tagline">
-                create and deploy any type of agents you want
+                Qlix gives businesses one governed platform to deploy, coordinate, and control AI agents.
               </p>
+              <div className="hero-cta-buttons">
+                <a className="hero-cta-button hero-cta-primary" href="/contact">Request a Demo</a>
+                <a className="hero-cta-button hero-cta-secondary" href="https://qlix.exora.solutions">Explore Qlix</a>
+              </div>
             </div>
 
-            {/* Two Column Section */}
+            {/* Qlix product pillars */}
             <div className="hero-two-columns">
-              {/* Left Column - Business */}
               <div className="hero-column hero-column-left">
-                <h2 className="hero-column-title">For Your Business</h2>
-                <p className="hero-column-text">End To End Tailored AI Employee that works 24/7</p>
+                <h2 className="hero-column-title">Governed by design</h2>
+                <p className="hero-column-text">Clear ownership, scoped permissions, and human approval for sensitive actions.</p>
               </div>
 
               {/* Central Logo Separator */}
@@ -457,10 +435,9 @@ function HomePage() {
                 />
               </div>
 
-              {/* Right Column - Life */}
               <div className="hero-column hero-column-right">
-                <h2 className="hero-column-title">For Your Life</h2>
-                <p className="hero-column-text">AI Agent For Your Daily Work. In Your System</p>
+                <h2 className="hero-column-title">Built for operations</h2>
+                <p className="hero-column-text">Coordinate agents and workflows while keeping your people accountable and in control.</p>
               </div>
             </div>
             </motion.div>
@@ -502,7 +479,7 @@ function HomePage() {
                 </span>
                 <span className="why-us-line-2">
                   <ShinyText
-                    text="Us?"
+                    text="Qlix?"
                     speed={2}
                     delay={0}
                     color="rgba(255, 255, 255, 0.85)"
@@ -515,7 +492,7 @@ function HomePage() {
                 </span>
               </h2>
               <SplitText
-                text="We Provide Software Infrastructure, Not a Tool"
+                text="One platform for governed AI operations"
                 tag="h3"
                 className="why-us-subtitle"
                 delay={30}
@@ -533,7 +510,7 @@ function HomePage() {
             <div className="why-us-content">
 
               <SplitText
-                text="Most companies today run on a fragile mix of tools, people, spreadsheets, and manual coordination."
+                text="AI agents create value only when teams can assign responsibility, control access, and review what happens."
                 tag="p"
                 className="why-us-intro"
                 delay={40}
@@ -548,7 +525,7 @@ function HomePage() {
               />
 
               <SplitText
-                text="Exora replaces this with a unified, purpose-built software infrastructure that:"
+                text="Qlix provides the operating controls businesses need to:"
                 tag="p"
                 className="why-us-subheading"
                 delay={40}
@@ -568,7 +545,7 @@ function HomePage() {
 
               <div className="why-us-closing">
                 <SplitText
-                  text="We don't sell features."
+                  text="Exora is the company."
                   tag="p"
                   className="why-us-closing-line"
                   delay={40}
@@ -582,7 +559,7 @@ function HomePage() {
                   textAlign="left"
                 />
                 <SplitText
-                  text="We install digital infrastructure."
+                  text="Qlix is the product."
                   tag="p"
                   className="why-us-closing-line"
                   delay={40}
@@ -712,9 +689,9 @@ function HomePage() {
                     <span className="neon-live-feed-label">Live Operations Feed</span>
                   </div>
                   <div className="neon-live-feed-body">
-                    <div>[14:02:11] <span className="text-primary">INFO</span>: Load balancer balancing 1.2M requests/sec</div>
-                    <div>[14:02:45] <span className="text-secondary">TRACE</span>: Handshake established with Node_Alpha_TX</div>
-                    <div>[14:03:02] <span className="text-primary">INFO</span>: Encrypted tunnel confirmed for user ID: 8829-X</div>
+                    <div>[14:02:11] <span className="text-primary">INFO</span>: Configured workflow active</div>
+                    <div>[14:02:45] <span className="text-secondary">TRACE</span>: Approval checkpoint ready</div>
+                    <div>[14:03:02] <span className="text-primary">INFO</span>: Recorded event written to Qlix</div>
                   </div>
                 </div>
               </div>
@@ -747,8 +724,8 @@ function HomePage() {
             </div>
             <div className="how-we-work-blob-section-right">
               <h2 className="how-we-work-blob-section-heading">
-                <span className="how-we-work-blob-section-line">Our</span>
-                <span className="how-we-work-blob-section-line">Agents</span>
+                <span className="how-we-work-blob-section-line">Qlix Agent</span>
+                <span className="how-we-work-blob-section-line">Capabilities</span>
               </h2>
               <div className="how-we-work-blob-section-scroll">
                 <ShinyText
@@ -783,7 +760,7 @@ function HomePage() {
             </div>
             <p className="flowing-menu-shiny-wrap">
               <ShinyText
-                text="These agents are not tools or chatbots. They are persistent software operators embedded into the company's infrastructure, running 24/7."
+                text="These agents are not tools or chatbots. They are persistent software operators embedded into the company's infrastructure, executing according to configured schedules and triggers."
                 speed={2}
                 delay={0}
                 color="rgba(255, 255, 255, 0.85)"

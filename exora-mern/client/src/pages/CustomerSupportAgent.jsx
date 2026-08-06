@@ -7,9 +7,9 @@ import './InventoryProcurementAgent.css';
 import '../components/Footer.css';
 
 const STEPS = [
-  { t: 'Customer Message', d: 'Incoming support requests from email, chat, or social media are captured instantly and processed by our natural language engine.' },
-  { t: 'AI Reply', d: 'An instant, context-aware response is generated from your knowledge base, resolving up to 80% of common queries without human intervention.' },
-  { t: 'Ticket Created', d: 'For complex issues, a ticket is automatically created in your CRM, categorized by intent and sentiment for priority routing.' },
+  { t: 'Customer Message', d: 'Incoming support requests from configured email, chat, or social channels are captured and processed with the available context.' },
+  { t: 'AI Reply', d: 'A context-aware response can be generated from your approved knowledge base for eligible queries.' },
+  { t: 'Ticket Created', d: 'For complex issues, a ticket can be created in your CRM and categorized for priority routing according to configured rules.' },
   { t: 'Escalation', d: 'High-stake or nuanced issues are routed to the right human specialist with a full summary of the AI interaction to date.' },
   { t: 'Resolved', d: 'The ticket is closed, customer satisfaction is tracked, and the interaction data feeds back into the AI to improve future responses.' },
 ];
@@ -53,7 +53,7 @@ export default function CustomerSupportAgent() {
             <div className="pl-0 md:pl-4">
               <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg hover:shadow-[0_0_30px_rgba(168,85,247,0.4)] hover:scale-105 transition-all duration-300">
                 <div className="flex items-center justify-between mb-5 md:mb-6 pb-4 border-b border-white/10">
-                  <h3 className="text-base md:text-lg font-semibold text-white">Support Dashboard</h3>
+                  <h3 className="text-base md:text-lg font-semibold text-white">Support Dashboard · Illustrative</h3>
                   <div className="flex gap-1.5 md:gap-2">
                     <div className="w-2.5 md:w-3 h-2.5 md:h-3 rounded-full bg-red-500"></div>
                     <div className="w-2.5 md:w-3 h-2.5 md:h-3 rounded-full bg-yellow-500"></div>
@@ -118,7 +118,7 @@ export default function CustomerSupportAgent() {
                   <MessageSquare size={24} className="text-purple-400" />
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-3">AI Auto Replies</h3>
-                <p className="text-lg text-gray-400 font-medium leading-relaxed">Instantly respond to common questions with intelligent, context-aware replies.</p>
+                <p className="text-lg text-gray-400 font-medium leading-relaxed">Respond to eligible questions using approved, context-aware knowledge.</p>
               </div>
 
               <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-8 hover:shadow-[0_0_30px_rgba(168,85,247,0.4)] hover:scale-105 transition-all duration-300">
@@ -126,7 +126,7 @@ export default function CustomerSupportAgent() {
                   <Inbox size={24} className="text-purple-400" />
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-3">Smart Ticketing</h3>
-                <p className="text-lg text-gray-400 font-medium leading-relaxed">Automatically categorize, prioritize, and route tickets to the right team.</p>
+                <p className="text-lg text-gray-400 font-medium leading-relaxed">Categorize, prioritize, and route tickets according to configured rules.</p>
               </div>
 
               <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-8 hover:shadow-[0_0_30px_rgba(168,85,247,0.4)] hover:scale-105 transition-all duration-300">
@@ -143,7 +143,7 @@ export default function CustomerSupportAgent() {
         <section className="py-16 md:py-20 px-6 relative z-10">
           <div className="max-w-6xl mx-auto text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-6">Start Automating Your Support Today</h2>
-            <p className="text-xl text-gray-400 mb-10">Join teams already using Exora to reduce support costs and improve customer satisfaction.</p>
+            <p className="text-xl text-gray-400 mb-10">Configure support workflows around your channels, knowledge, escalation rules, and review requirements.</p>
             
             <SeeHowItWorksButton className="mx-auto" />
           </div>

@@ -12,8 +12,8 @@ const STEPS = [
   { t: 'Data collection', d: 'The agent streams event data from every connected system — ERP, HRMS, ticketing, production floors — creating a unified timeline of every operation.' },
   { t: 'Pattern mining', d: 'Process mining algorithms replay event logs to reconstruct actual workflows, comparing them against the designed process to spot divergence.' },
   { t: 'Gap identification', d: 'Statistical models identify the steps with the highest latency, highest error rates, and greatest resource waste — ranked by opportunity value.' },
-  { t: 'Recommendations', d: 'For each bottleneck, the agent generates a ranked set of interventions with projected ROI, implementation complexity, and risk score.' },
-  { t: 'Change application', d: 'Approved changes are applied to configurations, routing rules, and thresholds automatically — or presented as a deployment-ready playbook for engineering.' },
+  { t: 'Recommendations', d: 'For each bottleneck, the agent generates a ranked set of interventions with projected business impact, implementation complexity, and risk context.' },
+  { t: 'Change application', d: 'Approved changes can be applied to configured controls or presented as a deployment-ready playbook for engineering.' },
   { t: 'Impact measurement', d: 'Post-change metrics are tracked against the pre-change baseline. A/B tests confirm statistical significance before the change is fully promoted.' },
   { t: 'Model refinement', d: 'Outcomes feed back into the agent\'s improvement model, increasing recommendation accuracy with every cycle. The system gets smarter the longer it runs.' },
 ];
@@ -92,20 +92,20 @@ const WF_NODES = [
 const WF_LABELS = ['Collect data', 'Mine patterns', 'Find gaps', 'Recommend', 'Apply change', 'Measure', 'Learn & loop'];
 
 const METRICS = [
-  { id: 'm1', val: '–38%', label: 'Cycle time', bar: 62 },
-  { id: 'm2', val: '+5x',  label: 'Throughput', bar: 83 },
-  { id: 'm3', val: '–74%', label: 'Error rate', bar: 74 },
-  { id: 'm4', val: '–22%', label: 'Cost per unit', bar: 44 },
-  { id: 'm5', val: '99.1%', label: 'SLA compliance', bar: 99 },
-  { id: 'm6', val: '71%',  label: 'Automation rate', bar: 71 },
+  { id: 'm1', val: 'Tracked', label: 'Cycle time', bar: 62 },
+  { id: 'm2', val: 'Compared',  label: 'Throughput', bar: 83 },
+  { id: 'm3', val: 'Flagged', label: 'Error rate', bar: 74 },
+  { id: 'm4', val: 'Measured', label: 'Cost per unit', bar: 44 },
+  { id: 'm5', val: 'Reviewed', label: 'SLA compliance', bar: 99 },
+  { id: 'm6', val: 'Scoped',  label: 'Automation rate', bar: 71 },
 ];
 
 const CAPS = [
   { Icon: IconProcessMining, title: 'Process mining', desc: 'Discovers your actual end-to-end process flows from event logs — not what you think happens, but what actually happens.' },
   { Icon: IconBottleneck, title: 'Bottleneck detection', desc: 'Pinpoints the exact steps where work piles up, throughput drops, or latency spikes — with root cause analysis included.' },
   { Icon: IconAB, title: 'A/B experiments', desc: 'Proposes and runs controlled experiments on process variants, measuring impact before committing to any change.' },
-  { Icon: IconKPI, title: 'KPI tracking', desc: 'Monitors your most important metrics in real time, with automatic alerts when any KPI drifts outside acceptable bounds.' },
-  { Icon: IconAutoTune, title: 'Auto-tuning', desc: 'Adjusts parameters, thresholds, and configurations automatically based on performance data — no manual tweaking needed.' },
+  { Icon: IconKPI, title: 'KPI tracking', desc: 'Monitors configured metrics and surfaces alerts when a KPI drifts outside its defined bounds.' },
+  { Icon: IconAutoTune, title: 'Guided tuning', desc: 'Recommends parameter, threshold, and configuration changes for review and approval.' },
   { Icon: IconFeedback, title: 'Feedback loops', desc: 'Learns from every optimization cycle, refining its models so improvement recommendations get sharper over time.' },
 ];
 
@@ -337,7 +337,7 @@ const OptimizationAgent = () => {
             </div>
             <h1 className="ip-hero-title">Optimization<br />Agent</h1>
             <p className="ip-hero-sub">
-              Continuously analyses your operations, identifies inefficiencies, and applies data-driven improvements — so your processes get faster and leaner every single day.
+              Analyses configured operations, identifies inefficiencies, and recommends data-driven improvements for review and controlled application.
             </p>
             <div className="opt-cta-row mt-6" style={{ justifyContent: 'flex-start' }}>
               <SeeHowItWorksButton />
@@ -356,10 +356,10 @@ const OptimizationAgent = () => {
 
         <motion.div className="opt-stats-bar" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.15 }}>
           {[
-            { num: '38%', label: 'Avg. cycle time reduction' },
-            { num: '5x',  label: 'Faster improvement cycles' },
-            { num: '200+', label: 'Metrics tracked' },
-            { num: '∞',   label: 'Continuous learning' },
+            { num: 'Tracked', label: 'Process baselines' },
+            { num: 'Compared',  label: 'Workflow variants' },
+            { num: 'Scoped', label: 'Metrics monitored' },
+            { num: 'Reviewed',   label: 'Recommendations' },
           ].map((s, i) => (
             <div className="opt-stat-item" key={i}>
               <div className="opt-stat-num">{s.num}</div>
@@ -418,7 +418,7 @@ const OptimizationAgent = () => {
             <div>
               <div className="ip-problem-title">Stagnant processes that never improve</div>
               <p className="ip-problem-desc">
-                Most organisations review processes quarterly at best. Inefficiencies compound silently. The Optimization Agent watches 24/7, spots drift the moment it starts, and continuously closes the gap between current and optimal performance.
+                Most organisations review processes periodically. The Optimization Agent monitors configured processes, surfaces drift, and helps teams close the gap between current and target performance.
               </p>
             </div>
           </div>

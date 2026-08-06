@@ -127,9 +127,9 @@ const Contact = () => {
                     Fill out the form below and our team will reach out within 24 hours.
                   </motion.p>
                 </div>
-                <div className="ira-bot-small-wrapper">
-                  <span className="ira-bot-name">IRA</span>
-                  <img src="/ira-bot.png" alt="IRA Bot" className="ira-bot-img" />
+                <div className="qlix-contact-mark" aria-label="Qlix by Exora">
+                  <span className="qlix-contact-mark-name">QLIX</span>
+                  <span className="qlix-contact-mark-by">by Exora</span>
                 </div>
               </div>
             </motion.div>

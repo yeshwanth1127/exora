@@ -189,7 +189,7 @@
   line-height: 1.6;
   letter-spacing: 0.02em;
   color: rgba(255, 255, 255, 0.62);
-  text-transform: lowercase;
+  text-transform: none;
 }
 
 .hero-cta-buttons {
@@ -202,6 +202,9 @@
 }
 
 .hero-cta-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 12px 28px;
   border-radius: 8px;
   font-size: 13px;
@@ -214,6 +217,7 @@
   text-transform: uppercase;
   position: relative;
   overflow: hidden;
+  text-decoration: none;
 }
 
 .hero-cta-primary {
@@ -3598,7 +3602,7 @@ h6 {
   }
 
   .editorial-desc.hero-agent-tagline {
-    text-transform: lowercase;
+    text-transform: none;
     letter-spacing: 0.02em;
   }
 
@@ -3625,15 +3629,6 @@ h6 {
     text-align: center; text-transform: uppercase;
     letter-spacing: 0.8px;
     display: flex; align-items: center; justify-content: center;
-  }
-
-  .editorial-ira-strip {
-    background: rgba(138,92,246,0.03);
-    border-top: 1px solid rgba(138,92,246,0.12);
-    border-bottom: 1px solid rgba(138,92,246,0.08);
-    padding: 26px 24px;
-    display: flex; flex-direction: column; gap: 24px;
-    margin-bottom: 28px;
   }
 
   .editorial-info-flex {

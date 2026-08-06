@@ -13,7 +13,7 @@ const STEPS = [
   { t: 'Rule matching', d: 'The engine scans your active rule library and identifies which rules apply to the incoming event based on type, value, user role, and metadata.' },
   { t: 'Condition evaluation', d: 'Each matched rule is evaluated against the event\'s data. Complex multi-condition rules are resolved in a single pass with consistent priority ordering.' },
   { t: 'Decision output', d: 'A structured decision is produced: approve, reject, escalate, or flag. The decision includes the rule ID and rationale for full traceability.' },
-  { t: 'Action routing', d: 'The decision is dispatched to the appropriate system or team — automatically. Approved actions proceed; escalations land in the right inbox instantly.' },
+  { t: 'Action routing', d: 'The decision is dispatched to the appropriate system or team according to configured rules. Approved actions proceed and escalations reach the designated queue.' },
   { t: 'Enforcement logged', d: 'Every decision is written to the audit log with timestamp, rule version, input data, and outcome — ready for compliance review at any time.' },
 ];
 
@@ -86,9 +86,9 @@ const CARD_NAV_ITEMS = [
 
 const CAPS = [
   { Icon: IconRuleEngine, title: 'Rule engine', desc: 'Define complex if-then-else logic, multi-condition rules, and nested policies in plain language or structured format.' },
-  { Icon: IconRouting, title: 'Dynamic routing', desc: 'Routes decisions, approvals, and exceptions to the right teams automatically based on rule outcomes and thresholds.' },
-  { Icon: IconVersioning, title: 'Policy versioning', desc: 'Track every rule change with full version history. Roll back policies instantly when business requirements shift.' },
-  { Icon: IconRealtime, title: 'Real-time decisions', desc: 'Evaluates requests against active rules in under 50ms — no queuing, no batch processing, no lag.' },
+  { Icon: IconRouting, title: 'Dynamic routing', desc: 'Routes decisions, approvals, and exceptions to designated teams based on configured rule outcomes and thresholds.' },
+  { Icon: IconVersioning, title: 'Policy versioning', desc: 'Track rule changes with version history and restore an earlier policy when business requirements shift.' },
+  { Icon: IconRealtime, title: 'Event-driven decisions', desc: 'Evaluates requests against active rules and records the applicable rule and rationale.' },
   { Icon: IconException, title: 'Exception handling', desc: 'Captures edge cases, escalates anomalies, and logs every exception with full context for audit and review.' },
   { Icon: IconSync, title: 'Multi-system sync', desc: 'Pushes rule outcomes to ERP, CRM, and databases simultaneously — one source of truth, everywhere.' },
 ];
@@ -142,7 +142,7 @@ const BusinessLogicAgent = () => {
             <div className="w-full">
               <div className="bg-[#09090b] border border-white/10 rounded-[20px] md:rounded-[24px] p-5 md:p-8 shadow-[0_0_30px_rgba(127,119,221,0.1)] hover:shadow-[0_0_50px_rgba(127,119,221,0.2)] transition-all duration-500 w-full text-left font-sans">
                 <div className="flex items-center justify-between mb-6 md:mb-8">
-                  <h3 className="text-[17px] md:text-[18px] font-bold text-white tracking-tight">Policy Decision Hub</h3>
+                  <h3 className="text-[17px] md:text-[18px] font-bold text-white tracking-tight">Policy Decision Hub · Illustrative</h3>
                   <div className="flex gap-1.5 md:gap-2">
                     <div className="w-2.5 md:w-3 h-2.5 md:h-3 rounded-full bg-[#E56A5B]"></div>
                     <div className="w-2.5 md:w-3 h-2.5 md:h-3 rounded-full bg-[#E3B052]"></div>
@@ -173,8 +173,8 @@ const BusinessLogicAgent = () => {
 
                 <div className="mt-8 pt-8 border-t border-white/5">
                   <div className="flex justify-between items-center mb-4">
-                    <span className="text-[11px] text-white/40 font-bold uppercase tracking-wider">Evaluation Latency</span>
-                    <span className="text-[11px] text-emerald-400 font-mono">42ms</span>
+                    <span className="text-[11px] text-white/40 font-bold uppercase tracking-wider">Policy evaluation</span>
+                    <span className="text-[11px] text-emerald-400 font-mono">RECORDED</span>
                   </div>
                   <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
                     <motion.div 
@@ -193,10 +193,10 @@ const BusinessLogicAgent = () => {
         {/* STATS */}
         <motion.div className="blg-stats-bar" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.15 }}>
           {[
-            { num: '99.8%', label: 'Policy accuracy' },
-            { num: '<50ms', label: 'Decision latency' },
-            { num: '500+', label: 'Rules supported' },
-            { num: '24/7', label: 'Enforcement' },
+            { num: 'Defined', label: 'Rule sets' },
+            { num: 'Traceable', label: 'Decisions' },
+            { num: 'Scoped', label: 'Exceptions' },
+            { num: 'Logged', label: 'Enforcement' },
           ].map((s, i) => (
             <div className="blg-stat-item" key={i}>
               <div className="blg-stat-num">{s.num}</div>
@@ -250,7 +250,7 @@ const BusinessLogicAgent = () => {
             <div>
               <div className="ip-problem-title">Inconsistent policy enforcement</div>
               <p className="ip-problem-desc">
-                Manual rule enforcement leads to human error, inconsistent decisions, and compliance gaps. The Business Logic Agent applies your exact rules at machine speed — every time, with zero drift.
+                Manual rule enforcement can create inconsistent decisions and compliance gaps. The Business Logic Agent applies defined rules consistently and surfaces exceptions for review.
               </p>
             </div>
           </div>

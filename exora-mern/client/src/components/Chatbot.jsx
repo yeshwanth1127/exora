@@ -142,9 +142,9 @@ const Chatbot = ({ isOpen: externalIsOpen, onToggle, hideFloatingButton = false 
       return knowledgeBase.contact
     }
     
-    // Waitlist queries
-    if (lowerQuery.includes('waitlist') || lowerQuery.includes('join') || lowerQuery.includes('sign up') || lowerQuery.includes('early access')) {
-      return "Great! You can join our waitlist by clicking the 'Join the Waitlist' button on our website. This will give you early access to our AI automation solutions and exclusive updates about new features and capabilities."
+    // Demo and sales queries
+    if (lowerQuery.includes('demo') || lowerQuery.includes('contact') || lowerQuery.includes('sales')) {
+      return "Qlix is available through a guided business conversation. Use the 'Request a Demo' button and our team will help you evaluate the right agent workflows and controls."
     }
     
     // Default response for unrecognized queries
