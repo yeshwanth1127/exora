@@ -18,6 +18,7 @@ const dashboardRoutes = require('./routes/dashboard');
 const activationRoutes = require('./routes/activation');
 const privacyRoutes = require('./routes/privacy');
 const waitlistRoutes = require('./routes/waitlist');
+const contactRoutes = require('./routes/contact');
 
 const app = express();
 let io = null;
@@ -35,6 +36,7 @@ app.use('/api/discovery', require('./routes/discovery'));
 app.use('/api/workflows', require('./routes/workflows'));
 app.use('/api/execution', require('./routes/execution'));  // NEW: Workflow execution routes
 app.use('/api/waitlist', waitlistRoutes);
+app.use('/api/contact', contactRoutes);
 // CRM handled through standard workflow activation (activation.js)
 // app.use('/', oauthRoutes);
 app.use('/', privacyRoutes);

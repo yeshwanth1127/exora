@@ -24,6 +24,7 @@ export const SITE_NAV_ITEMS = [
     links: [
       { label: 'About Exora', ariaLabel: 'About Exora', href: '/about' },
       { label: 'Contact', ariaLabel: 'Request a Qlix demo', href: '/contact' },
+      { label: 'Security', ariaLabel: 'Security and trust', href: '/security' },
     ],
   },
 ]

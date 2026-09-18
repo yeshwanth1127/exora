@@ -248,7 +248,7 @@
 /* Mobile: all three sections fit inside nav box, no scrolling; labels only, no subsections */
 @media (max-width: 768px) {
   .card-nav.open {
-    min-height: 280px !important;
+    min-height: 220px !important;
     max-height: calc(100vh - 40px) !important;
     height: auto !important;
     overflow-y: auto !important;
@@ -260,12 +260,16 @@
     visibility: visible !important;
     pointer-events: auto !important;
     overflow: visible !important;
+    flex-direction: row !important;
+    flex-wrap: wrap;
+    align-items: stretch !important;
     padding: 0.75rem 0.75rem 1.5rem 0.75rem;
   }
   .card-nav.open .nav-card {
     opacity: 1 !important;
     transform: none !important;
-    flex: 0 0 auto !important;
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
     min-height: 48px !important;
     height: auto !important;
     overflow: visible !important;
@@ -279,6 +283,8 @@
   .card-nav-mobile-cta {
     display: flex !important;
     justify-content: center;
+    flex: 1 1 100%;
+    width: 100%;
   }
 }
 
@@ -336,7 +342,8 @@
   }
   
   .card-nav-content { 
-    flex-direction: column; 
+    flex-direction: row; 
+    flex-wrap: wrap;
     align-items: stretch; 
     gap: 8px; 
     padding: 1rem 0.5rem 0.5rem 0.5rem; 
@@ -347,7 +354,8 @@
   .nav-card { 
     height: auto; 
     min-height: 60px; 
-    flex: 1 1 auto; 
+    flex: 1 1 0; 
+    min-width: 0;
     max-height: none; 
   }
   

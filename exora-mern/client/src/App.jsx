@@ -36,6 +36,7 @@ import QlixTeaser from './components/QlixTeaser'
 import { SITE_NAV_ITEMS } from './data/siteNavigation'
 import PublicLayout from './marketing/PublicLayout'
 import { HomePage, QlixPage, SolutionsPage, AboutPage, CareersPage, ContactPage, AgentPage as MarketingAgentPage } from './marketing/PublicPages'
+import { SecurityPage, PrivacyPage, TermsPage } from './marketing/TrustPages'
 
 const ScrollToTop = () => {
   const { pathname, hash } = useLocation();
@@ -205,6 +206,9 @@ function App() {
                 <Route path="/solutions" element={<SolutionsPage />} />
                 <Route path="/career" element={<CareersPage />} />
                 <Route path="/contact" element={<ContactPage />} />
+                <Route path="/security" element={<SecurityPage />} />
+                <Route path="/privacy" element={<PrivacyPage />} />
+                <Route path="/terms" element={<TermsPage />} />
                 <Route path="/qlix" element={<QlixPage />} />
                 <Route path="/agents/:slug" element={<MarketingAgentPage />} />
               </Route>

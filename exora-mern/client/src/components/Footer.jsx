@@ -71,6 +71,36 @@ const Footer = () => {
                 </li>
               </ul>
             </div>
+
+            <div className="footer-column">
+              <h3 className="footer-label">QUICK ACCESS</h3>
+              <ul className="footer-links">
+                <li>
+                  <Link to="/security">
+                    <MoveUpRight size={14} className="link-icon" />
+                    Security
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/privacy">
+                    <MoveUpRight size={14} className="link-icon" />
+                    Privacy
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/terms">
+                    <MoveUpRight size={14} className="link-icon" />
+                    Terms of Service
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/security#report">
+                    <MoveUpRight size={14} className="link-icon" />
+                    Report a vulnerability
+                  </Link>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
 

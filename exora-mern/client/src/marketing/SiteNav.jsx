@@ -32,10 +32,10 @@ export default function SiteNav() {
           <NavLink to="/qlix" onClick={close}>Qlix</NavLink>
           <NavLink to="/solutions" onClick={close}>For business</NavLink>
           <NavLink to="/about" onClick={close}>Company</NavLink>
+          <NavLink to="/security" onClick={close}>Security</NavLink>
           <NavLink to="/career" onClick={close}>Careers</NavLink>
-          <Link className="mx-nav-cta" to="/contact" onClick={close}>Talk to Exora <span>↗</span></Link>
+          <Link className="mx-nav-cta" to="/contact" onClick={close}>Talk to Exora <svg className="mx-arrow-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 12L12 4M12 4H6.5M12 4V9.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg></Link>
         </div>
-        <span className="mx-nav-tag">BUILD. GOVERN. EVOLVE.</span>
       </nav>
     </header>
   );

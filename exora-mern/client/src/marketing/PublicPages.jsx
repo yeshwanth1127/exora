@@ -1,11 +1,78 @@
+import { useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
-import { SiGmail, SiSlack, SiWhatsapp, SiZoho } from 'react-icons/si';
+import { API_BASE_URL } from '../config/api';
+import {
+  SiAsana,
+  SiDiscord,
+  SiDropbox,
+  SiGithub,
+  SiGmail,
+  SiGooglecalendar,
+  SiGoogledrive,
+  SiGooglesheets,
+  SiHubspot,
+  SiJira,
+  SiNotion,
+  SiSlack,
+  SiTelegram,
+  SiTrello,
+  SiWhatsapp,
+  SiZoom,
+  SiZoho,
+} from 'react-icons/si';
 import { agentCapabilities, liveIntegrations, steps } from './content';
-import OrbitImages from './OrbitImages';
 
-const Arrow = () => <span aria-hidden>↗</span>;
+const Arrow = ({ className = '' }) => (
+  <svg className={`mx-arrow-icon ${className}`.trim()} width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <path d="M4 12L12 4M12 4H6.5M12 4V9.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
 const Eyebrow = ({ children }) => <div className="mx-eyebrow"><i />{children}</div>;
 const CtaPair = () => <div className="mx-actions"><Link className="mx-button mx-button-light" to="/contact">Start a conversation <Arrow /></Link><a className="mx-button mx-button-ghost" href="https://qlix.exora.solutions">Open Qlix <Arrow /></a></div>;
+
+const TOOL_ROW_ONE = [
+  { icon: SiGmail, label: 'Gmail', color: '#ea4335' },
+  { icon: SiSlack, label: 'Slack', color: '#4a154b' },
+  { icon: SiWhatsapp, label: 'WhatsApp', color: '#25d366' },
+  { icon: SiZoho, label: 'Zoho', color: '#e42527' },
+  { icon: SiGooglecalendar, label: 'Google Calendar', color: '#4285f4' },
+  { icon: SiGooglesheets, label: 'Google Sheets', color: '#0f9d58' },
+  { icon: SiGoogledrive, label: 'Google Drive', color: '#fbbc04' },
+];
+
+const TOOL_ROW_TWO = [
+  { icon: SiNotion, label: 'Notion', color: '#111111' },
+  { icon: SiGithub, label: 'GitHub', color: '#181717' },
+  { icon: SiHubspot, label: 'HubSpot', color: '#ff7a59' },
+  { icon: SiDiscord, label: 'Discord', color: '#5865f2' },
+  { icon: SiTelegram, label: 'Telegram', color: '#26a5e4' },
+  { icon: SiTrello, label: 'Trello', color: '#0052cc' },
+  { icon: SiAsana, label: 'Asana', color: '#f06a6a' },
+  { icon: SiZoom, label: 'Zoom', color: '#2d8cff' },
+  { icon: SiDropbox, label: 'Dropbox', color: '#0061ff' },
+  { icon: SiJira, label: 'Jira', color: '#2684ff' },
+];
+
+function ToolMarquee({ tools, reverse = false, duration = 32 }) {
+  const loop = [...tools, ...tools];
+  return (
+    <div className={`mx-tool-marquee${reverse ? ' is-reverse' : ''}`} style={{ '--mx-marquee-duration': `${duration}s` }}>
+      <div className="mx-tool-marquee-track">
+        {loop.map((tool, index) => {
+          const Icon = tool.icon;
+          return (
+            <div className="mx-tool-chip" key={`${tool.label}-${index}`} aria-hidden={index >= tools.length || undefined}>
+              <span className="mx-tool-chip-icon" style={{ color: tool.color }}>
+                <Icon aria-hidden />
+              </span>
+              <span className="mx-tool-chip-label">{tool.label}</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 function WorkflowVisual({ type }) {
   return <div className={`mx-workflow-visual is-${type}`} aria-hidden="true">
@@ -59,7 +126,7 @@ function FeatureVisual({ type }) {
 function ProductConsole() {
   return <div className="mx-console" aria-label="Illustrative Qlix agent builder">
     <div className="mx-console-top"><div className="mx-console-brand"><img src="/logo_solo.png" alt="" /><b>qlix</b></div><span>AGENT STUDIO</span><div className="mx-status"><i />READY</div></div>
-    <div className="mx-console-grid"><aside><span>BUILD</span><b>Instruction</b><b>Knowledge</b><b>Connections</b><span>CONTROL</span><b>Permissions</b><b>Approvals</b><b>Audit</b></aside><div className="mx-prompt"><span>NATURAL LANGUAGE BUILDER</span><h3>What should your agent do?</h3><div className="mx-input">Monitor our support inbox, answer from approved knowledge, and send uncertain cases to a person.<i>↗</i></div><div className="mx-chips"><span>Gmail connected</span><span>Human approval</span><span>Audit enabled</span></div><div className="mx-flow"><b>INBOX</b><i>→</i><b>QLIX AGENT</b><i>→</i><b>REVIEW</b></div></div></div>
+    <div className="mx-console-grid"><aside><span>BUILD</span><b>Instruction</b><b>Knowledge</b><b>Connections</b><span>CONTROL</span><b>Permissions</b><b>Approvals</b><b>Audit</b></aside><div className="mx-prompt"><span>NATURAL LANGUAGE BUILDER</span><h3>What should your agent do?</h3><div className="mx-input">Monitor our support inbox, answer from approved knowledge, and send uncertain cases to a person.<i><Arrow /></i></div><div className="mx-chips"><span>Gmail connected</span><span>Human approval</span><span>Audit enabled</span></div><div className="mx-flow"><b>INBOX</b><i>→</i><b>QLIX AGENT</b><i>→</i><b>REVIEW</b></div></div></div>
     <div className="mx-console-foot"><span>Illustrative interface</span><span>ED25519 SIGNING · ACTIVE</span></div>
   </div>;
 }
@@ -67,17 +134,34 @@ function ProductConsole() {
 export function HomePage() {
   return <main>
     <section className="mx-hero mx-home-hero">
-      <div className="mx-orbit" aria-hidden><span>BUILD</span><span>CONNECT</span><span>CONTROL</span></div>
       <h1>Your AI workforce.<br/><em>Built by you.</em><br/>Governed by Qlix.</h1>
       <p className="mx-lede">Create capable AI agents through natural language, connect them to the tools you already use, and keep every important action within clear human boundaries.</p>
       <CtaPair />
       <div className="mx-hero-note"><span>NO-CODE AGENT BUILDER</span><span>CLOUD OR LOCAL</span><span>ED25519-SIGNED AUDIT RECORDS</span></div>
     </section>
+    <section className="mx-section mx-company-line mx-home-company-line" aria-label="Exora builds Qlix"><span>EXORA</span><i>BUILDS</i><span>QLIX</span><i>SO YOU CAN BUILD</i><span>AGENTS</span></section>
     <section className="mx-showcase mx-product-shot"><div className="mx-product-shot-bar"><span>QLIX / AI BUILDER</span><span>ACTUAL PRODUCT INTERFACE</span></div><img src="/qlix-agent-builder.jpeg" alt="Qlix AI Builder interface for creating an agent with natural-language instructions" /></section>
     <section className="mx-statement"><Eyebrow>THE PRODUCT</Eyebrow><h2>Ideas become agents.<br/>Agents become operations.</h2><p>Qlix turns a plain-language instruction into a working agent with connections, boundaries, approvals, and review built around it.</p></section>
     <section className="mx-section"><div className="mx-section-head"><Eyebrow>HOW QLIX WORKS</Eyebrow><h2>From prompt to<br/>production workflow.</h2></div><ol className="mx-step-grid">{steps.map(s=><li key={s.n}><span>{s.n}</span><WorkflowVisual type={s.visual}/><h3>{s.title}</h3><p>{s.text}</p></li>)}</ol></section>
-    <section className="mx-section mx-agent-section"><div className="mx-section-head"><Eyebrow>CAPABILITY LIBRARY</Eyebrow><h2>Start with a job<br/>that needs doing.</h2><p>Build from scratch or shape a Qlix agent around a common operational responsibility.</p></div><div className="mx-agent-list">{agentCapabilities.map(a=><Link to={`/agents/${a.slug}`} key={a.slug}><span>{a.index}</span><h3>{a.title}</h3><p>{a.signal}</p><i>↗</i></Link>)}</div></section>
-    <section className="mx-section mx-split"><div><Eyebrow>BUILT FOR REAL SYSTEMS</Eyebrow><h2>Meet your tools<br/>where they are.</h2><p>Qlix agents work through configured integrations and scoped access—not an isolated demo environment.</p></div><div className="mx-orbit-shell"><OrbitImages items={[<SiGmail aria-label="Gmail"/>,<SiSlack aria-label="Slack"/>,<SiWhatsapp aria-label="WhatsApp"/>,<SiZoho aria-label="Zoho"/>]} shape="ellipse" radiusX={490} radiusY={190} rotation={-8} duration={24} itemSize={112} responsive showPath pathColor="rgba(168,85,247,.32)" centerContent={<div className="mx-orbit-center"><img src="/logo_solo.png" alt="Qlix"/></div>}/></div></section>
+    <section className="mx-section mx-tools-section">
+      <div className="mx-tools-head">
+        <div className="mx-tool-copy">
+          <Eyebrow>INTEGRATIONS</Eyebrow>
+          <h2>Connect your everyday tools<br/>with our agents.</h2>
+          <p>Qlix agents work through configured integrations and scoped access—not an isolated demo environment.</p>
+        </div>
+        <aside className="mx-tool-stat-panel" aria-label="Over 100 tools available">
+          <b>100+</b>
+          <span>tools ready to connect</span>
+          <em>Gmail · Slack · Sheets · Drive · WhatsApp · and more</em>
+        </aside>
+      </div>
+      <div className="mx-tool-marquees" aria-label="Connected tools showcase">
+        <ToolMarquee tools={TOOL_ROW_ONE} duration={34} />
+        <ToolMarquee tools={TOOL_ROW_TWO} reverse duration={40} />
+      </div>
+    </section>
+    <section className="mx-section mx-agent-section"><div className="mx-section-head"><Eyebrow>WHY US</Eyebrow><h2>One prompt.<br/>A fully working agent.</h2><p>Describe the job in plain language—and we deploy a complete agent with tools, permissions, and controls already in place.</p></div><div className="mx-agent-list">{agentCapabilities.map(a=><Link to={`/agents/${a.slug}`} key={a.slug}><span>{a.index}</span><h3>{a.title}</h3><p>{a.signal}</p><i className="mx-agent-list-arrow"><Arrow /></i></Link>)}</div></section>
     <section className="mx-section mx-proof"><div><Eyebrow>PROVABLE HISTORY</Eyebrow><h2>Actions leave evidence.</h2></div><div><p>Configured Qlix events are recorded and signed using Ed25519. Once recorded, a Qlix audit entry is cryptographically impossible to modify.</p><div className="mx-signature"><span>EVENT / 04F8-A21C</span><span>ED25519 / VERIFIED</span><span>ENTRY / IMMUTABLE</span></div></div></section>
     <section className="mx-business-banner"><Eyebrow>QLIX FOR BUSINESS</Eyebrow><h2>Your operation is unique.<br/>Your Qlix can be too.</h2><p>Exora designs agents, workflows, and ongoing support around the way your business actually works.</p><Link className="mx-button mx-button-light" to="/solutions">Explore tailored solutions <Arrow /></Link></section>
   </main>;
@@ -98,7 +182,7 @@ export function SolutionsPage() {
   return <main><PageHero eyebrow="QLIX FOR BUSINESS" title={<>The product,<br/><em>shaped around you.</em></>} text="Businesses get Qlix plus agent design, tailored workflows, and hands-on support from Exora." action="Discuss your workflow" to="/contact" />
     <section className="mx-section"><div className="mx-section-head"><Eyebrow>THE ENGAGEMENT</Eyebrow><h2>Product foundation.<br/>Personalized operation.</h2></div><div className="mx-feature-grid mx-three"><Feature n="01" visual="agent" title="Agent design" text="We translate a business responsibility into clear agent instructions, access boundaries, and escalation logic."/><Feature n="02" visual="workflow" title="Workflow design" text="We connect people, Qlix agents, and business tools into an operating flow that fits the organisation."/><Feature n="03" visual="support" title="Ongoing support" text="We help teams review behaviour, refine workflows, and expand their Qlix environment responsibly."/></div></section>
     <section className="mx-section mx-process"><div><Eyebrow>WORKING TOGETHER</Eyebrow><h2>One useful workflow.<br/>Then the next.</h2></div><ol>{['Discover the operational job','Design the agent and controls','Connect and validate the workflow','Launch, support, and improve'].map((x,i)=><li key={x}><span>0{i+1}</span><h3>{x}</h3></li>)}</ol></section>
-    <section className="mx-section"><div className="mx-section-head"><Eyebrow>EXAMPLE CAPABILITIES</Eyebrow><h2>A Qlix for the work<br/>behind your business.</h2></div><div className="mx-agent-cards">{agentCapabilities.map(a=><Link key={a.slug} to={`/agents/${a.slug}`}><span>{a.index}</span><h3>{a.title}</h3><p>{a.short}</p><b>View capability ↗</b></Link>)}</div></section>
+    <section className="mx-section"><div className="mx-section-head"><Eyebrow>EXAMPLE CAPABILITIES</Eyebrow><h2>A Qlix for the work<br/>behind your business.</h2></div><div className="mx-agent-cards">{agentCapabilities.map(a=><Link key={a.slug} to={`/agents/${a.slug}`}><span>{a.index}</span><h3>{a.title}</h3><p>{a.short}</p><b>View capability <Arrow /></b></Link>)}</div></section>
     <FinalCta title="Bring us the workflow that keeps slowing you down." />
   </main>;
 }
@@ -117,9 +201,190 @@ export function CareersPage() { return <main><PageHero eyebrow="CAREERS" title={
     <section className="mx-open-role"><span>OPEN APPLICATION</span><h2>Don’t see a role listed?</h2><p>Tell us what you are exceptional at and why Qlix is the product you want to help build.</p><a className="mx-button mx-button-light" href="mailto:support@exora.solutions?subject=Working%20at%20Exora">Write to us <Arrow /></a></section>
   </main>; }
 
-export function ContactPage() { return <main><PageHero eyebrow="CONTACT" title={<>Bring us the work<br/><em>you want agents to own.</em></>} text="Whether you want to create your own Qlix agents or shape a tailored business deployment, start the conversation here." action="Email Exora" href="mailto:support@exora.solutions" />
-    <section className="mx-section mx-contact-grid"><div><Eyebrow>GET IN TOUCH</Eyebrow><a className="mx-email" href="mailto:support@exora.solutions">support@exora.solutions <Arrow /></a><p>Tell us about the workflow, the people involved, and the systems it touches. We will help identify the right starting point.</p></div><div className="mx-contact-card"><span>GOOD FIRST MESSAGE</span><ol><li>What outcome do you want?</li><li>Which tools are involved?</li><li>What must stay under human approval?</li><li>Cloud or local preference?</li></ol></div></section>
-  </main>; }
+const CONTACT_FAQ = [
+  {
+    q: 'How does governance work in Qlix?',
+    a: 'Governance means every agent runs with clear ownership, permission boundaries, and review. Configured events can be recorded and signed with Ed25519 so operational history stays verifiable—not quietly rewritten. Policies define what an agent may do, what it must escalate, and who is accountable.',
+  },
+  {
+    q: 'How do integrations and tool access work?',
+    a: 'Qlix connects to tools you already use—Gmail, WhatsApp, Slack, Zoho, Sheets, Drive, and more—through scoped credentials. Agents only receive the access required for the workflow you configure, not open-ended control of every system.',
+  },
+  {
+    q: 'Where does human control stay in the loop?',
+    a: 'Sensitive actions can require named human approval before they execute—sending customer replies, placing purchases, changing records, or crossing a risk threshold. You decide which steps may run autonomously and which must wait for a person.',
+  },
+  {
+    q: 'Can we deploy in the cloud or locally?',
+    a: 'Both. Qlix can run as a managed cloud deployment or inside your own environment. Local and private deployments keep more of the runtime and customer data under your infrastructure controls. Tell us your preference when you reach out.',
+  },
+  {
+    q: 'How is customer data retained and deleted?',
+    a: 'We retain account and operational data while your subscription or deployment is active, then delete or anonymize eligible data after offboarding or a verified deletion request—subject to legal holds and any immutable audit records that must remain verifiable. Full detail is in our Privacy Policy.',
+  },
+  {
+    q: 'Is customer data used for model training?',
+    a: 'No—not by default. Customer content is processed to run your agents and is not used to train Exora or third-party foundation models unless you explicitly allow that in writing or via a documented opt-in. See Security and Privacy for the full stance.',
+  },
+];
+
+function ContactFaq() {
+  const [openIndex, setOpenIndex] = useState(0);
+  return (
+    <div className="mx-contact-card mx-contact-faq">
+      <span>FAQS</span>
+      <div className="mx-faq-list">
+        {CONTACT_FAQ.map((item, index) => {
+          const open = openIndex === index;
+          return (
+            <div className={`mx-faq-item${open ? ' is-open' : ''}`} key={item.q}>
+              <button
+                type="button"
+                className="mx-faq-trigger"
+                aria-expanded={open}
+                onClick={() => setOpenIndex(open ? -1 : index)}
+              >
+                <span>{item.q}</span>
+                <i aria-hidden>{open ? '−' : '+'}</i>
+              </button>
+              <div className="mx-faq-panel" hidden={!open}>
+                <p>{item.a}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function ContactForm() {
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    company: '',
+    phone: '',
+    message: '',
+  });
+  const [status, setStatus] = useState({ type: 'idle', message: '' });
+  const [submitting, setSubmitting] = useState(false);
+
+  const onChange = (event) => {
+    const { name, value } = event.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const onSubmit = async (event) => {
+    event.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
+    setStatus({ type: 'idle', message: '' });
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...form, source: 'contact_page' }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Failed to send message. Please try again.');
+      }
+      setForm({ name: '', email: '', company: '', phone: '', message: '' });
+      setStatus({
+        type: 'success',
+        message: data.message || 'Thanks — we received your message.',
+      });
+    } catch (error) {
+      setStatus({
+        type: 'error',
+        message: error.message || 'Failed to send message. Please try again.',
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <form className="mx-contact-form" onSubmit={onSubmit} noValidate>
+      <Eyebrow>SEND A MESSAGE</Eyebrow>
+      <h2>Tell us what you want agents to do.</h2>
+      <p>Fill this in and we will follow up with the right starting point for your workflow.</p>
+
+      <div className="mx-form-grid">
+        <label className="mx-field">
+          <span>Name *</span>
+          <input name="name" type="text" autoComplete="name" value={form.name} onChange={onChange} required placeholder="Your name" />
+        </label>
+        <label className="mx-field">
+          <span>Email *</span>
+          <input name="email" type="email" autoComplete="email" value={form.email} onChange={onChange} required placeholder="you@company.com" />
+        </label>
+        <label className="mx-field">
+          <span>Company</span>
+          <input name="company" type="text" autoComplete="organization" value={form.company} onChange={onChange} placeholder="Company name" />
+        </label>
+        <label className="mx-field">
+          <span>Phone</span>
+          <input name="phone" type="tel" autoComplete="tel" value={form.phone} onChange={onChange} placeholder="+91 ..." />
+        </label>
+      </div>
+
+      <label className="mx-field mx-field-full">
+        <span>Message *</span>
+        <textarea
+          name="message"
+          rows={5}
+          value={form.message}
+          onChange={onChange}
+          required
+          placeholder="What outcome do you want, which tools are involved, and what should stay under human approval?"
+        />
+      </label>
+
+      {status.message && (
+        <div className={`mx-form-status is-${status.type}`} role="status">
+          {status.message}
+        </div>
+      )}
+
+      <button className="mx-button mx-button-light" type="submit" disabled={submitting}>
+        {submitting ? 'Sending...' : <>Send message <Arrow /></>}
+      </button>
+    </form>
+  );
+}
+
+export function ContactPage() {
+  return (
+    <main>
+      <PageHero
+        eyebrow="CONTACT"
+        title={<>Bring us the work<br/><em>you want agents to own.</em></>}
+        text="Whether you want to create your own Qlix agents or shape a tailored business deployment, start the conversation here."
+        action="Email Exora"
+        href="mailto:support@exora.solutions"
+      />
+      <section className="mx-section mx-contact-form-section">
+        <ContactForm />
+      </section>
+      <section className="mx-section mx-contact-grid">
+        <div>
+          <Eyebrow>GET IN TOUCH</Eyebrow>
+          <a className="mx-email" href="mailto:support@exora.solutions">support@exora.solutions <Arrow /></a>
+          <p>Tell us about the workflow, the people involved, and the systems it touches. We will help identify the right starting point.</p>
+          <div className="mx-trust-links">
+            <Link to="/security">Security</Link>
+            <Link to="/privacy">Privacy</Link>
+            <Link to="/terms">Terms</Link>
+            <Link to="/security#report">Report a vulnerability</Link>
+          </div>
+        </div>
+        <ContactFaq />
+      </section>
+    </main>
+  );
+}
 
 export function AgentPage() {
   const { slug } = useParams(); const agent=agentCapabilities.find(x=>x.slug===slug); if(!agent)return <Navigate to="/solutions" replace/>;
