@@ -35,7 +35,7 @@ import Qlix from './pages/Qlix'
 import QlixTeaser from './components/QlixTeaser'
 import { SITE_NAV_ITEMS } from './data/siteNavigation'
 import PublicLayout from './marketing/PublicLayout'
-import { HomePage, QlixPage, SolutionsPage, AboutPage, CareersPage, ContactPage, AgentPage as MarketingAgentPage } from './marketing/PublicPages'
+import { HomePage, QlixPage, SolutionsPage, MasterCataloguePage, AboutPage, CareersPage, ContactPage, AgentPage as MarketingAgentPage } from './marketing/PublicPages'
 import { SecurityPage, PrivacyPage, TermsPage } from './marketing/TrustPages'
 
 const ScrollToTop = () => {
@@ -204,6 +204,7 @@ function App() {
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/products" element={<Navigate to="/qlix" replace />} />
                 <Route path="/solutions" element={<SolutionsPage />} />
+                <Route path="/master-catalogue" element={<MasterCataloguePage />} />
                 <Route path="/career" element={<CareersPage />} />
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/security" element={<SecurityPage />} />
